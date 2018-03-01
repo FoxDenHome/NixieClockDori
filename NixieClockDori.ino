@@ -3,6 +3,8 @@
 #include <TimeLib.h>
 #include <limits.h>
 
+#define RENDER_USE_DELAY // Use delay when rendering instead of just returning for the next cycle
+
 #define MASK_UPPER_DOTS 1
 #define MASK_LOWER_DOTS 2
 
@@ -134,32 +136,34 @@ void serialEvent() {
       // Shows a "flash"/"alert" message on the clock (will show this message instead of the time for <M> milliseconds. Does not use/reset hold when 0). Dots are bit 1 for lower and bit 2 for upper. Turned off when HIGH
       // Will only set color flash if used without D and N parameters
       // If sent without any parameters, resets current flash message and goes back to clock mode
-      // F0000100000FF001337:;
+      // F0000100000FF0021337:;
       case 'F':
         if (inputString.length() < 15) {
           if (inputString.length() == 1) {
             holdDisplayUntil = 0;
             break;
           }
-          Serial.println(F("F BAD (Invalid length; expected 15+ or 1)"));
+          Serial.println(F("F BAD (Invalid length; expected 22, 15 or 1)"));
           break;
         }
 
-        unsigned long holdAddition = (unsigned long)inputString.substring(0, 8).toInt();
+        unsigned long holdAddition = (unsigned long)inputString.substring(1, 9).toInt();
         if (holdAddition > 0) {
           holdColorUntil = millis() + holdAddition;
         }
 
-        setColor(hexInputToByte(8), hexInputToByte(10), hexInputToByte(12));
+        setColor(hexInputToByte(9), hexInputToByte(11), hexInputToByte(13));
 
-        if (inputString.length() > 21) {
+        if (inputString.length() >= 22) {
           holdDisplayUntil = holdColorUntil;
-          int dots = inputString[14] - '0';
+          int dots = inputString[15] - '0';
           setDots((dots & 2) == 2, (dots & 1) == 1);
           for (int i = 0; i < 6; i++) {
             dataToDisplay[i] = symbolArray[inputString[i + 16] - '0'];
           }
         }
+
+        antiPoisonEnd = 0;
 
         Serial.println(F("F OK"));
         break;
@@ -192,21 +196,19 @@ void setColor(byte r, byte g, byte b) {
 
 void displayAntiPoison(int count) {
   antiPoisonEnd = millis() + (unsigned long)(ANTI_POISON_DELAY * 10UL * count);
-  analogWrite(PIN_LED_RED, 0);
-  analogWrite(PIN_LED_GREEN, 0);
-  analogWrite(PIN_LED_BLUE, 0);
-  colorSet = false;
 }
 
 void loop() {
- if (RTCPresent && (millis() - RTCLastSyncTime >= 10000 || millis() < RTCLastSyncTime)) {
+ unsigned long curMillis = millis();
+
+ if (RTCPresent && (curMillis - RTCLastSyncTime >= 10000 || curMillis < RTCLastSyncTime)) {
   getRTCTime();
   setTime(RTCHours, RTCMinutes, RTCSeconds, RTCDay, RTCMonth, RTCYear);
-  RTCLastSyncTime = millis();
+  RTCLastSyncTime = curMillis;
  }
 
- if (antiPoisonEnd > millis()) {
-  int idx = (antiPoisonEnd - millis()) / ANTI_POISON_DELAY;
+ if (antiPoisonEnd > curMillis) {
+  int idx = (antiPoisonEnd - curMillis) / ANTI_POISON_DELAY;
   while (idx < 0) {
     idx += 10;
   }
@@ -214,32 +216,20 @@ void loop() {
   for (int i = 0; i < 6; i++) {
     dataToDisplay[i] = symbolArray[idx];
   }
-  setDots(true, false);
-  renderNixies();
-  return;
- }
-
- if (antiPoisonEnd > 0) {
-  antiPoisonEnd = 0;
-  if (setColor) {
-    setColor(setR, setG, setB);
-  }
- }
- 
- if (holdDisplayUntil <= millis()) {
+ } else if (holdDisplayUntil <= curMillis) {
   if (second() % 2) {
     setDots(true, true);
   } else {
     setDots(false, false);
   }
-  if (colorSet && holdColorUntil <= millis()) {
+  if (colorSet && holdColorUntil <= curMillis) {
     analogWrite(PIN_LED_RED, 0);
     analogWrite(PIN_LED_GREEN, 0);
     analogWrite(PIN_LED_BLUE, 0);
     colorSet = false;
     holdColorUntil = 0;
   }
-  holdDisplayUntil = millis() + 10;
+  holdDisplayUntil = curMillis + 10;
   insert2(0, hour());
   insert2(2, minute());
   insert2(4, second());
@@ -345,10 +335,18 @@ void renderNixies()
   static byte anodeGroup = 0;
   static unsigned long lastTimeInterval1Started;
 
-  if ((micros() - lastTimeInterval1Started) <= 5000) {
-    return;
+  unsigned long curMicros = micros();
+  if (curMicros >= lastTimeInterval1Started) {
+    unsigned long timeSinceLastRender = curMicros - lastTimeInterval1Started;
+    if (timeSinceLastRender <= 5000) {
+#ifdef RENDER_USE_DELAY
+      delayMicroseconds(5000 - timeSinceLastRender);
+#else // RENDER_USE_DELAY
+      return;
+#endif // RENDER_USE_DELAY
+    }
   }
-  lastTimeInterval1Started = micros();
+  lastTimeInterval1Started = curMicros;
   
   byte curTubeL = anodeGroup << 1;
   byte curTubeR = curTubeL + 1;
