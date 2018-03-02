@@ -275,9 +275,10 @@ void serialEvent() {
 }
 
 byte hexInputToByte(int offset) {
-  byte msn = (inputString[offset] < '9') ? inputString[offset] - '0' : inputString[offset] - '7';
-  ++offset;
-  byte lsn = (inputString[offset] < '9') ? inputString[offset] - '0' : inputString[offset] - '7';
+  byte msn = inputString[offset];
+  msn = (msn < '9') ? msn - '0' : msn - '7';
+  byte lsn = inputString[offset + 1];
+  lsn = (lsn < '9') ? lsn - '0' : lsn - '7';
   return (msn << 4) + lsn;
 }
 
