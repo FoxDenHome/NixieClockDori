@@ -5,8 +5,9 @@
 #include "config.h"
 #include "crcserial.h"
 
-#define MASK_UPPER_DOTS 1
-#define MASK_LOWER_DOTS 2
+const byte MASK_UPPER_DOTS = 1;
+const byte MASK_LOWER_DOTS = 2;
+const byte MASK_BOTH_DOTS = MASK_UPPER_DOTS | MASK_LOWER_DOTS;
 
 #ifdef EFFECT_SLOT_MACHINE
 #define EFFECT_ENABLED
@@ -285,9 +286,16 @@ byte hexInputToByte(const byte offset) {
 }
 
 uint16_t getNumber(const byte idx) {
-  return 1 << ((idx) % 10);
+  return 1 << (idx % 10);
 }
 
+//#define setDotsC_false_false() { dotMask = MASK_BOTH_DOTS; }
+//#define setDotsC_true_false() { dotMask = MASK_LOWER_DOTS; }
+//#define setDotsC_false_true() { dotMask = MASK_UPPER_DOTS; }
+//#define setDotsC_true_true() { dotMask = 0; }
+//#define setDotsC_conc(upper, lower) setDotsC_##upper##_##lower
+//#define setDotsConst(upper, lower) setDotsC_conc(upper, lower)()
+#define setDotsConst setDots
 void setDots(const bool upper, const bool lower) {
   dotMask = (upper ? 0 : MASK_UPPER_DOTS) | (lower ? 0 : MASK_LOWER_DOTS);
 }
@@ -358,9 +366,9 @@ void loop() {
       const byte s = second(_n);
 
       if (s % 2) {
-        setDots(true, true);
+        setDotsConst(true, true);
       } else {
-        setDots(false, false);
+        setDotsConst(false, false);
       }
 
 #ifdef CLOCK_TRIM_HOURS
@@ -396,13 +404,13 @@ void loop() {
 
 bool showShortTime(const unsigned long timeMs, bool trimLZ) {
   if (timeMs >= ONE_HOUR_IN_MS) { // Show H/M/S
-    setDots(true, false);
+    setDotsConst(true, false);
     trimLZ = insert2(0, (timeMs / ONE_HOUR_IN_MS) % 100, trimLZ);
     trimLZ = insert2(2, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ);
     insert2(4, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ);
     return true;
   } else { // Show M/S/MS
-    setDots(false, true);
+    setDotsConst(false, true);
     trimLZ = insert2(0, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ);
     trimLZ = insert2(2, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ);
     insert2(4, (timeMs / 10UL) % 100, trimLZ);
@@ -427,7 +435,7 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero) {
 void displaySelfTest() {
   serialSend(F("< Start LED Test"));
 
-  setDots(true, true);
+  setDotsConst(true, true);
 
   analogWrite(PIN_LED_RED, 255);
   delay(1000);
