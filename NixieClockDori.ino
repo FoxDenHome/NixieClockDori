@@ -49,7 +49,6 @@ uint16_t dataToDisplayOld[6] = {0, 0, 0, 0, 0, 0};
 uint16_t dataToDisplay[6] = {0, 0, 0, 0, 0, 0}; // This will be displayed on tubes
 byte dotMask;
 
-String inputString;
 unsigned long holdDisplayUntil;
 bool colorSet;
 
@@ -64,6 +63,8 @@ unsigned long prevMillis;
 unsigned long stopwatchTime, countdownTo;
 
 unsigned long RTCLastSyncTime;
+
+String inputString = "";
 
 /****************/
 /* PROGRAM CODE */
@@ -107,16 +108,29 @@ void setup() {
 }
 
 void serialEvent() {
+  static bool receivedStart = false;
+
   while (Serial.available()) {
     const char inChar = (char)Serial.read();
+    if (inChar == '^') {
+      receivedStart = true;
+      inputString = "";
+      continue;
+    }
+    if (!receivedStart) {
+      continue;
+    }
     if (inChar != '\n') {
       inputString += inChar;
       if (inputString.length() >= 30) {
         inputString = "";
+        receivedStart = false;
         Serial.println(F("< Serial line too long. Buffer reset."));
       }
       continue;
     }
+
+    receivedStart = false;
     Serial.print(F("> "));
     Serial.println(inputString);
 
