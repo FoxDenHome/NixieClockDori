@@ -148,18 +148,19 @@ void serialEvent() {
         displayAntiPoison(inputString.substring(1, 3).toInt());
         Serial.println(F("P OK"));
         break;
-      // G MMMMMMMM IIII OOOO [RR GG BB]
+      // G [MMMMMMMM IIII OOOO RR GG BB]
       // M = milliseconds (Dec), I = Ease-In (Dec), O = Ease-Out (Dec), R = Red (Hex), G = Green (Hex), B = Blue (Hex)
-      // Shows a "flash"/"alert" message on the clock (will show this message instead of the time for <M> milliseconds. Does not use/reset hold when 0). Dots are bit 1 for lower and bit 2 for upper. Turned off when HIGH
-      // If sent without any parameters, resets current flash message and goes back to clock mode
+      // Shows a "flash"/"alert" color on the clock
+      // If sent without any parameters, resets current flash color
       // G000010000500050000FF00
       case 'G':
-        if (inputString.length() < 15) {
-          if (inputString.length() == 1) {
+        if (inputString.length() < 23) {
+          if (inputString.length() < 3) { // Allow for \r\n
             noColor();
+            Serial.println(F("G OK"));
             break;
           }
-          Serial.println(F("G BAD (Invalid length; expected 15 or 1)"));
+          Serial.println(F("G BAD (Invalid length; expected 23 or 1)"));
           break;
         }
         holdColorStartTime = millis();
@@ -167,22 +168,22 @@ void serialEvent() {
         holdColorSteadyTarget = holdColorEaseInTarget + (unsigned long)inputString.substring(1, 9).toInt();
         holdColorEaseOutTarget = holdColorSteadyTarget + (unsigned long)inputString.substring(13, 17).toInt();
 
-        tmpData = inputString[17] - '0';
-        setR = hexInputToByte(18);
-        setG = hexInputToByte(20);
-        setB = hexInputToByte(22);
+        setR = hexInputToByte(17);
+        setG = hexInputToByte(19);
+        setB = hexInputToByte(21);
         colorSet = true;
         Serial.println(F("G OK"));
         break;
-      // F MMMMMMMM [D NNNNNN]
+      // F [MMMMMMMM D NNNNNN]
       // M = milliseconds (Dec), D = dots (Bitmask Dec) to show the message, N = Nixie message (Dec)
-      // Shows a "flash"/"alert" color on the clock
+      // Shows a "flash"/"alert" message on the clock (will show this message instead of the time for <M> milliseconds. Does not use/reset hold when 0). Dots are bit 1 for lower and bit 2 for upper. Turned off when HIGH
       // If sent without any parameters, resets current flash message and goes back to clock mode
       // F0000100021337NA
       case 'F':
         if (inputString.length() < 16) {
-          if (inputString.length() == 1) {
+          if (inputString.length() < 3) { // Allow for \r\n
             holdDisplayUntil = 0;
+            Serial.println(F("F OK"));
             break;
           }
           Serial.println(F("F BAD (Invalid length; expected 16 or 1)"));
