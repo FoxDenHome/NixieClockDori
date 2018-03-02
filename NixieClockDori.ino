@@ -95,7 +95,7 @@ void serialEvent() {
       inputString += inChar;
       if (inputString.length() >= 30) {
         inputString = "";
-        Serial.println(F("< Line too long. Aborted."));
+        Serial.println(F("< Serial line too long. Buffer reset."));
       }
       continue;
     }

@@ -67,7 +67,7 @@ void rtcTest() {
   do {
     delay(100);
     if ((millis() - RTCReadingStartTime) > 3000) {
-      Serial.println(F("Warning! RTC DON'T RESPOND!"));
+      Serial.println(F("< Warning! RTC DIDN'T RESPOND!"));
       RTCPresent = false;
       break;
     }
