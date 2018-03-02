@@ -30,8 +30,14 @@
 #define NO_TUBES 0
 #define getNumber(idx) (1 << ((idx) % 10))
 
+#ifdef EFFECT_SLOT_MACHINE
+#define EFFECT_ENABLED
+#endif
+
+#ifdef EFFECT_ENABLED
 byte dataIsTransitioning[6] = {0, 0, 0, 0, 0, 0};
 uint16_t dataToDisplayOld[6] = {0, 0, 0, 0, 0, 0};
+#endif
 uint16_t dataToDisplay[6] = {0, 0, 0, 0, 0, 0}; // This will be displayed on tubes
 byte dotMask;
 
@@ -369,7 +375,8 @@ void loop() {
       displayDirty = true;
     }
   }
-  
+
+#ifdef EFFECT_ENABLED
   if (displayDirty) {
     for (int i = 0; i < 6; i++) {
       if (dataToDisplayOld[i] != dataToDisplay[i]) {
@@ -378,6 +385,7 @@ void loop() {
       }
     }
   }
+#endif
 
   renderNixies(milliDelta);
 }
@@ -463,6 +471,7 @@ void renderNixies(unsigned long milliDelta) {
   uint16_t tubeL = dataToDisplay[curTubeL];
   uint16_t tubeR = dataToDisplay[curTubeR];
 
+#ifdef EFFECT_ENABLED
   byte tubeTrans = dataIsTransitioning[curTubeL];
   if (tubeTrans > 0) {
 #ifdef EFFECT_SLOT_MACHINE
@@ -486,6 +495,7 @@ void renderNixies(unsigned long milliDelta) {
       dataIsTransitioning[curTubeR] = 0;
     }
   }
+#endif
 
   digitalWrite(PIN_LE, LOW); // allow data input (Transparent mode)
   SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE2));
