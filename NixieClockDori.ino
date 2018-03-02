@@ -323,12 +323,12 @@ void loop() {
     holdDisplayUntil = curMillis + 10;
     if (countdownTo > 0) {
       if (countdownTo <= curMillis) {
-        showShortTime(0);
+        showShortTime(0, true);
       } else {
-        showShortTime(countdownTo - curMillis);
+        showShortTime(countdownTo - curMillis, true);
       }
     } else if (stopwatchEnabled) {
-      showShortTime(stopwatchTime);
+      showShortTime(stopwatchTime, true);
     } else {
       byte s = second();
       if (s % 2) {
@@ -354,8 +354,7 @@ void loop() {
   renderNixies();
 }
 
-void showShortTime(unsigned long timeMs) {
-  bool trimLZ = true;
+void showShortTime(unsigned long timeMs, bool trimLZ) {
   if (timeMs >= ONE_HOUR_IN_MS) { // Show H/M/S
     setDots(true, false);
     trimLZ = insert2(0, (timeMs / ONE_HOUR_IN_MS) % 100, trimLZ);
