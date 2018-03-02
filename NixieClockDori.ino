@@ -288,11 +288,6 @@ void loop() {
       dataToDisplay[i] = getSymbol(idx);
     }
   } else if (holdDisplayUntil <= curMillis) {
-    if (second() % 2) {
-      setDots(true, true);
-    } else {
-      setDots(false, false);
-    }
     holdDisplayUntil = curMillis + 10;
     if (countdownTo > 0) {
       if (countdownTo <= curMillis) {
@@ -303,13 +298,21 @@ void loop() {
     } else if (stopwatchEnabled) {
       showShortTime(stopwatchTime);
     } else {
-      insert2(0, hour());
-      insert2(2, minute());
-      insert2(4, second());
+      byte s = second();
+      if (s % 2) {
+        setDots(true, true);
+      } else {
+        setDots(false, false);
+      }
+      byte h = hour();
+      insert1(0, h / 10, true);
+      insert1(1, h, false);
+      insert2(2, minute(), false);
+      insert2(4, s, false);
+      if (h < 4 && s % 10 == 0) {
+        displayAntiPoison(1);
+      }
     }
-  } else if (hour() < 4 && second() % 10 == 0) {
-    displayAntiPoison(1);
-    return;
   }
   
   renderNixies();
@@ -321,16 +324,17 @@ void loop() {
 
 void showShortTime(unsigned long timeMs)
 {
+  bool trimLZ = true;
   if (timeMs >= ONE_HOUR_IN_MS) { // Show H/M/S
     setDots(true, false);
-    insert2(0, (timeMs / ONE_HOUR_IN_MS) % 100);
-    insert2(2, (timeMs / ONE_MINUTE_IN_MS) % 60);
-    insert2(4, (timeMs / ONE_SECOND_IN_MS) % 60);
+    trimLZ = insert2(0, (timeMs / ONE_HOUR_IN_MS) % 100, trimLZ);
+    trimLZ = insert2(2, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ);
+    insert2(4, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ);
   } else { // Show M/S/MS
     setDots(false, true);
-    insert2(0, (timeMs / ONE_MINUTE_IN_MS) % 60);
-    insert2(2, (timeMs / ONE_SECOND_IN_MS) % 60);
-    insert2(4, (timeMs / 10UL) % 100);
+    trimLZ = insert2(0, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ);
+    trimLZ = insert2(2, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ);
+    insert2(4, (timeMs / 10UL) % 100, trimLZ);
   }
 }
 
@@ -353,10 +357,21 @@ void testRTC() {
   }
 }
 
-void insert2(int offset, int data)
+bool insert1(int offset, int data, boolean trimLeadingZero)
 {
-  dataToDisplay[offset    ] = getSymbol((data / 10) % 10);
-  dataToDisplay[offset + 1] = getSymbol(data % 10);
+  data %= 10;
+  if (data == 0 && trimLeadingZero) {
+    dataToDisplay[offset] = 0;
+    return true;
+  } else {
+    dataToDisplay[offset] = getSymbol(data);
+    return false;
+  }
+}
+bool insert2(int offset, int data, boolean trimLeadingZero)
+{
+  trimLeadingZero = insert1(offset, data / 10, trimLeadingZero);
+  return insert1(offset + 1, data, trimLeadingZero);
 }
 
 void getRTCTime()
