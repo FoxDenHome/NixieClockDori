@@ -16,7 +16,7 @@ void rtcSetTime(tmElements_t& tm) {
 }
 
 void rtcInit() {
-  time_t prevT = RTC.get();
+  const time_t prevT = RTC.get();
   if (!RTC.chipPresent()) {
     serialSend(F("< Warning! RTC NOT ON BOARD!"));
     return;
@@ -24,18 +24,16 @@ void rtcInit() {
 
   if (prevT == 0) {
     RTC.set(5); // Set dummy time
-    prevT = RTC.get();
-  }
-
-  const unsigned long rtcReadingStartTime = millis();
-
-  do {
+    delay(1000);
+    for (byte b = 0; b < 10 && RTC.get() <= 5; b++) {
+      delay(100);
+    }
     delay(100);
-    if ((millis() - rtcReadingStartTime) > 3000) {
-      serialSend(F("< Warning! RTC DIDN'T RESPOND!"));
+    if (RTC.get() <= 5) {
+      serialSend(F("< Warning! RTC ZERO!"));
       return;
     }
-  } while (prevT == RTC.get());
+  }
 
   setSyncProvider(RTC.get);
 }
