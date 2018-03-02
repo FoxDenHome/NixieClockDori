@@ -26,8 +26,10 @@
 
 #define ANTI_POISON_DELAY 200UL
 
-const unsigned int symbolArray[12] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 0, 1023}; // Last two chars = none on / all on. They are : and ;
-unsigned int dataToDisplay[6] = {0, 0, 0, 0, 0, 0}; // This will be displayed on tubes
+const uint16_t symbolArray[12] PROGMEM = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 0, 1023}; // Last two chars = none on / all on. They are : and ;
+#define getSymbol(idx) (pgm_read_word_near(symbolArray + (idx)))
+
+uint16_t dataToDisplay[6] = {0, 0, 0, 0, 0, 0}; // This will be displayed on tubes
 byte dotMask;
 
 bool RTCPresent;
@@ -159,7 +161,7 @@ void serialEvent() {
           int dots = inputString[15] - '0';
           setDots((dots & 2) == 2, (dots & 1) == 1);
           for (int i = 0; i < 6; i++) {
-            dataToDisplay[i] = symbolArray[inputString[i + 16] - '0'];
+            dataToDisplay[i] = getSymbol(inputString[i + 16] - '0');
           }
         }
 
@@ -214,7 +216,7 @@ void loop() {
   }
   idx %= 10;
   for (int i = 0; i < 6; i++) {
-    dataToDisplay[i] = symbolArray[idx];
+    dataToDisplay[i] = getSymbol(idx);
   }
  } else if (holdDisplayUntil <= curMillis) {
   if (second() % 2) {
@@ -261,8 +263,8 @@ void testRTC() {
 
 void insert2(int offset, int data)
 {
-  dataToDisplay[offset    ] = symbolArray[(data / 10) % 10];
-  dataToDisplay[offset + 1] = symbolArray[data % 10];
+  dataToDisplay[offset    ] = getSymbol((data / 10) % 10);
+  dataToDisplay[offset + 1] = getSymbol(data % 10);
 }
 
 void getRTCTime()
