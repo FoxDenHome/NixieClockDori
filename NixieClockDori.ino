@@ -222,7 +222,7 @@ void serialEvent() {
           Serial.println(F("W BAD (Invalid length; expected 2)"));
           break;
         }
-        bool wOk = true;
+        tmpData = true;
         switch (inputString[1]) {
           case 'R':
             stopwatchEnabled = false;
@@ -242,11 +242,11 @@ void serialEvent() {
             stopwatchTime = 0;
             break;
           default:
-            wOk = false;
+            tmpData = false;
             Serial.print(F("W BAD (Invalid C)"));
             break;
         }
-        if (wOk) {
+        if (tmpData) {
           Serial.println(F("W OK"));
         }
         break;
