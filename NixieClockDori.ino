@@ -103,6 +103,7 @@ void setup() {
 
   digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);
 
+  prevMillis = millis();
   serialSend(F("< Ready"));
 }
 
@@ -389,17 +390,21 @@ void loop() {
   }
 
 #ifdef EFFECT_ENABLED
-  if (displayDirty) {
-    for (byte i = 0; i < 6; i++) {
-      if (dataToDisplayOld[i] != dataToDisplay[i]) {
-        dataToDisplayOld[i] = dataToDisplay[i];
-        dataIsTransitioning[i] = EFFECT_SPEED;
+  for (byte i = 0; i < 6; i++) {
+    if (displayDirty && dataToDisplayOld[i] != dataToDisplay[i]) {
+      dataToDisplayOld[i] = dataToDisplay[i];
+      dataIsTransitioning[i] = EFFECT_SPEED;
+    } else if(dataIsTransitioning[i] > 0) {
+      if (dataIsTransitioning[i] > milliDelta) {
+        dataIsTransitioning[i] -= milliDelta;
+      } else {
+        dataIsTransitioning[i] = 0;
       }
     }
   }
 #endif
 
-  renderNixies(milliDelta);
+  renderNixies();
 }
 
 bool showShortTime(const unsigned long timeMs, bool trimLZ) {
@@ -452,7 +457,7 @@ void displaySelfTest() {
   displayAntiPoison(2);
 }
 
-void renderNixies(const unsigned long milliDelta) {
+void renderNixies() {
   static byte anodeGroup = 0;
   static unsigned long lastTimeInterval1Started;
 
@@ -487,11 +492,6 @@ void renderNixies(const unsigned long milliDelta) {
 #ifdef EFFECT_SLOT_MACHINE
     tubeL = getNumber(tubeTrans / (EFFECT_SPEED / 10));
 #endif
-    if (tubeTrans > milliDelta) {
-      dataIsTransitioning[curTubeL] -= milliDelta;
-    } else {
-      dataIsTransitioning[curTubeL] = 0;
-    }
   }
 
   tubeTrans = dataIsTransitioning[curTubeR];
@@ -499,11 +499,6 @@ void renderNixies(const unsigned long milliDelta) {
 #ifdef EFFECT_SLOT_MACHINE
     tubeR = getNumber(tubeTrans / (EFFECT_SPEED / 10));
 #endif
-    if (tubeTrans > milliDelta) {
-      dataIsTransitioning[curTubeR] -= milliDelta;
-    } else {
-      dataIsTransitioning[curTubeR] = 0;
-    }
   }
 #endif
 
