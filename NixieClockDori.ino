@@ -94,8 +94,6 @@ void setup() {
 
   // Begin initialization routines
   serialInit();
-
-  rtcTest();
   rtcInit();
 
   digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);

@@ -2,7 +2,6 @@
 #define _RTC_H_INCLUDED
 
 void rtcSetTime(const tmElements_t& tm);
-void rtcTest();
 void rtcInit();
 
 #endif // _RTC_H_INCLUDED
