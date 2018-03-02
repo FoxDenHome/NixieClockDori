@@ -1,9 +1,9 @@
 #ifndef _RTC_H_INCLUDED
 #define _RTC_H_INCLUDED
 
-void rtcSync();
 void rtcSetTime(const tmElements_t& tm);
 void rtcTest();
+void rtcInit();
 
 #endif // _RTC_H_INCLUDED
 

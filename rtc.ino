@@ -7,15 +7,8 @@ void setTimeTM(const tmElements_t& tm) {
   setTime(tm.Hour, tm.Minute, tm.Second, tm.Day, tm.Month, tm.Year);
 }
 
-void rtcSync() {
-  if (!RTC.chipPresent()) {
-    return;
-  }
-  tmElements_t tm;
-  if (!RTC.read(tm)) {
-    return;
-  }
-  setTimeTM(tm);
+void rtcInit() {
+  setSyncProvider(RTC.get);
 }
 
 void rtcSetTime(tmElements_t& tm) {

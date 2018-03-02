@@ -1,5 +1,6 @@
 #include <SPI.h>
 #include <TimeLib.h>
+#include <DS1307RTC.h>
 #include "rtc.h"
 #include "config.h"
 #include "crcserial.h"
@@ -63,8 +64,6 @@ bool stopwatchRunning = false;
 unsigned long prevMillis;
 unsigned long stopwatchTime, countdownTo;
 
-unsigned long RTCLastSyncTime;
-
 /****************/
 /* PROGRAM CODE */
 /****************/
@@ -97,7 +96,7 @@ void setup() {
   serialInit();
 
   rtcTest();
-  rtcSync();
+  rtcInit();
 
   digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);
 
@@ -315,11 +314,6 @@ void loop() {
   const unsigned long curMillis = millis();
   const unsigned long milliDelta = (curMillis >= prevMillis) ? (curMillis - prevMillis) : 0;
   prevMillis = curMillis;
-
-  if (curMillis - RTCLastSyncTime >= 10000 || curMillis < RTCLastSyncTime) {
-    rtcSync();
-    RTCLastSyncTime = curMillis;
-  }
 
   // Handle color logic
   if (colorSet) {
