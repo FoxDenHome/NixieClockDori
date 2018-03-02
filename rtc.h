@@ -2,7 +2,7 @@
 #define _RTC_H_INCLUDED
 
 void rtcSync();
-void rtcSetTime(byte h, byte m, byte s, byte d, byte mon, byte y, byte w);
+void rtcSetTime(const tmElements_t& tm);
 void rtcTest();
 
 #endif // _RTC_H_INCLUDED
