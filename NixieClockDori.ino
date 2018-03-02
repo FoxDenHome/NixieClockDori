@@ -328,20 +328,22 @@ void loop() {
     } else if (stopwatchEnabled) {
       showShortTime(stopwatchTime, true);
     } else {
-      byte s = second();
+      time_t _n = now();
+
+      byte s = second(_n);
       if (s % 2) {
         setDots(true, true);
       } else {
         setDots(false, false);
       }
-      byte h = hour();
+      byte h = hour(_n);
 #ifdef CLOCK_TRIM_HOURS
       insert1(0, h / 10, true);
       insert1(1, h, false);
 #else
       insert2(0, h, false);
 #endif
-      insert2(2, minute(), false);
+      insert2(2, minute(_n), false);
       insert2(4, s, false);
       if (h < 4 && s % 10 == 0) {
         displayAntiPoison(1);
