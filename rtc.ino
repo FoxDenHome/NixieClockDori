@@ -1,79 +1,52 @@
 #include <TimeLib.h>
+#include <DS1307RTC.h>
 #include "crcserial.h"
 #include "rtc.h"
 
-#define DS1307_ADDRESS 0x68
-#define ZERO 0
-
-bool rtcPresent;
+void setTimeTM(const tmElements_t& tm) {
+  setTime(tm.Hour, tm.Minute, tm.Second, tm.Day, tm.Month, tm.Year);
+}
 
 void rtcSync() {
-  if (!rtcPresent) {
+  if (!RTC.chipPresent()) {
     return;
   }
-
-  Wire.beginTransmission(DS1307_ADDRESS);
-  Wire.write(ZERO);
-  Wire.endTransmission();
-
-  Wire.requestFrom(DS1307_ADDRESS, 7);
-  const byte s = bcdToDec(Wire.read());
-  const byte m = bcdToDec(Wire.read());
-  const byte h = bcdToDec(Wire.read() & 0b111111); //24 hour time
-  const byte w = bcdToDec(Wire.read()); //0-6 -> sunday - Saturday
-  const byte d = bcdToDec(Wire.read());
-  const byte mon = bcdToDec(Wire.read());
-  const byte y = bcdToDec(Wire.read());
-
-  setTime(h, m, s, d, mon, y);
-}
-
-void rtcSetTime(const byte h, const byte m, const byte s, const byte d, const byte mon, const byte y, const byte w) {
-  setTime(h, m, s, d, mon, y);
-  if (!rtcPresent) {
+  tmElements_t tm;
+  if (!RTC.read(tm)) {
     return;
   }
-
-  Wire.beginTransmission(DS1307_ADDRESS);
-  Wire.write(ZERO); //stop Oscillator
-
-  Wire.write(decToBcd(s));
-  Wire.write(decToBcd(m));
-  Wire.write(decToBcd(h));
-  Wire.write(decToBcd(w));
-  Wire.write(decToBcd(d));
-  Wire.write(decToBcd(mon));
-  Wire.write(decToBcd(y));
-
-  Wire.write(ZERO); //start
-  Wire.endTransmission();
-
+  setTimeTM(tm);
 }
 
-byte rtcReadSeconds() {
-  Wire.beginTransmission(DS1307_ADDRESS);
-  Wire.write(ZERO);
-  Wire.endTransmission();
-
-  Wire.requestFrom(DS1307_ADDRESS, 7);
-  const byte s = bcdToDec(Wire.read());
-  Wire.read(); Wire.read(); Wire.read(); Wire.read(); Wire.read(); Wire.read();
-  return s;
+void rtcSetTime(tmElements_t& tm) {
+  setTimeTM(tm);
+  if (!RTC.chipPresent()) {
+    return;
+  }
+  RTC.write(tm);
 }
 
 void rtcTest() {
-  const byte prevSeconds = rtcReadSeconds();
+  time_t prevT = RTC.get();
+  if (!RTC.chipPresent()) {
+    serialSend(F("< Warning! RTC NOT ON BOARD!"));
+    return;
+  }
+
+  if (prevT == 0) {
+    RTC.set(5); // Set dummy time
+    prevT = RTC.get();
+  }
+
   const unsigned long rtcReadingStartTime = millis();
-  rtcPresent = true;
 
   do {
     delay(100);
     if ((millis() - rtcReadingStartTime) > 3000) {
       serialSend(F("< Warning! RTC DIDN'T RESPOND!"));
-      rtcPresent = false;
       break;
     }
-  } while (prevSeconds == rtcReadSeconds());
+  } while (prevT == RTC.get());
 }
 
 byte decToBcd(const byte val) {

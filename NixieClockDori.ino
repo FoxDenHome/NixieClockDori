@@ -127,15 +127,15 @@ void serialEvent() {
           serialSend(F("T BAD (Invalid length; expected 16)"));
           break;
         }
-        rtcSetTime(
-          inputString.substring(1, 3).toInt(),   // H
-          inputString.substring(3, 5).toInt(),   // I
-          inputString.substring(5, 7).toInt(),   // S
-          inputString.substring(6, 9).toInt(),   // D
-          inputString.substring(9, 11).toInt(),  // M
-          inputString.substring(11, 13).toInt(), // Y
-          inputString.substring(13, 14).toInt()  // W
-        );
+        tmElements_t tm;
+        tm.Hour = inputString.substring(1, 3).toInt();
+        tm.Minute = inputString.substring(3, 5).toInt();
+        tm.Second = inputString.substring(5, 7).toInt();
+        tm.Day = inputString.substring(6, 9).toInt();
+        tm.Month = inputString.substring(9, 11).toInt();
+        tm.Year = inputString.substring(11, 13).toInt();
+        tm.Wday = inputString.substring(13, 14).toInt();
+        rtcSetTime(tm);
         serialSend(F("T OK"));
         break;
       // X
