@@ -348,7 +348,7 @@ void loop() {
     for (byte i = 0; i < 6; i++) {
       dataToDisplay[i] = sym;
     }
-    displayDirty = true;
+    displayDirty = false;
   } else if (holdDisplayUntil <= curMillis) {
     holdDisplayUntil = curMillis + 10;
     if (countdownTo > 0) {
