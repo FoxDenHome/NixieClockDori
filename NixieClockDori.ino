@@ -337,6 +337,7 @@ void loop() {
       } else {
         setDots(false, false);
       }
+
 #ifdef CLOCK_TRIM_HOURS
       insert1(0, h / 10, true);
       insert1(1, h, false);
@@ -345,6 +346,7 @@ void loop() {
 #endif
       insert2(2, minute(_n), false);
       insert2(4, s, false);
+
       if (h < 4 && s % 10 == 0) {
         displayAntiPoison(1);
       }
