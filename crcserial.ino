@@ -4,8 +4,8 @@
 FastCRC16 crc;
 String inputChecksum;
 
-#define stringCRC(str) crc.modbus((const uint8_t*)str.c_str(), str.length())
-#define stringCRCUpdate(str) crc.modbus_upd((const uint8_t*)str.c_str(), str.length())
+#define stringCRC(str) crc.ccitt((const uint8_t*)str.c_str(), str.length())
+#define stringCRCUpdate(str) crc.ccitt_upd((const uint8_t*)str.c_str(), str.length())
 
 void serialInit() {
   Serial.begin(2000000);
