@@ -1,5 +1,4 @@
 #include <SPI.h>
-#include <Wire.h>
 #include <TimeLib.h>
 #include "rtc.h"
 #include "config.h"
@@ -92,7 +91,6 @@ void setup() {
   pinMode(PIN_BUTTON_DOWN, INPUT_PULLUP);
 
   // Lib setup
-  Wire.begin();
   SPI.begin();
 
   // Begin initialization routines
