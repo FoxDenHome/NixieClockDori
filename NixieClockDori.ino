@@ -103,8 +103,8 @@ void serialEvent() {
     byte tmpData;
 
     switch (inputString[0]) {
-      // T HH MM SS DD MM YY W
-      // H = Hours, M = Minutes, S = Seconds, D = Day of month, M = month, Y = year, W = Day of week (ALL Dec)
+      // T HH II SS DD MM YY W
+      // H = Hours, I = Minutes, S = Seconds, D = Day of month, M = month, Y = year, W = Day of week (ALL Dec)
       // Sets the time on the clock
       // T1756300103180
       case 'T':
@@ -113,13 +113,13 @@ void serialEvent() {
           break;
         }
         rtcSetTime(
-          inputString.substring(1, 3).toInt(),
-          inputString.substring(3, 5).toInt(),
-          inputString.substring(5, 7).toInt(),
-          inputString.substring(6, 9).toInt(),
-          inputString.substring(9, 11).toInt(),
-          inputString.substring(11, 35).toInt(),
-          inputString.substring(13, 14).toInt()
+          inputString.substring(1, 3).toInt(),   // H
+          inputString.substring(3, 5).toInt(),   // I
+          inputString.substring(5, 7).toInt(),   // S
+          inputString.substring(6, 9).toInt(),   // D
+          inputString.substring(9, 11).toInt(),  // M
+          inputString.substring(11, 13).toInt(), // Y
+          inputString.substring(13, 14).toInt()  // W
         );
         Serial.println(F("T OK"));
         break;
