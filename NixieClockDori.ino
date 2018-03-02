@@ -329,14 +329,14 @@ void loop() {
       showShortTime(stopwatchTime, true);
     } else {
       time_t _n = now();
-
+      byte h = hour(_n);
       byte s = second(_n);
+
       if (s % 2) {
         setDots(true, true);
       } else {
         setDots(false, false);
       }
-      byte h = hour(_n);
 #ifdef CLOCK_TRIM_HOURS
       insert1(0, h / 10, true);
       insert1(1, h, false);
