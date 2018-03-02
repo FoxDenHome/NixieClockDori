@@ -40,13 +40,3 @@ void rtcInit() {
   setSyncProvider(RTC.get);
 }
 
-byte decToBcd(const byte val) {
-  // Convert normal decimal numbers to binary coded decimal
-  return ((val / 10) << 4) + (val % 10);
-}
-
-byte bcdToDec(const byte val)  {
-  // Convert binary coded decimal to normal decimal numbers
-  return ((val >> 4) * 10) + (val % 16);
-}
-
