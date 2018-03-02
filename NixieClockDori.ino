@@ -368,6 +368,7 @@ bool insert1(int offset, int data, boolean trimLeadingZero)
     return false;
   }
 }
+
 bool insert2(int offset, int data, boolean trimLeadingZero)
 {
   trimLeadingZero = insert1(offset, data / 10, trimLeadingZero);
@@ -463,10 +464,10 @@ void renderNixies()
   digitalWrite(PIN_LE, LOW); // allow data input (Transparent mode)
 
   SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE2));
-  SPI.transfer(dotMask);                                                     // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0, L1 - dots
-  SPI.transfer(dataToDisplay[curTubeR] >> 6 | 1 << (anodeGroup + 4));        // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0-A2 - anodes
-  SPI.transfer(dataToDisplay[curTubeR] << 2 | dataToDisplay[curTubeL] >> 8); // [RC5][RC4][RC3][RC2][RC1][RC0][LC9][LC8] - RC9-RC0 - Right tubes cathodes
-  SPI.transfer(dataToDisplay[curTubeL]);                                     // [LC7][LC6][LC5][LC4][LC3][LC2][LC1][LC0] - LC9-LC0 - Left tubes cathodes
+  SPI.transfer(dotMask);                                                     // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
+  SPI.transfer(dataToDisplay[curTubeR] >> 6 | 1 << (anodeGroup + 4));        // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes
+  SPI.transfer(dataToDisplay[curTubeR] << 2 | dataToDisplay[curTubeL] >> 8); // [RC5][RC4][RC3][RC2][RC1][RC0][LC9][LC8] - RC9 - RC0 - Right tubes cathodes
+  SPI.transfer(dataToDisplay[curTubeL]);                                     // [LC7][LC6][LC5][LC4][LC3][LC2][LC1][LC0] - LC9 - LC0 - Left tubes cathodes
   SPI.endTransaction();
   
   digitalWrite(PIN_LE, HIGH); // latching data 
