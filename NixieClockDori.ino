@@ -92,7 +92,7 @@ void setup() {
 
   // Lib setup
   Wire.begin();
-  Serial.begin(115200);
+  Serial.begin(2000000);
   SPI.begin();
 
   // Begin initialization routines
