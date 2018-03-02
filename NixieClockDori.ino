@@ -311,13 +311,9 @@ void loop() {
 
   // Handle "what to display" logic
   if (antiPoisonEnd > curMillis) {
-    int idx = (antiPoisonEnd - curMillis) / ANTI_POISON_DELAY;
-    while (idx < 0) {
-      idx += 10;
-    }
-    idx %= 10;
+    uint16_t sym = getSymbol(((antiPoisonEnd - curMillis) / ANTI_POISON_DELAY) % 10);
     for (int i = 0; i < 6; i++) {
-      dataToDisplay[i] = getSymbol(idx);
+      dataToDisplay[i] = sym;
     }
   } else if (holdDisplayUntil <= curMillis) {
     holdDisplayUntil = curMillis + 10;
