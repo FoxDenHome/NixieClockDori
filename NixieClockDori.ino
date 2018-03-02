@@ -24,8 +24,9 @@
 #define ONE_MINUTE_IN_MS (ONE_SECOND_IN_MS * 60UL)
 #define ONE_HOUR_IN_MS (ONE_MINUTE_IN_MS * 60UL)
 
-const uint16_t symbolArray[12] PROGMEM = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 0, 1023}; // Last two chars = none on / all on. They are : and ;
-#define getSymbol(idx) (pgm_read_word_near(symbolArray + (idx)))
+#define ALL_TUBES ((1 << 10) - 1)
+#define NO_TUBES 0
+#define getNumber(idx) (1 << ((idx) % 10))
 
 byte dataIsTransitioning[6] = {0, 0, 0, 0, 0, 0};
 uint16_t dataToDisplayOld[6] = {0, 0, 0, 0, 0, 0};
@@ -177,7 +178,7 @@ void serialEvent() {
       // M = milliseconds (Dec), D = dots (Bitmask Dec) to show the message, N = Nixie message (Dec)
       // Shows a "flash"/"alert" color on the clock
       // If sent without any parameters, resets current flash message and goes back to clock mode
-      // F0000100021337:;
+      // F0000100021337NA
       case 'F':
         if (inputString.length() < 16) {
           if (inputString.length() == 1) {
@@ -192,7 +193,14 @@ void serialEvent() {
         tmpData = inputString[9] - '0';
         setDots((tmpData & 2) == 2, (tmpData & 1) == 1);
         for (int i = 0; i < 6; i++) {
-          dataToDisplay[i] = getSymbol(inputString[i + 10] - '0');
+          tmpData = inputString[i + 10];
+          if (tmpData == 'N') {
+            dataToDisplay[i] = NO_TUBES;
+          } else if (tmpData == 'A') {
+            dataToDisplay[i] = ALL_TUBES;
+          } else {
+            dataToDisplay[i] = getNumber(tmpData - '0');
+          }
         }
 
         antiPoisonEnd = 0;
@@ -316,7 +324,7 @@ void loop() {
 
   // Handle "what to display" logic
   if (antiPoisonEnd > curMillis) {
-    uint16_t sym = getSymbol(((antiPoisonEnd - curMillis) / ANTI_POISON_DELAY) % 10);
+    uint16_t sym = getNumber((antiPoisonEnd - curMillis) / ANTI_POISON_DELAY);
     for (int i = 0; i < 6; i++) {
       dataToDisplay[i] = sym;
     }
@@ -393,7 +401,7 @@ bool insert1(int offset, int data, bool trimLeadingZero) {
     dataToDisplay[offset] = 0;
     return true;
   } else {
-    dataToDisplay[offset] = getSymbol(data);
+    dataToDisplay[offset] = getNumber(data);
     return false;
   }
 }
@@ -449,7 +457,7 @@ void renderNixies(unsigned long milliDelta) {
   byte tubeTrans = dataIsTransitioning[curTubeL];
   if (tubeTrans > 0) {
 #ifdef EFFECT_SLOT_MACHINE
-    tubeL = getSymbol((tubeTrans / (EFFECT_SPEED / 10)) % 10);
+    tubeL = getNumber(tubeTrans / (EFFECT_SPEED / 10));
 #endif
     if (tubeTrans > milliDelta) {
       dataIsTransitioning[curTubeL] -= milliDelta;
@@ -461,7 +469,7 @@ void renderNixies(unsigned long milliDelta) {
   tubeTrans = dataIsTransitioning[curTubeR];
   if (tubeTrans > 0) {
 #ifdef EFFECT_SLOT_MACHINE
-    tubeR = getSymbol((tubeTrans / (EFFECT_SPEED / 10)) % 10);
+    tubeR = getNumber(tubeTrans / (EFFECT_SPEED / 10));
 #endif
     if (tubeTrans > milliDelta) {
       dataIsTransitioning[curTubeR] -= milliDelta;
