@@ -49,8 +49,7 @@ bool stopwatchRunning = false;
 unsigned long prevMillis;
 unsigned long stopwatchTime, countdownTo;
 
-void setup() 
-{
+void setup() {
   // Pin setup
   pinMode(PIN_DHV, OUTPUT);
   digitalWrite(PIN_DHV, LOW); // Turn off HV ASAP during setup
@@ -123,8 +122,8 @@ void serialEvent() {
         setRTCDateTime(RTCHours, RTCMinutes, RTCSeconds, RTCDay, RTCMonth, RTCYear, RTCDayOfWeek);
         Serial.println(F("T OK"));
         break;
-     // X
-     // Performs a display reset of all modes
+      // X
+      // Performs a display reset of all modes
       case 'X':
         holdDisplayUntil = 0;
         holdColorUntil = 0;
@@ -337,7 +336,7 @@ void loop() {
       }
     }
   }
-  
+
   renderNixies();
 }
 
@@ -345,8 +344,7 @@ void loop() {
 #define ONE_MINUTE_IN_MS (ONE_SECOND_IN_MS * 60UL)
 #define ONE_HOUR_IN_MS (ONE_MINUTE_IN_MS * 60UL)
 
-void showShortTime(unsigned long timeMs)
-{
+void showShortTime(unsigned long timeMs) {
   bool trimLZ = true;
   if (timeMs >= ONE_HOUR_IN_MS) { // Show H/M/S
     setDots(true, false);
@@ -367,12 +365,10 @@ void testRTC() {
   unsigned long RTCReadingStartTime = millis();
   RTCPresent = true;
 
-  while(prevSeconds == RTCSeconds)
-  {
+  while (prevSeconds == RTCSeconds) {
     delay(100);
     getRTCTime();
-    if ((millis() - RTCReadingStartTime) > 3000)
-    {
+    if ((millis() - RTCReadingStartTime) > 3000) {
       Serial.println(F("Warning! RTC DON'T RESPOND!"));
       RTCPresent = false;
       break;
@@ -380,8 +376,7 @@ void testRTC() {
   }
 }
 
-bool insert1(int offset, int data, bool trimLeadingZero)
-{
+bool insert1(int offset, int data, bool trimLeadingZero) {
   data %= 10;
   if (data == 0 && trimLeadingZero) {
     dataToDisplay[offset] = 0;
@@ -392,18 +387,16 @@ bool insert1(int offset, int data, bool trimLeadingZero)
   }
 }
 
-bool insert2(int offset, int data, bool trimLeadingZero)
-{
+bool insert2(int offset, int data, bool trimLeadingZero) {
   trimLeadingZero = insert1(offset, data / 10, trimLeadingZero);
   return insert1(offset + 1, data, trimLeadingZero);
 }
 
-void getRTCTime()
-{
+void getRTCTime() {
   Wire.beginTransmission(DS1307_ADDRESS);
   Wire.write(ZERO);
   Wire.endTransmission();
-  
+
   Wire.requestFrom(DS1307_ADDRESS, 7);
   RTCSeconds = bcdToDec(Wire.read());
   RTCMinutes = bcdToDec(Wire.read());
@@ -414,8 +407,7 @@ void getRTCTime()
   RTCYear = bcdToDec(Wire.read());
 }
 
-void setRTCDateTime(byte h, byte m, byte s, byte d, byte mon, byte y, byte w)
-{
+void setRTCDateTime(byte h, byte m, byte s, byte d, byte mon, byte y, byte w) {
   Wire.beginTransmission(DS1307_ADDRESS);
   Wire.write(ZERO); //stop Oscillator
 
@@ -432,22 +424,21 @@ void setRTCDateTime(byte h, byte m, byte s, byte d, byte mon, byte y, byte w)
 
 }
 
-byte decToBcd(byte val){
+byte decToBcd(byte val) {
   // Convert normal decimal numbers to binary coded decimal
   return ((val / 10) << 4) + (val % 10);
 }
 
 byte bcdToDec(byte val)  {
   // Convert binary coded decimal to normal decimal numbers
-  return ((val >> 4) * 10) + (val%16);
+  return ((val >> 4) * 10) + (val % 16);
 }
 
-void displaySelfTest()
-{
+void displaySelfTest() {
   Serial.println(F("Start LED Test"));
 
   setDots(true, true);
-   
+
   analogWrite(PIN_LED_RED, 255);
   delay(1000);
   analogWrite(PIN_LED_RED, 0);
@@ -455,16 +446,15 @@ void displaySelfTest()
   delay(1000);
   analogWrite(PIN_LED_GREEN, 0);
   analogWrite(PIN_LED_BLUE, 255);
-  delay(1000); 
+  delay(1000);
   analogWrite(PIN_LED_BLUE, 0);
-  
+
   Serial.println(F("Stop LED Test"));
 
   displayAntiPoison(2);
 }
 
-void renderNixies()
-{
+void renderNixies() {
   static byte anodeGroup = 0;
   static unsigned long lastTimeInterval1Started;
 
@@ -480,10 +470,10 @@ void renderNixies()
     }
   }
   lastTimeInterval1Started = curMicros;
-  
+
   byte curTubeL = anodeGroup << 1;
   byte curTubeR = curTubeL + 1;
-  
+
   digitalWrite(PIN_LE, LOW); // allow data input (Transparent mode)
 
   SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE2));
@@ -492,9 +482,9 @@ void renderNixies()
   SPI.transfer(dataToDisplay[curTubeR] << 2 | dataToDisplay[curTubeL] >> 8); // [RC5][RC4][RC3][RC2][RC1][RC0][LC9][LC8] - RC9 - RC0 - Right tubes cathodes
   SPI.transfer(dataToDisplay[curTubeL]);                                     // [LC7][LC6][LC5][LC4][LC3][LC2][LC1][LC0] - LC9 - LC0 - Left tubes cathodes
   SPI.endTransaction();
-  
-  digitalWrite(PIN_LE, HIGH); // latching data 
-  
+
+  digitalWrite(PIN_LE, HIGH); // latching data
+
   if (++anodeGroup > 2) {
     anodeGroup = 0;
   }
