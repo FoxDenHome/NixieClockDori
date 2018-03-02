@@ -1,7 +1,7 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <TimeLib.h>
-#include <limits.h>
+#include "rtc.h"
 
 #define RENDER_USE_DELAY // Use delay when rendering instead of just returning for the next cycle
 //#define CLOCK_TRIM_HOURS
@@ -27,15 +27,15 @@
 
 #define ANTI_POISON_DELAY 200UL
 
+#define ONE_SECOND_IN_MS (1000UL)
+#define ONE_MINUTE_IN_MS (ONE_SECOND_IN_MS * 60UL)
+#define ONE_HOUR_IN_MS (ONE_MINUTE_IN_MS * 60UL)
+
 const uint16_t symbolArray[12] PROGMEM = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 0, 1023}; // Last two chars = none on / all on. They are : and ;
 #define getSymbol(idx) (pgm_read_word_near(symbolArray + (idx)))
 
 uint16_t dataToDisplay[6] = {0, 0, 0, 0, 0, 0}; // This will be displayed on tubes
 byte dotMask;
-
-bool RTCPresent;
-int RTCHours, RTCMinutes, RTCSeconds, RTCDay, RTCMonth, RTCYear, RTCDayOfWeek;
-unsigned long RTCLastSyncTime;
 
 String inputString;
 unsigned long holdDisplayUntil;
@@ -48,6 +48,8 @@ bool stopwatchEnabled = false;
 bool stopwatchRunning = false;
 unsigned long prevMillis;
 unsigned long stopwatchTime, countdownTo;
+
+unsigned long RTCLastSyncTime;
 
 void setup() {
   // Pin setup
@@ -79,8 +81,8 @@ void setup() {
   // Begin initialization routines
   inputString.reserve(32);
 
-  testRTC();
-  RTCLastSyncTime = ULONG_MAX;
+  rtcTest();
+  rtcSync();
 
   // Turn on HV
   digitalWrite(PIN_DHV, HIGH);
@@ -102,24 +104,24 @@ void serialEvent() {
     unsigned long addition;
 
     switch (inputString[0]) {
-      // T HH MM SS DD MM YYYY W
+      // T HH MM SS DD MM YY W
       // H = Hours, M = Minutes, S = Seconds, D = Day of month, M = month, Y = year, W = Day of week (ALL Dec)
       // Sets the time on the clock
-      // T175630010320180
+      // T1756300103180
       case 'T':
         if (inputString.length() < 16) {
           Serial.println(F("T BAD (Invalid length; expected 16)"));
           break;
         }
-        RTCHours = int(inputString.substring(1, 3).toInt());
-        RTCMinutes = int(inputString.substring(3, 5).toInt());
-        RTCSeconds = int(inputString.substring(5, 7).toInt());
-        RTCDay = int(inputString.substring(6, 9).toInt());
-        RTCMonth = int(inputString.substring(9, 11).toInt());
-        RTCYear = int(inputString.substring(11, 15).toInt());
-        RTCDayOfWeek = int(inputString.substring(15, 16).toInt());
-        setTime(RTCHours, RTCMinutes, RTCSeconds, RTCDay, RTCMonth, RTCYear);
-        setRTCDateTime(RTCHours, RTCMinutes, RTCSeconds, RTCDay, RTCMonth, RTCYear, RTCDayOfWeek);
+        rtcSetTime(
+          inputString.substring(1, 3).toInt(),
+          inputString.substring(3, 5).toInt(),
+          inputString.substring(5, 7).toInt(),
+          inputString.substring(6, 9).toInt(),
+          inputString.substring(9, 11).toInt(),
+          inputString.substring(11, 35).toInt(),
+          inputString.substring(13, 14).toInt()
+        );
         Serial.println(F("T OK"));
         break;
       // X
@@ -278,9 +280,8 @@ void loop() {
   }
   prevMillis = curMillis;
 
-  if (RTCPresent && (curMillis - RTCLastSyncTime >= 10000 || curMillis < RTCLastSyncTime)) {
-    getRTCTime();
-    setTime(RTCHours, RTCMinutes, RTCSeconds, RTCDay, RTCMonth, RTCYear);
+  if (curMillis - RTCLastSyncTime >= 10000 || curMillis < RTCLastSyncTime) {
+    rtcSync();
     RTCLastSyncTime = curMillis;
   }
 
@@ -340,10 +341,6 @@ void loop() {
   renderNixies();
 }
 
-#define ONE_SECOND_IN_MS (1000UL)
-#define ONE_MINUTE_IN_MS (ONE_SECOND_IN_MS * 60UL)
-#define ONE_HOUR_IN_MS (ONE_MINUTE_IN_MS * 60UL)
-
 void showShortTime(unsigned long timeMs) {
   bool trimLZ = true;
   if (timeMs >= ONE_HOUR_IN_MS) { // Show H/M/S
@@ -356,23 +353,6 @@ void showShortTime(unsigned long timeMs) {
     trimLZ = insert2(0, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ);
     trimLZ = insert2(2, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ);
     insert2(4, (timeMs / 10UL) % 100, trimLZ);
-  }
-}
-
-void testRTC() {
-  getRTCTime();
-  byte prevSeconds = RTCSeconds;
-  unsigned long RTCReadingStartTime = millis();
-  RTCPresent = true;
-
-  while (prevSeconds == RTCSeconds) {
-    delay(100);
-    getRTCTime();
-    if ((millis() - RTCReadingStartTime) > 3000) {
-      Serial.println(F("Warning! RTC DON'T RESPOND!"));
-      RTCPresent = false;
-      break;
-    }
   }
 }
 
@@ -390,48 +370,6 @@ bool insert1(int offset, int data, bool trimLeadingZero) {
 bool insert2(int offset, int data, bool trimLeadingZero) {
   trimLeadingZero = insert1(offset, data / 10, trimLeadingZero);
   return insert1(offset + 1, data, trimLeadingZero);
-}
-
-void getRTCTime() {
-  Wire.beginTransmission(DS1307_ADDRESS);
-  Wire.write(ZERO);
-  Wire.endTransmission();
-
-  Wire.requestFrom(DS1307_ADDRESS, 7);
-  RTCSeconds = bcdToDec(Wire.read());
-  RTCMinutes = bcdToDec(Wire.read());
-  RTCHours = bcdToDec(Wire.read() & 0b111111); //24 hour time
-  RTCDayOfWeek = bcdToDec(Wire.read()); //0-6 -> sunday - Saturday
-  RTCDay = bcdToDec(Wire.read());
-  RTCMonth = bcdToDec(Wire.read());
-  RTCYear = bcdToDec(Wire.read());
-}
-
-void setRTCDateTime(byte h, byte m, byte s, byte d, byte mon, byte y, byte w) {
-  Wire.beginTransmission(DS1307_ADDRESS);
-  Wire.write(ZERO); //stop Oscillator
-
-  Wire.write(decToBcd(s));
-  Wire.write(decToBcd(m));
-  Wire.write(decToBcd(h));
-  Wire.write(decToBcd(w));
-  Wire.write(decToBcd(d));
-  Wire.write(decToBcd(mon));
-  Wire.write(decToBcd(y));
-
-  Wire.write(ZERO); //start
-  Wire.endTransmission();
-
-}
-
-byte decToBcd(byte val) {
-  // Convert normal decimal numbers to binary coded decimal
-  return ((val / 10) << 4) + (val % 10);
-}
-
-byte bcdToDec(byte val)  {
-  // Convert binary coded decimal to normal decimal numbers
-  return ((val >> 4) * 10) + (val % 16);
 }
 
 void displaySelfTest() {
