@@ -2,9 +2,7 @@
 #include <Wire.h>
 #include <TimeLib.h>
 #include "rtc.h"
-
-#define RENDER_USE_DELAY // Use delay when rendering instead of just returning for the next cycle
-//#define CLOCK_TRIM_HOURS
+#include "config.h"
 
 #define MASK_UPPER_DOTS 1
 #define MASK_LOWER_DOTS 2
@@ -25,8 +23,6 @@
 #define PIN_BUTTON_UP A2
 #define PIN_BUTTON_DOWN A1
 
-#define ANTI_POISON_DELAY 200UL
-
 #define ONE_SECOND_IN_MS (1000UL)
 #define ONE_MINUTE_IN_MS (ONE_SECOND_IN_MS * 60UL)
 #define ONE_HOUR_IN_MS (ONE_MINUTE_IN_MS * 60UL)
@@ -40,8 +36,10 @@ byte dotMask;
 String inputString;
 unsigned long holdDisplayUntil;
 bool colorSet;
-unsigned long holdColorUntil;
+
+unsigned long holdColorStartTime, holdColorEaseInTarget, holdColorSteadyTarget, holdColorEaseOutTarget;
 byte setR, setG, setB;
+
 unsigned long antiPoisonEnd;
 
 bool stopwatchEnabled = false;
@@ -101,7 +99,8 @@ void serialEvent() {
     }
     Serial.print(F("Got "));
     Serial.println(inputString);
-    unsigned long addition;
+
+    byte tmpData;
 
     switch (inputString[0]) {
       // T HH MM SS DD MM YY W
@@ -128,7 +127,7 @@ void serialEvent() {
       // Performs a display reset of all modes
       case 'X':
         holdDisplayUntil = 0;
-        holdColorUntil = 0;
+        noColor();
         stopwatchEnabled = false;
         stopwatchRunning = false;
         stopwatchTime = 0;
@@ -147,37 +146,52 @@ void serialEvent() {
         displayAntiPoison(inputString.substring(1, 3).toInt());
         Serial.println(F("P OK"));
         break;
-      // F MMMMMMMM RR GG BB [D NNNNNN]
-      // M = milliseconds (Dec), R = Red (Hex), G = Green (Hex), B = Blue (Hex), D = dots (Bitmask Dec) to show the message, N = Nixie message (Dec)
+      // G MMMMMMMM IIII OOOO [RR GG BB]
+      // M = milliseconds (Dec), I = Ease-In (Dec), O = Ease-Out (Dec), R = Red (Hex), G = Green (Hex), B = Blue (Hex)
       // Shows a "flash"/"alert" message on the clock (will show this message instead of the time for <M> milliseconds. Does not use/reset hold when 0). Dots are bit 1 for lower and bit 2 for upper. Turned off when HIGH
-      // Will only set color flash if used without D and N parameters
       // If sent without any parameters, resets current flash message and goes back to clock mode
-      // F0000100000FF0021337:;
-      case 'F':
+      // G000010000500050000FF00
+      case 'G':
         if (inputString.length() < 15) {
           if (inputString.length() == 1) {
-            holdDisplayUntil = 0;
-            holdColorUntil = 0;
+            noColor();
             break;
           }
-          Serial.println(F("F BAD (Invalid length; expected 22, 15 or 1)"));
+          Serial.println(F("G BAD (Invalid length; expected 15 or 1)"));
+          break;
+        }
+        holdColorStartTime = millis();
+        holdColorEaseInTarget = holdColorStartTime + (unsigned long)inputString.substring(9, 13).toInt();
+        holdColorSteadyTarget = holdColorEaseInTarget + (unsigned long)inputString.substring(1, 9).toInt();
+        holdColorEaseOutTarget = holdColorSteadyTarget + (unsigned long)inputString.substring(13, 17).toInt();
+
+        tmpData = inputString[17] - '0';
+        setR = hexInputToByte(18);
+        setG = hexInputToByte(20);
+        setB = hexInputToByte(22);
+        colorSet = true;
+        Serial.println(F("G OK"));
+        break;
+      // F MMMMMMMM [D NNNNNN]
+      // M = milliseconds (Dec), D = dots (Bitmask Dec) to show the message, N = Nixie message (Dec)
+      // Shows a "flash"/"alert" color on the clock
+      // If sent without any parameters, resets current flash message and goes back to clock mode
+      // F0000100021337:;
+      case 'F':
+        if (inputString.length() < 16) {
+          if (inputString.length() == 1) {
+            holdDisplayUntil = 0;
+            break;
+          }
+          Serial.println(F("F BAD (Invalid length; expected 16 or 1)"));
           break;
         }
 
-        addition = (unsigned long)inputString.substring(1, 9).toInt();
-        if (addition > 0) {
-          holdColorUntil = millis() + addition;
-        }
-
-        setColor(hexInputToByte(9), hexInputToByte(11), hexInputToByte(13));
-
-        if (inputString.length() >= 22) {
-          holdDisplayUntil = holdColorUntil;
-          int dots = inputString[15] - '0';
-          setDots((dots & 2) == 2, (dots & 1) == 1);
-          for (int i = 0; i < 6; i++) {
-            dataToDisplay[i] = getSymbol(inputString[i + 16] - '0');
-          }
+        holdDisplayUntil = millis() + (unsigned long)inputString.substring(1, 9).toInt();
+        tmpData = inputString[9] - '0';
+        setDots((tmpData & 2) == 2, (tmpData & 1) == 1);
+        for (int i = 0; i < 6; i++) {
+          dataToDisplay[i] = getSymbol(inputString[i + 10] - '0');
         }
 
         antiPoisonEnd = 0;
@@ -190,17 +204,12 @@ void serialEvent() {
       // C00010000
       case 'C':
         if (inputString.length() < 9) {
-          Serial.println(F("C BAD (Invalid length; expected 9)"));
-          break;
-        }
-        addition = (unsigned long)inputString.substring(1, 9).toInt();
-        if (addition == 0) {
           countdownTo = 0;
         } else {
           stopwatchEnabled = false;
           stopwatchRunning = false;
           stopwatchTime = 0;
-          countdownTo = millis() + addition;
+          countdownTo = millis() + inputString.substring(1, 9).toInt();
         }
         Serial.println(F("C OK"));
         break;
@@ -258,14 +267,11 @@ void setDots(bool upper, bool lower) {
   dotMask = (upper ? 0 : MASK_UPPER_DOTS) | (lower ? 0 : MASK_LOWER_DOTS);
 }
 
-void setColor(byte r, byte g, byte b) {
-  colorSet = true;
-  setR = r;
-  setG = g;
-  setB = b;
-  analogWrite(PIN_LED_RED, r);
-  analogWrite(PIN_LED_GREEN, g);
-  analogWrite(PIN_LED_BLUE, b);
+void noColor() {
+  colorSet = false;
+  analogWrite(PIN_LED_RED, 0);
+  analogWrite(PIN_LED_GREEN, 0);
+  analogWrite(PIN_LED_BLUE, 0);
 }
 
 void displayAntiPoison(int count) {
@@ -285,18 +291,28 @@ void loop() {
     RTCLastSyncTime = curMillis;
   }
 
-  if (colorSet && holdColorUntil <= curMillis) {
-    analogWrite(PIN_LED_RED, 0);
-    analogWrite(PIN_LED_GREEN, 0);
-    analogWrite(PIN_LED_BLUE, 0);
-    colorSet = false;
-    holdColorUntil = 0;
+  // Handle color logic
+  if (colorSet) {
+    float factor = 1.0;
+    if (curMillis < holdColorEaseInTarget) {
+      factor = 1.0 - ((float)(holdColorEaseInTarget - curMillis) / (float)(holdColorEaseInTarget - holdColorStartTime));
+    } else if (curMillis > holdColorEaseOutTarget) {
+      colorSet = false;
+      factor = 0.0;
+    } else if (curMillis > holdColorSteadyTarget) {
+      factor = (float)(holdColorEaseOutTarget - curMillis) / (float)(holdColorEaseOutTarget - holdColorSteadyTarget);
+    }
+    analogWrite(PIN_LED_RED, setR * factor);
+    analogWrite(PIN_LED_GREEN, setG * factor);
+    analogWrite(PIN_LED_BLUE, setB * factor);
   }
 
+  // Handle other stuff
   if (stopwatchRunning) {
     stopwatchTime += milliDelta;
   }
 
+  // Handle "what to display" logic
   if (antiPoisonEnd > curMillis) {
     int idx = (antiPoisonEnd - curMillis) / ANTI_POISON_DELAY;
     while (idx < 0) {
