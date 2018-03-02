@@ -4,7 +4,7 @@
 #include <limits.h>
 
 #define RENDER_USE_DELAY // Use delay when rendering instead of just returning for the next cycle
-#define CLOCK_TRIM_HOURS
+//#define CLOCK_TRIM_HOURS
 
 #define MASK_UPPER_DOTS 1
 #define MASK_LOWER_DOTS 2
