@@ -43,6 +43,11 @@ unsigned long holdColorUntil;
 byte setR, setG, setB;
 unsigned long antiPoisonEnd;
 
+boolean stopwatchEnabled = false;
+boolean stopwatchRunning = false;
+unsigned long prevMillis;
+unsigned long stopwatchTime, countdownTo;
+
 void setup() 
 {
   // Pin setup
@@ -94,6 +99,8 @@ void serialEvent() {
     }
     Serial.print(F("Got "));
     Serial.println(inputString);
+    unsigned long addition;
+
     switch (inputString[0]) {
       // T HH MM SS DD MM YYYY W
       // H = Hours, M = Minutes, S = Seconds, D = Day of month, M = month, Y = year, W = Day of week (ALL Dec)
@@ -116,10 +123,15 @@ void serialEvent() {
         Serial.println(F("T OK"));
         break;
      // X
-     // Performs a display self test (cycles through R, G, B) with all columns on, then cycles through 9-0 twice
+     // Performs a display reset of all modes
       case 'X':
+        holdDisplayUntil = 0;
+        holdColorUntil = 0;
+        stopwatchEnabled = false;
+        stopwatchRunning = false;
+        stopwatchTime = 0;
+        countdownTo = 0;
         Serial.println(F("X OK"));
-        displaySelfTest();
         break;
       // P CC
       // C = Count (Dec)
@@ -143,15 +155,16 @@ void serialEvent() {
         if (inputString.length() < 15) {
           if (inputString.length() == 1) {
             holdDisplayUntil = 0;
+            holdColorUntil = 0;
             break;
           }
           Serial.println(F("F BAD (Invalid length; expected 22, 15 or 1)"));
           break;
         }
 
-        unsigned long holdAddition = (unsigned long)inputString.substring(1, 9).toInt();
-        if (holdAddition > 0) {
-          holdColorUntil = millis() + holdAddition;
+        addition = (unsigned long)inputString.substring(1, 9).toInt();
+        if (addition > 0) {
+          holdColorUntil = millis() + addition;
         }
 
         setColor(hexInputToByte(9), hexInputToByte(11), hexInputToByte(13));
@@ -168,6 +181,45 @@ void serialEvent() {
         antiPoisonEnd = 0;
 
         Serial.println(F("F OK"));
+        break;
+      // C MMMMMMMM
+      // M = Time in ms (Dec)
+      // Starts a countdown for <M> ms
+      // C00010000
+      case 'C':
+        addition = (unsigned long)inputString.substring(1, 9).toInt();
+        if (addition == 0) {
+          countdownTo = 0;
+        } else {
+          stopwatchEnabled = false;
+          stopwatchRunning = false;
+          stopwatchTime = 0;
+          countdownTo = millis() + addition;
+        }
+        break;
+      // W C
+      // C = subcommand
+      // Controls the stopwatch. R for reset/disable, P for pause, U for un-pause, S for start/restart
+      // WS
+      case 'W':
+        switch (inputString[1]) {
+          case 'R':
+            stopwatchEnabled = false;
+            stopwatchRunning = false;
+            stopwatchTime = 0;
+            break;
+          case 'P':
+            stopwatchRunning = false;
+            break;
+          case 'U':
+            stopwatchRunning = true;
+            break;
+          case 'S':
+            countdownTo = 0;
+            stopwatchEnabled = true;
+            stopwatchRunning = true;
+            stopwatchTime = 0;
+        }
         break;
     }
 
@@ -201,29 +253,19 @@ void displayAntiPoison(int count) {
 }
 
 void loop() {
- unsigned long curMillis = millis();
+  unsigned long curMillis = millis();
+  unsigned long milliDelta = curMillis - prevMillis;
+  if (curMillis < prevMillis) {
+    milliDelta = 0;
+  }
+  prevMillis = curMillis;
 
- if (RTCPresent && (curMillis - RTCLastSyncTime >= 10000 || curMillis < RTCLastSyncTime)) {
-  getRTCTime();
-  setTime(RTCHours, RTCMinutes, RTCSeconds, RTCDay, RTCMonth, RTCYear);
-  RTCLastSyncTime = curMillis;
- }
+  if (RTCPresent && (curMillis - RTCLastSyncTime >= 10000 || curMillis < RTCLastSyncTime)) {
+    getRTCTime();
+    setTime(RTCHours, RTCMinutes, RTCSeconds, RTCDay, RTCMonth, RTCYear);
+    RTCLastSyncTime = curMillis;
+  }
 
- if (antiPoisonEnd > curMillis) {
-  int idx = (antiPoisonEnd - curMillis) / ANTI_POISON_DELAY;
-  while (idx < 0) {
-    idx += 10;
-  }
-  idx %= 10;
-  for (int i = 0; i < 6; i++) {
-    dataToDisplay[i] = getSymbol(idx);
-  }
- } else if (holdDisplayUntil <= curMillis) {
-  if (second() % 2) {
-    setDots(true, true);
-  } else {
-    setDots(false, false);
-  }
   if (colorSet && holdColorUntil <= curMillis) {
     analogWrite(PIN_LED_RED, 0);
     analogWrite(PIN_LED_GREEN, 0);
@@ -231,15 +273,65 @@ void loop() {
     colorSet = false;
     holdColorUntil = 0;
   }
-  holdDisplayUntil = curMillis + 10;
-  insert2(0, hour());
-  insert2(2, minute());
-  insert2(4, second());
- } else if (hour() < 4 && second() % 10 == 0) {
-  displayAntiPoison(1);
- }
 
- renderNixies();
+  if (stopwatchRunning) {
+    stopwatchTime += milliDelta;
+  }
+
+  if (antiPoisonEnd > curMillis) {
+    int idx = (antiPoisonEnd - curMillis) / ANTI_POISON_DELAY;
+    while (idx < 0) {
+      idx += 10;
+    }
+    idx %= 10;
+    for (int i = 0; i < 6; i++) {
+      dataToDisplay[i] = getSymbol(idx);
+    }
+  } else if (holdDisplayUntil <= curMillis) {
+    if (second() % 2) {
+      setDots(true, true);
+    } else {
+      setDots(false, false);
+    }
+    holdDisplayUntil = curMillis + 10;
+    if (countdownTo > 0) {
+      if (countdownTo <= curMillis) {
+        showShortTime(0);
+      } else {
+        showShortTime(countdownTo - curMillis);
+      }
+    } else if (stopwatchEnabled) {
+      showShortTime(stopwatchTime);
+    } else {
+      insert2(0, hour());
+      insert2(2, minute());
+      insert2(4, second());
+    }
+  } else if (hour() < 4 && second() % 10 == 0) {
+    displayAntiPoison(1);
+    return;
+  }
+  
+  renderNixies();
+}
+
+#define ONE_SECOND_IN_MS (1000UL)
+#define ONE_MINUTE_IN_MS (ONE_SECOND_IN_MS * 60UL)
+#define ONE_HOUR_IN_MS (ONE_MINUTE_IN_MS * 60UL)
+
+void showShortTime(unsigned long timeMs)
+{
+  if (timeMs >= ONE_HOUR_IN_MS) { // Show H/M/S
+    setDots(true, false);
+    insert2(0, (timeMs / ONE_HOUR_IN_MS) % 100);
+    insert2(2, (timeMs / ONE_MINUTE_IN_MS) % 60);
+    insert2(4, (timeMs / ONE_SECOND_IN_MS) % 60);
+  } else { // Show M/S/MS
+    setDots(false, true);
+    insert2(0, (timeMs / ONE_MINUTE_IN_MS) % 60);
+    insert2(2, (timeMs / ONE_SECOND_IN_MS) % 60);
+    insert2(4, (timeMs / 10UL) % 100);
+  }
 }
 
 void testRTC() {
