@@ -39,13 +39,13 @@ unsigned long RTCLastSyncTime;
 
 String inputString;
 unsigned long holdDisplayUntil;
-boolean colorSet;
+bool colorSet;
 unsigned long holdColorUntil;
 byte setR, setG, setB;
 unsigned long antiPoisonEnd;
 
-boolean stopwatchEnabled = false;
-boolean stopwatchRunning = false;
+bool stopwatchEnabled = false;
+bool stopwatchRunning = false;
 unsigned long prevMillis;
 unsigned long stopwatchTime, countdownTo;
 
@@ -253,7 +253,7 @@ byte hexInputToByte(int offset) {
   return (msn << 4) + lsn;
 }
 
-void setDots(boolean upper, boolean lower) {
+void setDots(bool upper, bool lower) {
   dotMask = (upper ? 0 : MASK_UPPER_DOTS) | (lower ? 0 : MASK_LOWER_DOTS);
 }
 
@@ -380,7 +380,7 @@ void testRTC() {
   }
 }
 
-bool insert1(int offset, int data, boolean trimLeadingZero)
+bool insert1(int offset, int data, bool trimLeadingZero)
 {
   data %= 10;
   if (data == 0 && trimLeadingZero) {
@@ -392,7 +392,7 @@ bool insert1(int offset, int data, boolean trimLeadingZero)
   }
 }
 
-bool insert2(int offset, int data, boolean trimLeadingZero)
+bool insert2(int offset, int data, bool trimLeadingZero)
 {
   trimLeadingZero = insert1(offset, data / 10, trimLeadingZero);
   return insert1(offset + 1, data, trimLeadingZero);
