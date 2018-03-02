@@ -3,6 +3,7 @@
 #include <TimeLib.h>
 #include "rtc.h"
 #include "config.h"
+#include "crcserial.h"
 
 #define MASK_UPPER_DOTS 1
 #define MASK_LOWER_DOTS 2
@@ -44,7 +45,7 @@ const uint16_t NO_TUBES = 0;
 /********************/
 #ifdef EFFECT_ENABLED
 byte dataIsTransitioning[6] = {0, 0, 0, 0, 0, 0};
-uint16_t dataToDisplayOld[6] = {0, 0, 0, 0, 0, 0};
+uint16_t dataToDisplayOld[6] = {10000, 10000, 10000, 10000, 10000, 10000}; // 10000 is a clearly invalid value but fits into a uint16_t
 #endif
 uint16_t dataToDisplay[6] = {0, 0, 0, 0, 0, 0}; // This will be displayed on tubes
 byte dotMask;
@@ -63,8 +64,6 @@ unsigned long prevMillis;
 unsigned long stopwatchTime, countdownTo;
 
 unsigned long RTCLastSyncTime;
-
-String inputString = "";
 
 /****************/
 /* PROGRAM CODE */
@@ -93,46 +92,26 @@ void setup() {
 
   // Lib setup
   Wire.begin();
-  Serial.begin(2000000);
   SPI.begin();
 
   // Begin initialization routines
-  inputString.reserve(32);
+  serialInit();
 
   rtcTest();
   rtcSync();
 
   digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);
 
-  Serial.println(F("^< Ready"));
+  serialSend(F("< Ready"));
 }
 
 void serialEvent() {
   static bool receivedStart = false;
 
   while (Serial.available()) {
-    const char inChar = (char)Serial.read();
-    if (inChar == '^') {
-      receivedStart = true;
-      inputString = "";
+    if (!serialReadNext()) {
       continue;
     }
-    if (!receivedStart) {
-      continue;
-    }
-    if (inChar != '\n') {
-      inputString += inChar;
-      if (inputString.length() >= 30) {
-        inputString = "";
-        receivedStart = false;
-        Serial.println(F("^< Serial line too long. Buffer reset."));
-      }
-      continue;
-    }
-
-    receivedStart = false;
-    Serial.print(F("^> "));
-    Serial.println(inputString);
 
     byte tmpData;
 
@@ -142,8 +121,8 @@ void serialEvent() {
       // Sets the time on the clock
       // T1756300103180
       case 'T':
-        if (inputString.length() < 16) {
-          Serial.println(F("^T BAD (Invalid length; expected 16)"));
+        if (inputString.length() < 14) {
+          serialSend(F("T BAD (Invalid length; expected 16)"));
           break;
         }
         rtcSetTime(
@@ -155,7 +134,7 @@ void serialEvent() {
           inputString.substring(11, 13).toInt(), // Y
           inputString.substring(13, 14).toInt()  // W
         );
-        Serial.println(F("^T OK"));
+        serialSend(F("T OK"));
         break;
       // X
       // Performs a display reset of all modes
@@ -166,7 +145,7 @@ void serialEvent() {
         stopwatchRunning = false;
         stopwatchTime = 0;
         countdownTo = 0;
-        Serial.println(F("^X OK"));
+        serialSend(F("X OK"));
         break;
       // P CC
       // C = Count (Dec)
@@ -174,11 +153,11 @@ void serialEvent() {
       // P01
       case 'P':
         if (inputString.length() < 2) {
-          Serial.println(F("^P BAD (Invalid length; expected 2)"));
+          serialSend(F("P BAD (Invalid length; expected 2)"));
           break;
         }
         displayAntiPoison(inputString.substring(1, 3).toInt());
-        Serial.println(F("^P OK"));
+        serialSend(F("P OK"));
         break;
       // G [MMMMMMMM IIII OOOO RR GG BB]
       // M = milliseconds (Dec), I = Ease-In (Dec), O = Ease-Out (Dec), R = Red (Hex), G = Green (Hex), B = Blue (Hex)
@@ -189,10 +168,10 @@ void serialEvent() {
         if (inputString.length() < 23) {
           if (inputString.length() < 3) { // Allow for \r\n
             noColor();
-            Serial.println(F("^G OK"));
+            serialSend(F("G OK"));
             break;
           }
-          Serial.println(F("^G BAD (Invalid length; expected 23 or 1)"));
+          serialSend(F("G BAD (Invalid length; expected 23 or 1)"));
           break;
         }
         holdColorStartTime = millis();
@@ -204,7 +183,7 @@ void serialEvent() {
         setG = hexInputToByte(19);
         setB = hexInputToByte(21);
         colorSet = true;
-        Serial.println(F("^G OK"));
+        serialSend(F("G OK"));
         break;
       // F [MMMMMMMM D NNNNNN]
       // M = milliseconds (Dec), D = dots (Bitmask Dec) to show the message, N = Nixie message (Dec)
@@ -215,10 +194,10 @@ void serialEvent() {
         if (inputString.length() < 16) {
           if (inputString.length() < 3) { // Allow for \r\n
             holdDisplayUntil = 0;
-            Serial.println(F("^F OK"));
+            serialSend(F("F OK"));
             break;
           }
-          Serial.println(F("^F BAD (Invalid length; expected 16 or 1)"));
+          serialSend(F("F BAD (Invalid length; expected 16 or 1)"));
           break;
         }
 
@@ -238,7 +217,7 @@ void serialEvent() {
 
         antiPoisonEnd = 0;
 
-        Serial.println(F("^F OK"));
+        serialSend(F("F OK"));
         break;
       // C MMMMMMMM
       // M = Time in ms (Dec)
@@ -253,7 +232,7 @@ void serialEvent() {
           stopwatchTime = 0;
           countdownTo = millis() + inputString.substring(1, 9).toInt();
         }
-        Serial.println(F("^C OK"));
+        serialSend(F("C OK"));
         break;
       // W C
       // C = subcommand
@@ -261,7 +240,7 @@ void serialEvent() {
       // WS
       case 'W':
         if (inputString.length() < 2) {
-          Serial.println(F("^W BAD (Invalid length; expected 2)"));
+          serialSend(F("W BAD (Invalid length; expected 2)"));
           break;
         }
         tmpData = true;
@@ -285,11 +264,11 @@ void serialEvent() {
             break;
           default:
             tmpData = false;
-            Serial.print(F("^W BAD (Invalid C)"));
+            Serial.print(F("W BAD (Invalid C)"));
             break;
         }
         if (tmpData) {
-          Serial.println(F("^W OK"));
+          serialSend(F("W OK"));
         }
         break;
     }
@@ -446,7 +425,7 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero) {
 }
 
 void displaySelfTest() {
-  Serial.println(F("^< Start LED Test"));
+  serialSend(F("< Start LED Test"));
 
   setDots(true, true);
 
@@ -460,7 +439,7 @@ void displaySelfTest() {
   delay(1000);
   analogWrite(PIN_LED_BLUE, 0);
 
-  Serial.println(F("^< Stop LED Test"));
+  serialSend(F("< Stop LED Test"));
 
   displayAntiPoison(2);
 }

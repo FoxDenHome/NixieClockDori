@@ -1,4 +1,6 @@
 #include <TimeLib.h>
+#include "crcserial.h"
+#include "rtc.h"
 
 #define DS1307_ADDRESS 0x68
 #define ZERO 0
@@ -67,7 +69,7 @@ void rtcTest() {
   do {
     delay(100);
     if ((millis() - rtcReadingStartTime) > 3000) {
-      Serial.println(F("^< Warning! RTC DIDN'T RESPOND!"));
+      serialSend(F("< Warning! RTC DIDN'T RESPOND!"));
       rtcPresent = false;
       break;
     }
