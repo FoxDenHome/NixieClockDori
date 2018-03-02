@@ -7,10 +7,6 @@ void setTimeTM(const tmElements_t& tm) {
   setTime(tm.Hour, tm.Minute, tm.Second, tm.Day, tm.Month, tm.Year);
 }
 
-void rtcInit() {
-  setSyncProvider(RTC.get);
-}
-
 void rtcSetTime(tmElements_t& tm) {
   setTimeTM(tm);
   if (!RTC.chipPresent()) {
@@ -19,7 +15,7 @@ void rtcSetTime(tmElements_t& tm) {
   RTC.write(tm);
 }
 
-void rtcTest() {
+void rtcInit() {
   time_t prevT = RTC.get();
   if (!RTC.chipPresent()) {
     serialSend(F("< Warning! RTC NOT ON BOARD!"));
@@ -37,9 +33,11 @@ void rtcTest() {
     delay(100);
     if ((millis() - rtcReadingStartTime) > 3000) {
       serialSend(F("< Warning! RTC DIDN'T RESPOND!"));
-      break;
+      return;
     }
   } while (prevT == RTC.get());
+
+  setSyncProvider(RTC.get);
 }
 
 byte decToBcd(const byte val) {
