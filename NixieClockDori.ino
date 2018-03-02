@@ -7,9 +7,6 @@
 #define MASK_UPPER_DOTS 1
 #define MASK_LOWER_DOTS 2
 
-#define DS1307_ADDRESS 0x68
-#define ZERO 0x00
-
 #define PIN_LE 10 /* Latch Enabled data accepted while HI level */
 #define PIN_HIZ 8 /* Z state in registers outputs (while LOW level) */
 #define PIN_DHV 5 /* off/on MAX1771 Driver  Hight Voltage(DHV) 110-220V */
