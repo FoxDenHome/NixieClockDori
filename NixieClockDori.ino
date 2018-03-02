@@ -4,6 +4,8 @@
 #include "rtc.h"
 #include "config.h"
 
+#define DISPLAY_DELAY_MICROS 5000
+
 #define MASK_UPPER_DOTS 1
 #define MASK_LOWER_DOTS 2
 
@@ -439,13 +441,19 @@ void renderNixies(unsigned long milliDelta) {
   unsigned long curMicros = micros();
   if (curMicros >= lastTimeInterval1Started) {
     unsigned long timeSinceLastRender = curMicros - lastTimeInterval1Started;
-    if (timeSinceLastRender <= 5000) {
+    if (timeSinceLastRender < DISPLAY_DELAY_MICROS) {
 #ifdef RENDER_USE_DELAY
-      delayMicroseconds(5000 - timeSinceLastRender);
+      delayMicroseconds(DISPLAY_DELAY_MICROS - timeSinceLastRender);
 #else // RENDER_USE_DELAY
       return;
 #endif // RENDER_USE_DELAY
     }
+  } else if (curMicros < DISPLAY_DELAY_MICROS) {
+#ifdef RENDER_USE_DELAY
+      delayMicroseconds(DISPLAY_DELAY_MICROS - curMicros);
+#else // RENDER_USE_DELAY
+      return;
+#endif // RENDER_USE_DELAY
   }
   lastTimeInterval1Started = curMicros;
 
