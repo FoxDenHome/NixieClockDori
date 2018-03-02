@@ -3,10 +3,10 @@
 #define DS1307_ADDRESS 0x68
 #define ZERO 0
 
-bool RTCPresent;
+bool rtcPresent;
 
 void rtcSync() {
-  if (!RTCPresent) {
+  if (!rtcPresent) {
     return;
   }
 
@@ -15,20 +15,20 @@ void rtcSync() {
   Wire.endTransmission();
 
   Wire.requestFrom(DS1307_ADDRESS, 7);
-  byte RTCSeconds = bcdToDec(Wire.read());
-  byte RTCMinutes = bcdToDec(Wire.read());
-  byte RTCHours = bcdToDec(Wire.read() & 0b111111); //24 hour time
-  byte RTCDayOfWeek = bcdToDec(Wire.read()); //0-6 -> sunday - Saturday
-  byte RTCDay = bcdToDec(Wire.read());
-  byte RTCMonth = bcdToDec(Wire.read());
-  byte RTCYear = bcdToDec(Wire.read());
+  const byte s = bcdToDec(Wire.read());
+  const byte m = bcdToDec(Wire.read());
+  const byte h = bcdToDec(Wire.read() & 0b111111); //24 hour time
+  const byte w = bcdToDec(Wire.read()); //0-6 -> sunday - Saturday
+  const byte d = bcdToDec(Wire.read());
+  const byte mon = bcdToDec(Wire.read());
+  const byte y = bcdToDec(Wire.read());
 
-  setTime(RTCHours, RTCMinutes, RTCSeconds, RTCDay, RTCMonth, RTCYear);
+  setTime(h, m, s, d, mon, y);
 }
 
-void rtcSetTime(byte h, byte m, byte s, byte d, byte mon, byte y, byte w) {
+void rtcSetTime(const byte h, const byte m, const byte s, const byte d, const byte mon, const byte y, const byte w) {
   setTime(h, m, s, d, mon, y);
-  if (!RTCPresent) {
+  if (!rtcPresent) {
     return;
   }
 
@@ -54,32 +54,32 @@ byte rtcReadSeconds() {
   Wire.endTransmission();
 
   Wire.requestFrom(DS1307_ADDRESS, 7);
-  byte RTCSeconds = bcdToDec(Wire.read());
+  const byte s = bcdToDec(Wire.read());
   Wire.read(); Wire.read(); Wire.read(); Wire.read(); Wire.read(); Wire.read();
-  return RTCSeconds;
+  return s;
 }
 
 void rtcTest() {
-  byte prevSeconds = rtcReadSeconds();
-  unsigned long RTCReadingStartTime = millis();
-  RTCPresent = true;
+  const byte prevSeconds = rtcReadSeconds();
+  const unsigned long rtcReadingStartTime = millis();
+  rtcPresent = true;
 
   do {
     delay(100);
-    if ((millis() - RTCReadingStartTime) > 3000) {
+    if ((millis() - rtcReadingStartTime) > 3000) {
       Serial.println(F("^< Warning! RTC DIDN'T RESPOND!"));
-      RTCPresent = false;
+      rtcPresent = false;
       break;
     }
   } while (prevSeconds == rtcReadSeconds());
 }
 
-byte decToBcd(byte val) {
+byte decToBcd(const byte val) {
   // Convert normal decimal numbers to binary coded decimal
   return ((val / 10) << 4) + (val % 10);
 }
 
-byte bcdToDec(byte val)  {
+byte bcdToDec(const byte val)  {
   // Convert binary coded decimal to normal decimal numbers
   return ((val >> 4) * 10) + (val % 16);
 }
