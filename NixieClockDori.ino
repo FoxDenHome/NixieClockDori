@@ -4,36 +4,44 @@
 #include "rtc.h"
 #include "config.h"
 
-#define DISPLAY_DELAY_MICROS 5000
-
 #define MASK_UPPER_DOTS 1
 #define MASK_LOWER_DOTS 2
-
-#define PIN_LE 10 /* Latch Enabled data accepted while HI level */
-#define PIN_HIZ 8 /* Z state in registers outputs (while LOW level) */
-#define PIN_DHV 5 /* off/on MAX1771 Driver  Hight Voltage(DHV) 110-220V */
-#define PIN_BUZZER 2
-
-#define PIN_LED_RED 9
-#define PIN_LED_GREEN 6
-#define PIN_LED_BLUE 3
-
-#define PIN_BUTTON_SET A0
-#define PIN_BUTTON_UP A2
-#define PIN_BUTTON_DOWN A1
-
-#define ONE_SECOND_IN_MS (1000UL)
-#define ONE_MINUTE_IN_MS (ONE_SECOND_IN_MS * 60UL)
-#define ONE_HOUR_IN_MS (ONE_MINUTE_IN_MS * 60UL)
-
-#define ALL_TUBES ((1 << 10) - 1)
-#define NO_TUBES 0
-#define getNumber(idx) (1 << ((idx) % 10))
 
 #ifdef EFFECT_SLOT_MACHINE
 #define EFFECT_ENABLED
 #endif
 
+/********************/
+/* PIN DEFINITIONS  */
+/********************/
+const byte PIN_DISPLAY_LATCH = 10;      // Passes data from SPI chip to display while HIGH (pulled LOW during SPI write)
+const byte PIN_HIZ = 8;                 // Z state in registers outputs (while LOW level) Always LOW? */
+const byte PIN_HIGH_VOLTAGE_ENABLE = 5; // High Voltage (tube power) on while HIGH
+const byte PIN_BUZZER = 2;              // Piezo buzzer pin
+
+const byte PIN_LED_RED = 9;             // PWM/analog pin for all red LEDs
+const byte PIN_LED_GREEN = 6;           // PWM/analog pin for all green LEDs
+const byte PIN_LED_BLUE = 3;            // PWM/analog pin for all blue LEDs
+
+const byte PIN_BUTTON_SET = A0;         // "set" button
+const byte PIN_BUTTON_UP = A2;          // "up" button
+const byte PIN_BUTTON_DOWN = A1;        // "down" button
+
+/*******************/
+/* OTHER CONSTANTS */
+/*******************/
+const unsigned long DISPLAY_DELAY_MICROS = 5000UL;
+
+const unsigned long ONE_SECOND_IN_MS = 1000UL;
+const unsigned long ONE_MINUTE_IN_MS = ONE_SECOND_IN_MS * 60UL;
+const unsigned long ONE_HOUR_IN_MS = ONE_MINUTE_IN_MS * 60UL;
+
+const uint16_t ALL_TUBES = (1 << 10) - 1; // Bitmask to enable all tubes
+const uint16_t NO_TUBES = 0;
+
+/********************/
+/* GLOBAL VARIABLES */
+/********************/
 #ifdef EFFECT_ENABLED
 byte dataIsTransitioning[6] = {0, 0, 0, 0, 0, 0};
 uint16_t dataToDisplayOld[6] = {0, 0, 0, 0, 0, 0};
@@ -57,10 +65,13 @@ unsigned long stopwatchTime, countdownTo;
 
 unsigned long RTCLastSyncTime;
 
+/****************/
+/* PROGRAM CODE */
+/****************/
 void setup() {
   // Pin setup
-  pinMode(PIN_DHV, OUTPUT);
-  digitalWrite(PIN_DHV, LOW); // Turn off HV ASAP during setup
+  pinMode(PIN_HIGH_VOLTAGE_ENABLE, OUTPUT);
+  digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, LOW); // Turn off HV ASAP during setup
 
   pinMode(PIN_LED_RED, OUTPUT);
   pinMode(PIN_LED_GREEN, OUTPUT);
@@ -71,7 +82,7 @@ void setup() {
 
   pinMode(PIN_BUZZER, OUTPUT);
 
-  pinMode(PIN_LE, OUTPUT);
+  pinMode(PIN_DISPLAY_LATCH, OUTPUT);
   pinMode(PIN_HIZ, OUTPUT);
   digitalWrite(PIN_HIZ, LOW);
 
@@ -90,15 +101,14 @@ void setup() {
   rtcTest();
   rtcSync();
 
-  // Turn on HV
-  digitalWrite(PIN_DHV, HIGH);
+  digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);
 
   Serial.println(F("< Ready"));
 }
 
 void serialEvent() {
   while (Serial.available()) {
-    char inChar = (char)Serial.read();
+    const char inChar = (char)Serial.read();
     if (inChar != '\n') {
       inputString += inChar;
       if (inputString.length() >= 30) {
@@ -201,7 +211,7 @@ void serialEvent() {
         holdDisplayUntil = millis() + (unsigned long)inputString.substring(1, 9).toInt();
         tmpData = inputString[9] - '0';
         setDots((tmpData & 2) == 2, (tmpData & 1) == 1);
-        for (int i = 0; i < 6; i++) {
+        for (byte i = 0; i < 6; i++) {
           tmpData = inputString[i + 10];
           if (tmpData == 'N') {
             dataToDisplay[i] = NO_TUBES;
@@ -274,15 +284,18 @@ void serialEvent() {
   }
 }
 
-byte hexInputToByte(int offset) {
-  byte msn = inputString[offset];
-  msn = (msn <= '9') ? msn - '0' : msn - '7';
-  byte lsn = inputString[offset + 1];
-  lsn = (lsn <= '9') ? lsn - '0' : lsn - '7';
-  return (msn << 4) + lsn;
+#define hexCharToNum(c) ((c <= '9') ? c - '0' : c - '7')
+byte hexInputToByte(const byte offset) {
+  const byte msn = inputString[offset];
+  const byte lsn = inputString[offset + 1];
+  return (hexCharToNum(msn) << 4) + hexCharToNum(lsn);
 }
 
-void setDots(bool upper, bool lower) {
+uint16_t getNumber(const byte idx) {
+  return 1 << ((idx) % 10);
+}
+
+void setDots(const bool upper, const bool lower) {
   dotMask = (upper ? 0 : MASK_UPPER_DOTS) | (lower ? 0 : MASK_LOWER_DOTS);
 }
 
@@ -293,17 +306,14 @@ void noColor() {
   analogWrite(PIN_LED_BLUE, 0);
 }
 
-void displayAntiPoison(int count) {
-  antiPoisonEnd = millis() + (unsigned long)(ANTI_POISON_DELAY * 10UL * count);
+void displayAntiPoison(const unsigned long count) {
+  antiPoisonEnd = millis() + (ANTI_POISON_DELAY * 10UL * count);
 }
 
 void loop() {
   bool displayDirty = false;
-  unsigned long curMillis = millis();
-  unsigned long milliDelta = curMillis - prevMillis;
-  if (curMillis < prevMillis) {
-    milliDelta = 0;
-  }
+  const unsigned long curMillis = millis();
+  const unsigned long milliDelta = (curMillis >= prevMillis) ? (curMillis - prevMillis) : 0;
   prevMillis = curMillis;
 
   if (curMillis - RTCLastSyncTime >= 10000 || curMillis < RTCLastSyncTime) {
@@ -334,8 +344,8 @@ void loop() {
 
   // Handle "what to display" logic
   if (antiPoisonEnd > curMillis) {
-    uint16_t sym = getNumber((antiPoisonEnd - curMillis) / ANTI_POISON_DELAY);
-    for (int i = 0; i < 6; i++) {
+    const uint16_t sym = getNumber((antiPoisonEnd - curMillis) / ANTI_POISON_DELAY);
+    for (byte i = 0; i < 6; i++) {
       dataToDisplay[i] = sym;
     }
     displayDirty = true;
@@ -350,9 +360,9 @@ void loop() {
     } else if (stopwatchEnabled) {
       displayDirty = showShortTime(stopwatchTime, true);
     } else {
-      time_t _n = now();
-      byte h = hour(_n);
-      byte s = second(_n);
+      const time_t _n = now();
+      const byte h = hour(_n);
+      const byte s = second(_n);
 
       if (s % 2) {
         setDots(true, true);
@@ -379,7 +389,7 @@ void loop() {
 
 #ifdef EFFECT_ENABLED
   if (displayDirty) {
-    for (int i = 0; i < 6; i++) {
+    for (byte i = 0; i < 6; i++) {
       if (dataToDisplayOld[i] != dataToDisplay[i]) {
         dataToDisplayOld[i] = dataToDisplay[i];
         dataIsTransitioning[i] = EFFECT_SPEED;
@@ -391,7 +401,7 @@ void loop() {
   renderNixies(milliDelta);
 }
 
-bool showShortTime(unsigned long timeMs, bool trimLZ) {
+bool showShortTime(const unsigned long timeMs, bool trimLZ) {
   if (timeMs >= ONE_HOUR_IN_MS) { // Show H/M/S
     setDots(true, false);
     trimLZ = insert2(0, (timeMs / ONE_HOUR_IN_MS) % 100, trimLZ);
@@ -407,20 +417,18 @@ bool showShortTime(unsigned long timeMs, bool trimLZ) {
   }
 }
 
-bool insert1(int offset, int data, bool trimLeadingZero) {
-  data %= 10;
+void insert1(const byte offset, const byte data, const bool trimLeadingZero) {
   if (data == 0 && trimLeadingZero) {
     dataToDisplay[offset] = 0;
-    return true;
   } else {
     dataToDisplay[offset] = getNumber(data);
-    return false;
   }
 }
 
-bool insert2(int offset, int data, bool trimLeadingZero) {
-  trimLeadingZero = insert1(offset, data / 10, trimLeadingZero);
-  return insert1(offset + 1, data, trimLeadingZero);
+bool insert2(const byte offset, const byte data, const bool trimLeadingZero) {
+  insert1(offset, data / 10, trimLeadingZero);
+  insert1(offset + 1, data, trimLeadingZero);
+  return data == 0;
 }
 
 void displaySelfTest() {
@@ -443,13 +451,13 @@ void displaySelfTest() {
   displayAntiPoison(2);
 }
 
-void renderNixies(unsigned long milliDelta) {
+void renderNixies(const unsigned long milliDelta) {
   static byte anodeGroup = 0;
   static unsigned long lastTimeInterval1Started;
 
-  unsigned long curMicros = micros();
+  const unsigned long curMicros = micros();
   if (curMicros >= lastTimeInterval1Started) {
-    unsigned long timeSinceLastRender = curMicros - lastTimeInterval1Started;
+    const unsigned long timeSinceLastRender = curMicros - lastTimeInterval1Started;
     if (timeSinceLastRender < DISPLAY_DELAY_MICROS) {
 #ifdef RENDER_USE_DELAY
       delayMicroseconds(DISPLAY_DELAY_MICROS - timeSinceLastRender);
@@ -459,15 +467,15 @@ void renderNixies(unsigned long milliDelta) {
     }
   } else if (curMicros < DISPLAY_DELAY_MICROS) {
 #ifdef RENDER_USE_DELAY
-      delayMicroseconds(DISPLAY_DELAY_MICROS - curMicros);
+    delayMicroseconds(DISPLAY_DELAY_MICROS - curMicros);
 #else // RENDER_USE_DELAY
-      return;
+    return;
 #endif // RENDER_USE_DELAY
   }
   lastTimeInterval1Started = curMicros;
 
-  byte curTubeL = anodeGroup << 1;
-  byte curTubeR = curTubeL + 1;
+  const byte curTubeL = anodeGroup << 1;
+  const byte curTubeR = curTubeL + 1;
 
   uint16_t tubeL = dataToDisplay[curTubeL];
   uint16_t tubeR = dataToDisplay[curTubeR];
@@ -498,14 +506,14 @@ void renderNixies(unsigned long milliDelta) {
   }
 #endif
 
-  digitalWrite(PIN_LE, LOW); // allow data input (Transparent mode)
+  digitalWrite(PIN_DISPLAY_LATCH, LOW);
   SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE2));
   SPI.transfer(dotMask);                            // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
   SPI.transfer(tubeR >> 6 | 1 << (anodeGroup + 4)); // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes
   SPI.transfer(tubeR << 2 | tubeL >> 8);            // [RC5][RC4][RC3][RC2][RC1][RC0][LC9][LC8] - RC9 - RC0 - Right tubes cathodes
   SPI.transfer(tubeL);                              // [LC7][LC6][LC5][LC4][LC3][LC2][LC1][LC0] - LC9 - LC0 - Left tubes cathodes
   SPI.endTransaction();
-  digitalWrite(PIN_LE, HIGH); // latching data
+  digitalWrite(PIN_DISPLAY_LATCH, HIGH);
 
   if (++anodeGroup > 2) {
     anodeGroup = 0;

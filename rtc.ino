@@ -1,7 +1,7 @@
 #include <TimeLib.h>
 
 #define DS1307_ADDRESS 0x68
-#define ZERO 0x00
+#define ZERO 0
 
 bool RTCPresent;
 
