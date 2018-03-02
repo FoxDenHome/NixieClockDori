@@ -185,9 +185,13 @@ void serialEvent() {
         break;
       // C MMMMMMMM
       // M = Time in ms (Dec)
-      // Starts a countdown for <M> ms
+      // Starts a countdown for <M> ms. Stops countdown if <M> = 0
       // C00010000
       case 'C':
+        if (inputString.length() < 9) {
+          Serial.println(F("C BAD (Invalid length; expected 9)"));
+          break;
+        }
         addition = (unsigned long)inputString.substring(1, 9).toInt();
         if (addition == 0) {
           countdownTo = 0;
@@ -197,12 +201,18 @@ void serialEvent() {
           stopwatchTime = 0;
           countdownTo = millis() + addition;
         }
+        Serial.println(F("C OK"));
         break;
       // W C
       // C = subcommand
       // Controls the stopwatch. R for reset/disable, P for pause, U for un-pause, S for start/restart
       // WS
       case 'W':
+        if (inputString.length() < 2) {
+          Serial.println(F("W BAD (Invalid length; expected 2)"));
+          break;
+        }
+        bool wOk = true;
         switch (inputString[1]) {
           case 'R':
             stopwatchEnabled = false;
@@ -220,6 +230,14 @@ void serialEvent() {
             stopwatchEnabled = true;
             stopwatchRunning = true;
             stopwatchTime = 0;
+            break;
+          default:
+            wOk = false;
+            Serial.print(F("W BAD (Invalid C)"));
+            break;
+        }
+        if (wOk) {
+          Serial.println(F("W OK"));
         }
         break;
     }
