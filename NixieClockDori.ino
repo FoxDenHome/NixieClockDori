@@ -27,6 +27,8 @@
 const uint16_t symbolArray[12] PROGMEM = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 0, 1023}; // Last two chars = none on / all on. They are : and ;
 #define getSymbol(idx) (pgm_read_word_near(symbolArray + (idx)))
 
+byte dataIsTransitioning[6] = {0, 0, 0, 0, 0, 0};
+uint16_t dataToDisplayOld[6] = {0, 0, 0, 0, 0, 0};
 uint16_t dataToDisplay[6] = {0, 0, 0, 0, 0, 0}; // This will be displayed on tubes
 byte dotMask;
 
@@ -278,6 +280,7 @@ void displayAntiPoison(int count) {
 }
 
 void loop() {
+  bool displayDirty = false;
   unsigned long curMillis = millis();
   unsigned long milliDelta = curMillis - prevMillis;
   if (curMillis < prevMillis) {
@@ -317,16 +320,17 @@ void loop() {
     for (int i = 0; i < 6; i++) {
       dataToDisplay[i] = sym;
     }
+    displayDirty = true;
   } else if (holdDisplayUntil <= curMillis) {
     holdDisplayUntil = curMillis + 10;
     if (countdownTo > 0) {
       if (countdownTo <= curMillis) {
-        showShortTime(0, true);
+        displayDirty = showShortTime(0, true);
       } else {
-        showShortTime(countdownTo - curMillis, true);
+        displayDirty = showShortTime(countdownTo - curMillis, true);
       }
     } else if (stopwatchEnabled) {
-      showShortTime(stopwatchTime, true);
+      displayDirty = showShortTime(stopwatchTime, true);
     } else {
       time_t _n = now();
       byte h = hour(_n);
@@ -350,23 +354,36 @@ void loop() {
       if (h < 4 && s % 10 == 0) {
         displayAntiPoison(1);
       }
+
+      displayDirty = true;
+    }
+  }
+  
+  if (displayDirty) {
+    for (int i = 0; i < 6; i++) {
+      if (dataToDisplayOld[i] != dataToDisplay[i]) {
+        dataToDisplayOld[i] = dataToDisplay[i];
+        dataIsTransitioning[i] = EFFECT_SPEED;
+      }
     }
   }
 
-  renderNixies();
+  renderNixies(milliDelta);
 }
 
-void showShortTime(unsigned long timeMs, bool trimLZ) {
+bool showShortTime(unsigned long timeMs, bool trimLZ) {
   if (timeMs >= ONE_HOUR_IN_MS) { // Show H/M/S
     setDots(true, false);
     trimLZ = insert2(0, (timeMs / ONE_HOUR_IN_MS) % 100, trimLZ);
     trimLZ = insert2(2, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ);
     insert2(4, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ);
+    return true;
   } else { // Show M/S/MS
     setDots(false, true);
     trimLZ = insert2(0, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ);
     trimLZ = insert2(2, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ);
     insert2(4, (timeMs / 10UL) % 100, trimLZ);
+    return false; // Don't allow transition effects on rapid timer
   }
 }
 
@@ -406,7 +423,7 @@ void displaySelfTest() {
   displayAntiPoison(2);
 }
 
-void renderNixies() {
+void renderNixies(unsigned long milliDelta) {
   static byte anodeGroup = 0;
   static unsigned long lastTimeInterval1Started;
 
@@ -426,15 +443,40 @@ void renderNixies() {
   byte curTubeL = anodeGroup << 1;
   byte curTubeR = curTubeL + 1;
 
+  uint16_t tubeL = dataToDisplay[curTubeL];
+  uint16_t tubeR = dataToDisplay[curTubeR];
+
+  byte tubeTrans = dataIsTransitioning[curTubeL];
+  if (tubeTrans > 0) {
+#ifdef EFFECT_SLOT_MACHINE
+    tubeL = getSymbol((tubeTrans / (EFFECT_SPEED / 10)) % 10);
+#endif
+    if (tubeTrans > milliDelta) {
+      dataIsTransitioning[curTubeL] -= milliDelta;
+    } else {
+      dataIsTransitioning[curTubeL] = 0;
+    }
+  }
+
+  tubeTrans = dataIsTransitioning[curTubeR];
+  if (tubeTrans > 0) {
+#ifdef EFFECT_SLOT_MACHINE
+    tubeR = getSymbol((tubeTrans / (EFFECT_SPEED / 10)) % 10);
+#endif
+    if (tubeTrans > milliDelta) {
+      dataIsTransitioning[curTubeR] -= milliDelta;
+    } else {
+      dataIsTransitioning[curTubeR] = 0;
+    }
+  }
+
   digitalWrite(PIN_LE, LOW); // allow data input (Transparent mode)
-
   SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE2));
-  SPI.transfer(dotMask);                                                     // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
-  SPI.transfer(dataToDisplay[curTubeR] >> 6 | 1 << (anodeGroup + 4));        // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes
-  SPI.transfer(dataToDisplay[curTubeR] << 2 | dataToDisplay[curTubeL] >> 8); // [RC5][RC4][RC3][RC2][RC1][RC0][LC9][LC8] - RC9 - RC0 - Right tubes cathodes
-  SPI.transfer(dataToDisplay[curTubeL]);                                     // [LC7][LC6][LC5][LC4][LC3][LC2][LC1][LC0] - LC9 - LC0 - Left tubes cathodes
+  SPI.transfer(dotMask);                            // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
+  SPI.transfer(tubeR >> 6 | 1 << (anodeGroup + 4)); // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes
+  SPI.transfer(tubeR << 2 | tubeL >> 8);            // [RC5][RC4][RC3][RC2][RC1][RC0][LC9][LC8] - RC9 - RC0 - Right tubes cathodes
+  SPI.transfer(tubeL);                              // [LC7][LC6][LC5][LC4][LC3][LC2][LC1][LC0] - LC9 - LC0 - Left tubes cathodes
   SPI.endTransaction();
-
   digitalWrite(PIN_LE, HIGH); // latching data
 
   if (++anodeGroup > 2) {
