@@ -347,6 +347,7 @@ void loop() {
     const uint16_t sym = getNumber((antiPoisonEnd - curMillis) / ANTI_POISON_DELAY);
     for (byte i = 0; i < 6; i++) {
       dataToDisplay[i] = sym;
+      dataIsTransitioning[i] = 0;
     }
     displayDirty = false;
   } else if (holdDisplayUntil <= curMillis) {
