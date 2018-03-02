@@ -81,6 +81,8 @@ void setup() {
 
   // Turn on HV
   digitalWrite(PIN_DHV, HIGH);
+
+  Serial.println(F("< Ready"));
 }
 
 void serialEvent() {
@@ -90,11 +92,11 @@ void serialEvent() {
       inputString += inChar;
       if (inputString.length() >= 30) {
         inputString = "";
-        Serial.println(F("Line too long. Aborted."));
+        Serial.println(F("< Line too long. Aborted."));
       }
       continue;
     }
-    Serial.print(F("Got "));
+    Serial.print(F("> "));
     Serial.println(inputString);
 
     byte tmpData;
@@ -381,7 +383,7 @@ bool insert2(int offset, int data, bool trimLeadingZero) {
 }
 
 void displaySelfTest() {
-  Serial.println(F("Start LED Test"));
+  Serial.println(F("< Start LED Test"));
 
   setDots(true, true);
 
@@ -395,7 +397,7 @@ void displaySelfTest() {
   delay(1000);
   analogWrite(PIN_LED_BLUE, 0);
 
-  Serial.println(F("Stop LED Test"));
+  Serial.println(F("< Stop LED Test"));
 
   displayAntiPoison(2);
 }
