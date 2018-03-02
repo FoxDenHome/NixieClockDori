@@ -4,6 +4,7 @@
 #include <limits.h>
 
 #define RENDER_USE_DELAY // Use delay when rendering instead of just returning for the next cycle
+#define CLOCK_TRIM_HOURS
 
 #define MASK_UPPER_DOTS 1
 #define MASK_LOWER_DOTS 2
@@ -305,8 +306,12 @@ void loop() {
         setDots(false, false);
       }
       byte h = hour();
+#ifdef CLOCK_TRIM_HOURS
       insert1(0, h / 10, true);
       insert1(1, h, false);
+#else
+      insert2(0, h, false);
+#endif
       insert2(2, minute(), false);
       insert2(4, s, false);
       if (h < 4 && s % 10 == 0) {
