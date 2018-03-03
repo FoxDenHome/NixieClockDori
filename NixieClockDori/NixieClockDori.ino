@@ -328,7 +328,8 @@ void renderNixies(Task *me) {
 		analogWrite(PIN_LED_RED, 0);
 		analogWrite(PIN_LED_GREEN, 0);
 		analogWrite(PIN_LED_BLUE, 0);
-	} else if (displayUpdateTask) {
+	}
+	else if (displayUpdateTask) {
 		if (displayUpdateTask->render(microDelta)) {
 			displayTriggerEffects();
 		}
