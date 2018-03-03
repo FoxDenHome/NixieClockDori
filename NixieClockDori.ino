@@ -372,7 +372,7 @@ void loop() {
       insert2(2, minute(_n), false);
       insert2(4, s, false);
 
-      if (h < 4 && s % 10 == 0) {
+      if (h < 4 && s % 10 == 2) {
         displayAntiPoison(1);
       }
 
