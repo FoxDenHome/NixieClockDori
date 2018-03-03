@@ -5,7 +5,7 @@
 
 class DisplayTask_Countdown : public DisplayTask {
 public:
-	bool render(const unsigned long microDelta) override;
+	bool render(const unsigned long microDelta, uint16_t dataToDisplay[], byte *dotMask) override;
 	unsigned long to;
 protected:
 	const bool _canShow() override;

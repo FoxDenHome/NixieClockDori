@@ -9,13 +9,6 @@ Task T_renderNixies(5, renderNixies);
 
 const uint16_t INVALID_TUBES = 10000;
 
-#ifdef EFFECT_ENABLED
-byte dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
-uint16_t dataToDisplayOld[6] = { INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES };
-#endif
-uint16_t dataToDisplay[6] = { 0, 0, 0, 0, 0, 0 }; // This will be displayed on tubes
-byte dotMask;
-
 const byte MASK_UPPER_DOTS = 1;
 const byte MASK_LOWER_DOTS = 2;
 const byte MASK_BOTH_DOTS = MASK_UPPER_DOTS | MASK_LOWER_DOTS;
@@ -39,32 +32,24 @@ byte makeDotMask(const bool upper, const bool lower) {
 	return (upper ? 0 : MASK_UPPER_DOTS) | (lower ? 0 : MASK_LOWER_DOTS);
 }
 
-void setDotsMask(const byte mask) {
-	dotMask = mask;
-}
-
-void setDots(const bool upper, const bool lower) {
-	setDotsMask(makeDotMask(upper, lower));
-}
-
-bool showShortTime(const unsigned long timeMs, bool trimLZ) {
+bool showShortTime(const unsigned long timeMs, bool trimLZ, uint16_t dataToDisplay[], byte *dotMask) {
 	if (timeMs >= ONE_HOUR_IN_MS) { // Show H/M/S
-		setDotsConst(true, false);
-		trimLZ = insert2(0, (timeMs / ONE_HOUR_IN_MS) % 100, trimLZ);
-		trimLZ = insert2(2, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ);
-		insert2(4, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ);
+		*dotMask = makeDotMask(true, false);
+		trimLZ = insert2(0, (timeMs / ONE_HOUR_IN_MS) % 100, trimLZ, dataToDisplay);
+		trimLZ = insert2(2, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ, dataToDisplay);
+		insert2(4, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ, dataToDisplay);
 		return true;
 	}
 	else { // Show M/S/MS
-		setDotsConst(false, true);
-		trimLZ = insert2(0, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ);
-		trimLZ = insert2(2, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ);
-		insert2(4, (timeMs / 10UL) % 100, trimLZ);
+		*dotMask = makeDotMask(false, true);
+		trimLZ = insert2(0, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ, dataToDisplay);
+		trimLZ = insert2(2, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ, dataToDisplay);
+		insert2(4, (timeMs / 10UL) % 100, trimLZ, dataToDisplay);
 		return false; // Don't allow transition effects on rapid timer
 	}
 }
 
-void insert1(const byte offset, const byte data, const bool trimLeadingZero) {
+void insert1(const byte offset, const byte data, const bool trimLeadingZero, uint16_t dataToDisplay[]) {
 	if (data == 0 && trimLeadingZero) {
 		dataToDisplay[offset] = 0;
 	}
@@ -73,43 +58,21 @@ void insert1(const byte offset, const byte data, const bool trimLeadingZero) {
 	}
 }
 
-bool insert2(const byte offset, const byte data, const bool trimLeadingZero) {
-	insert1(offset, data / 10, trimLeadingZero);
-	insert1(offset + 1, data, trimLeadingZero);
+bool insert2(const byte offset, const byte data, const bool trimLeadingZero, uint16_t dataToDisplay[]) {
+	insert1(offset, data / 10, trimLeadingZero, dataToDisplay);
+	insert1(offset + 1, data, trimLeadingZero, dataToDisplay);
 	return data == 0;
 }
 
-void displayTriggerEffects() {
-#ifdef EFFECT_ENABLED
-	bool hasEffects = false;
-	for (byte i = 0; i < 6; i++) {
-		if (dataToDisplayOld[i] != dataToDisplay[i]) {
-			dataToDisplayOld[i] = dataToDisplay[i];
-			dataIsTransitioning[i] = EFFECT_SPEED;
-			hasEffects = true;
-		}
-	}
-#endif
-}
-
-void displayEffectsUpdate(const unsigned long microDelta) {
-#ifdef EFFECT_ENABLED
-	const unsigned long milliDelta = microDelta / 1000UL;
-	bool hadEffects = false;
-	for (byte i = 0; i < 6; i++) {
-		if (dataIsTransitioning[i] > milliDelta) {
-			dataIsTransitioning[i] -= milliDelta;
-			hadEffects = true;
-		}
-		else {
-			dataIsTransitioning[i] = 0;
-		}
-	}
-#endif
-}
-
 void renderNixies(Task *me) {
+#ifdef EFFECT_ENABLED
+	static unsigned long dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
+	static uint16_t dataToDisplayOld[6] = { INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES };
+#endif
+	static uint16_t dataToDisplayCurrent[6] = { 0, 0, 0, 0, 0, 0 };
+
 	static byte anodeGroup = 0;
+	byte dotMask = 0;
 
 	const unsigned long curMillis = millis();
 	uint16_t tubeL = INVALID_TUBES, tubeR = INVALID_TUBES;
@@ -125,38 +88,60 @@ void renderNixies(Task *me) {
 		analogWrite(PIN_LED_BLUE, 0);
 	}
 	else if (DisplayTask::current) {
-		if (DisplayTask::current->render(microDelta)) {
-			displayTriggerEffects();
+		if (DisplayTask::current->render(microDelta, dataToDisplayCurrent, &dotMask)) {
+			// Start necessary effects (when display changed)
+#ifdef EFFECT_ENABLED
+			bool hasEffects = false;
+			for (byte i = 0; i < 6; i++) {
+				if (dataToDisplayOld[i] != dataToDisplayCurrent[i]) {
+					dataToDisplayOld[i] = dataToDisplayCurrent[i];
+					dataIsTransitioning[i] = EFFECT_SPEED;
+					hasEffects = true;
+				}
+			}
+#endif
 		}
 		analogWrite(PIN_LED_RED, DisplayTask::current->red);
 		analogWrite(PIN_LED_GREEN, DisplayTask::current->green);
 		analogWrite(PIN_LED_BLUE, DisplayTask::current->blue);
 	}
 
-	displayEffectsUpdate(microDelta);
+	// Progress through effect
+#ifdef EFFECT_ENABLED
+	bool hadEffects = false;
+	for (byte i = 0; i < 6; i++) {
+		if (dataIsTransitioning[i] > microDelta) {
+			dataIsTransitioning[i] -= microDelta;
+			hadEffects = true;
+		}
+		else {
+			dataIsTransitioning[i] = 0;
+		}
+	}
+#endif
 
 	const byte curTubeL = anodeGroup << 1;
 	const byte curTubeR = curTubeL + 1;
 
 	if (tubeL == INVALID_TUBES) {
-		tubeL = dataToDisplay[curTubeL];
+		tubeL = dataToDisplayCurrent[curTubeL];
 #ifdef EFFECT_ENABLED
-		byte tubeTrans = dataIsTransitioning[curTubeL];
+		unsigned long tubeTrans = dataIsTransitioning[curTubeL];
 		if (tubeTrans > 0) {
 #ifdef EFFECT_SLOT_MACHINE
-			tubeL = getNumber(tubeTrans / (EFFECT_SPEED / 10));
+			tubeL = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
 #endif
 		}
 #endif
 	}
 
 	if (tubeR == INVALID_TUBES) {
-		tubeR = dataToDisplay[curTubeR];
+		tubeR = dataToDisplayCurrent[curTubeR];
 #ifdef EFFECT_ENABLED
-		byte tubeTrans = dataIsTransitioning[curTubeR];
+		unsigned long tubeTrans = dataIsTransitioning[curTubeR];
 		if (tubeTrans > 0) {
 #ifdef EFFECT_SLOT_MACHINE
-			tubeR = getNumber(tubeTrans / (EFFECT_SPEED / 10));
+			tubeR = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
 #endif
 		}
 #endif

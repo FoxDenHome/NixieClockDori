@@ -11,23 +11,17 @@
 const uint16_t ALL_TUBES = (1 << 10) - 1; // Bitmask to enable all tubes
 const uint16_t NO_TUBES = 0;
 
-extern uint16_t dataToDisplay[6];
-
-#define setDotsConst setDots
-
 void displayInit();
 
 void displayAntiPoison(const unsigned long count);
 
 byte makeDotMask(const bool upper, const bool lower);
-void setDots(const bool upper, const bool lower);
-void setDotsMask(const byte mask);
 
 uint16_t getNumber(const byte idx);
 
-void insert1(const byte offset, const byte data, const bool trimLeadingZero);
-bool insert2(const byte offset, const byte data, const bool trimLeadingZero);
-bool showShortTime(const unsigned long timeMs, bool trimLZ);
+void insert1(const byte offset, const byte data, const bool trimLeadingZero, uint16_t dataToDisplay[]);
+bool insert2(const byte offset, const byte data, const bool trimLeadingZero, uint16_t dataToDisplay[]);
+bool showShortTime(const unsigned long timeMs, bool trimLZ, uint16_t dataToDisplay[], byte *dotMask);
 
 #endif
 
