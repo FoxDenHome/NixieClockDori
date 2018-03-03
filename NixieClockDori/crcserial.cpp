@@ -2,6 +2,7 @@
 #include "crcserial.h"
 
 FastCRC16 crc;
+String inputString;
 String inputChecksum;
 
 #define stringCRC(str) crc.ccitt((const uint8_t*)str.c_str(), str.length())
