@@ -60,7 +60,7 @@ bool serialReadNext() {
     int computedCRC = stringCRC(inputString);
     int receivedCRC = inputChecksum.toInt();
     if (computedCRC != receivedCRC) {
-      serialSend("> BADCRC " + String(computedCRC) + " " + String(receivedCRC) + " " + inputString);  
+      serialSend("> BADCRC " + String(computedCRC) + " " + String(receivedCRC) + " " + inputString);
       return false;
     }
     serialSend("> OK " + inputString);
