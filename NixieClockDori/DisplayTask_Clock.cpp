@@ -16,8 +16,8 @@ bool DisplayTask_Clock::render(const unsigned long microDelta, uint16_t dataToDi
 	if (s % 2) {
 		*dotMask = makeDotMask(true, true);
 	}
-	else
-		*dotMask = makeDotMask(false, false); {
+	else {
+		*dotMask = makeDotMask(false, false);
 	}
 
 #ifdef CLOCK_TRIM_HOURS
