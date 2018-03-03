@@ -5,30 +5,30 @@
 #include <arduino.h>
 
 class DisplayTask {
-  public:
-    bool canShow();
-    virtual const bool isLoPri();
+public:
+	bool canShow();
+	virtual const bool isLoPri();
 
-    // Returns true if change-effects should show
-    virtual bool render(const Task* renderTask) = 0;
+	// Returns true if change-effects should show
+	virtual bool render(const Task* renderTask) = 0;
 
-    void add();
-    void remove();
+	void add();
+	void remove();
 
-    static DisplayTask* findNextValid(DisplayTask *dt_current);
+	static DisplayTask* findNextValid(DisplayTask *dt_current);
 
-    byte red, green, blue;
+	byte red, green, blue;
 
-    // Internal use only!
-  protected:
-    virtual const bool _removeOnCantShow();
-    virtual const bool _canShow();
+	// Internal use only!
+protected:
+	virtual const bool _removeOnCantShow();
+	virtual const bool _canShow();
 
-  private:
-    static DisplayTask* _findNextValid(DisplayTask *curPtr, DisplayTask *stopOn);
-    DisplayTask *next;
-    DisplayTask *prev;
-    bool isAdded;
+private:
+	static DisplayTask* _findNextValid(DisplayTask *curPtr, DisplayTask *stopOn);
+	DisplayTask *next;
+	DisplayTask *prev;
+	bool isAdded;
 };
 
 #endif
