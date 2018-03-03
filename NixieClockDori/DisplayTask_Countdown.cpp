@@ -7,15 +7,15 @@ const bool DisplayTask_Countdown::_canShow() {
 	return this->to != 0;
 }
 
-bool DisplayTask_Countdown::render(const unsigned long microDelta, uint16_t dataToDisplay[], byte *dotMask) {
+bool DisplayTask_Countdown::render(const unsigned long microDelta) {
 	const unsigned long curMillis = millis();
 	if (this->to < curMillis) {
 		const uint16_t sym = (second() % 2) ? NO_TUBES : getNumber(0);
 		for (byte i = 0; i < 6; i++) {
-			dataToDisplay[i] = sym;
+			this->dataToDisplay[i] = sym;
 		}
 		return false;
 	}
-	return showShortTime(this->to - curMillis, true, dataToDisplay, dotMask);
+	return showShortTime(this->to - curMillis, true, this->dataToDisplay, &this->dotMask);
 }
 

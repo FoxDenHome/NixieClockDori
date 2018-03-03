@@ -5,12 +5,7 @@ const bool DisplayTask_Flash::_canShow() {
 	return this->endTime > 0 && millis() < this->endTime;
 }
 
-bool DisplayTask_Flash::render(const unsigned long microDelta, uint16_t dataToDisplay[], byte *dotMask) {
-	for (byte idx = 0; idx < 6; idx++) {
-		dataToDisplay[idx] = this->symbols[idx];
-	}
-	*dotMask = this->dotsMask;
-
+bool DisplayTask_Flash::render(const unsigned long microDelta) {
 	return true;
 }
 
