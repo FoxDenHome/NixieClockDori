@@ -260,23 +260,3 @@ byte hexInputToByte(const byte offset) {
 	const byte lsn = inputString[offset + 1];
 	return (hexCharToNum(msn) << 4) + hexCharToNum(lsn);
 }
-
-void displaySelfTest() {
-	serialSend(F("< Start LED Test"));
-
-	setDotsConst(true, true);
-
-	analogWrite(PIN_LED_RED, 255);
-	delay(1000);
-	analogWrite(PIN_LED_RED, 0);
-	analogWrite(PIN_LED_GREEN, 255);
-	delay(1000);
-	analogWrite(PIN_LED_GREEN, 0);
-	analogWrite(PIN_LED_BLUE, 255);
-	delay(1000);
-	analogWrite(PIN_LED_BLUE, 0);
-
-	serialSend(F("< Stop LED Test"));
-
-	displayAntiPoison(2);
-}
