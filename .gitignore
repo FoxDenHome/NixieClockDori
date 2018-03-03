@@ -1,3 +1,7 @@
 *.tmp
-__pycache__
+.vs
+__pycache__/
 *.pyc
+__vm/
+Debug/
+Release/

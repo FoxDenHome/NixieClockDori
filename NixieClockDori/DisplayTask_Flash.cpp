@@ -10,5 +10,7 @@ bool DisplayTask_Flash::render(const Task* renderTask) {
     dataToDisplay[idx] = this->symbols[idx];
   }
   dotMask = this->dotsMask;
+
+  return true;
 }
 
