@@ -13,11 +13,13 @@ void serialInit() {
   inputString.reserve(32);
 }
 
+#define _serialSendNext(str) Serial.print(str); crcCalc = stringCRCUpdate(str);
+#define _serialSendFirst(str) uint16_t crcCalc; Serial.print('^'); Serial.print(str); crcCalc = stringCRC(str);
+#define _serialSendEnd() Serial.print('|'); Serial.println(String(crcCalc));
+
 void serialSend(const String data) {
-  Serial.print('^');
-  Serial.print(data);
-  Serial.print('|');
-  Serial.println(String(stringCRC(data)));
+  _serialSendFirst(data);
+  _serialSendEnd();
 }
 
 bool serialReadNext() {
@@ -54,13 +56,21 @@ bool serialReadNext() {
   if (inChar == '\n') {
     receivedStart = false;
     if (!inChecksum) {
-      serialSend("> NOCRC " + inputString);
+      _serialSendFirst(String(F("> NOCRC ")));
+      _serialSendNext(inputString);
+      _serialSendEnd();
       return false;
     }
     int computedCRC = stringCRC(inputString);
     int receivedCRC = inputChecksum.toInt();
     if (computedCRC != receivedCRC) {
-      serialSend("> BADCRC " + String(computedCRC) + " " + String(receivedCRC) + " " + inputString);
+      _serialSendFirst(String(F("> BADCRC ")));
+      _serialSendNext(String(computedCRC));
+      _serialSendNext(String(" "));
+      _serialSendNext(String(receivedCRC));
+      _serialSendNext(String(" "));
+      _serialSendNext(inputString);
+      _serialSendEnd();
       return false;
     }
     serialSend("> OK " + inputString);
