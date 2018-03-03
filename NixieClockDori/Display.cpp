@@ -1,5 +1,7 @@
 #include "Display.h"
+#include "DisplayTask.h"
 #include "const.h"
+#include <SPI.h>
 
 #ifdef EFFECT_ENABLED
 byte dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
@@ -58,3 +60,99 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero) {
 	return data == 0;
 }
 
+void displayTriggerEffects() {
+#ifdef EFFECT_ENABLED
+	bool hasEffects = false;
+	for (byte i = 0; i < 6; i++) {
+		if (dataToDisplayOld[i] != dataToDisplay[i]) {
+			dataToDisplayOld[i] = dataToDisplay[i];
+			dataIsTransitioning[i] = EFFECT_SPEED;
+			hasEffects = true;
+		}
+	}
+#endif
+}
+
+void displayEffectsUpdate(const unsigned long microDelta) {
+#ifdef EFFECT_ENABLED
+	const unsigned long milliDelta = microDelta / 1000UL;
+	bool hadEffects = false;
+	for (byte i = 0; i < 6; i++) {
+		if (dataIsTransitioning[i] > milliDelta) {
+			dataIsTransitioning[i] -= milliDelta;
+			hadEffects = true;
+		}
+		else {
+			dataIsTransitioning[i] = 0;
+		}
+	}
+#endif
+}
+
+void renderNixies(Task *me) {
+	static byte anodeGroup = 0;
+
+	const unsigned long curMillis = millis();
+	uint16_t tubeL = INVALID_TUBES, tubeR = INVALID_TUBES;
+
+	const unsigned long microDelta = me->nowMicros - me->lastCallTimeMicros;
+
+	if (antiPoisonEnd > curMillis) {
+		const uint16_t sym = getNumber((antiPoisonEnd - curMillis) / ANTI_POISON_DELAY);
+		tubeL = sym;
+		tubeR = sym;
+		analogWrite(PIN_LED_RED, 0);
+		analogWrite(PIN_LED_GREEN, 0);
+		analogWrite(PIN_LED_BLUE, 0);
+	}
+	else if (DisplayTask::current) {
+		if (DisplayTask::current->render(microDelta)) {
+			displayTriggerEffects();
+		}
+		analogWrite(PIN_LED_RED, DisplayTask::current->red);
+		analogWrite(PIN_LED_GREEN, DisplayTask::current->green);
+		analogWrite(PIN_LED_BLUE, DisplayTask::current->blue);
+	}
+
+	displayEffectsUpdate(microDelta);
+
+	const byte curTubeL = anodeGroup << 1;
+	const byte curTubeR = curTubeL + 1;
+
+	if (tubeL == INVALID_TUBES) {
+		tubeL = dataToDisplay[curTubeL];
+#ifdef EFFECT_ENABLED
+		byte tubeTrans = dataIsTransitioning[curTubeL];
+		if (tubeTrans > 0) {
+#ifdef EFFECT_SLOT_MACHINE
+			tubeL = getNumber(tubeTrans / (EFFECT_SPEED / 10));
+#endif
+		}
+#endif
+	}
+
+	if (tubeR == INVALID_TUBES) {
+		tubeR = dataToDisplay[curTubeR];
+#ifdef EFFECT_ENABLED
+		byte tubeTrans = dataIsTransitioning[curTubeR];
+		if (tubeTrans > 0) {
+#ifdef EFFECT_SLOT_MACHINE
+			tubeR = getNumber(tubeTrans / (EFFECT_SPEED / 10));
+#endif
+		}
+#endif
+	}
+
+	digitalWrite(PIN_DISPLAY_LATCH, LOW);
+	SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE2));
+	SPI.transfer(dotMask);                            // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
+	SPI.transfer(tubeR >> 6 | 1 << (anodeGroup + 4)); // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes
+	SPI.transfer(tubeR << 2 | tubeL >> 8);            // [RC5][RC4][RC3][RC2][RC1][RC0][LC9][LC8] - RC9 - RC0 - Right tubes cathodes
+	SPI.transfer(tubeL);                              // [LC7][LC6][LC5][LC4][LC3][LC2][LC1][LC0] - LC9 - LC0 - Left tubes cathodes
+	SPI.endTransaction();
+	digitalWrite(PIN_DISPLAY_LATCH, HIGH);
+
+	if (++anodeGroup > 2) {
+		anodeGroup = 0;
+	}
+}
