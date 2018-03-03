@@ -7,6 +7,8 @@
 void renderNixies(Task *me);
 Task T_renderNixies(5, renderNixies);
 
+const uint16_t INVALID_TUBES = 10000;
+
 #ifdef EFFECT_ENABLED
 byte dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
 uint16_t dataToDisplayOld[6] = { INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES };
