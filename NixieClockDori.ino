@@ -1,6 +1,9 @@
 #include <SPI.h>
 #include <TimeLib.h>
-#include <DS1307RTC.h>
+
+#include <SoftTimer.h>
+#undef PREVENT_LOOP_ITERATION
+
 #include "rtc.h"
 #include "config.h"
 #include "crcserial.h"
@@ -51,18 +54,13 @@ uint16_t dataToDisplayOld[6] = {10000, 10000, 10000, 10000, 10000, 10000}; // 10
 uint16_t dataToDisplay[6] = {0, 0, 0, 0, 0, 0}; // This will be displayed on tubes
 byte dotMask;
 
-unsigned long holdDisplayUntil;
-bool colorSet;
-
 unsigned long holdColorStartTime, holdColorEaseInTarget, holdColorSteadyTarget, holdColorEaseOutTarget;
 byte setR, setG, setB;
 
 unsigned long antiPoisonEnd;
 
-bool stopwatchEnabled = false;
 bool stopwatchRunning = false;
-unsigned long prevMillis;
-unsigned long stopwatchTime, countdownTo;
+unsigned long stopwatchTime, countdownTo, holdDisplayUntil;
 
 /****************/
 /* PROGRAM CODE */
@@ -71,6 +69,29 @@ unsigned long stopwatchTime, countdownTo;
 /********************/
 /* FUNCTION ALIASES */
 /********************/
+
+void updateDisplayCountdown(Task *me);
+void updateDisplayStopwatch(Task *me);
+void updateDisplayAntiPoison(Task *me);
+void updateDisplayClock(Task *me);
+void updateColors(Task *me);
+void renderNixies(Task *me);
+void changeUpdater(Task *me);
+void serialReader(Task *me);
+
+Task T_updateDisplayCountdown(5, updateDisplayCountdown);
+Task T_updateDisplayStopwatch(5, updateDisplayStopwatch);
+Task T_updateDisplayAntiPoison(10, updateDisplayAntiPoison);
+Task T_updateDisplayClock(10, updateDisplayClock);
+Task T_updateColors(16, updateColors);
+Task T_renderNixies(5, renderNixies);
+Task T_changeUpdater(5000, changeUpdater);
+Task T_serialReader(0, serialReader);
+
+#ifdef EFFECT_ENABLED
+void displayEffectsUpdate(Task *me);
+Task T_displayEffectsUpdate(5, displayEffectsUpdate);
+#endif
 
 //#define setDotsC_false_false() { dotMask = MASK_BOTH_DOTS; }
 //#define setDotsC_true_false() { dotMask = MASK_LOWER_DOTS; }
@@ -114,13 +135,15 @@ void setup() {
 
   digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);
 
-  prevMillis = millis();
+  SoftTimer.add(&T_renderNixies);
+  SoftTimer.add(&T_serialReader);
+  SoftTimer.add(&T_changeUpdater);
+  changeUpdater(NULL);
+  
   serialSend(F("< Ready"));
 }
 
-void serialEvent() {
-  static bool receivedStart = false;
-
+void serialReader(Task *me) {
   while (Serial.available()) {
     if (!serialReadNext()) {
       continue;
@@ -152,18 +175,17 @@ void serialEvent() {
       // X
       // Performs a display reset of all modes
       case 'X':
-        holdDisplayUntil = 0;
         noColor();
-        stopwatchEnabled = false;
         stopwatchRunning = false;
         stopwatchTime = 0;
         countdownTo = 0;
+        changeUpdater(NULL);
         serialSend(F("X OK"));
         break;
       // P CC
       // C = Count (Dec)
       // Performs an anti poisoning routine <C> times
-      // P01
+      // ^P01|-20043
       case 'P':
         if (inputString.length() < 2) {
           serialSend(F("P BAD (Invalid length; expected 2)"));
@@ -176,7 +198,7 @@ void serialEvent() {
       // M = milliseconds (Dec), I = Ease-In (Dec), O = Ease-Out (Dec), R = Red (Hex), G = Green (Hex), B = Blue (Hex)
       // Shows a "flash"/"alert" color on the clock
       // If sent without any parameters, resets current flash color
-      // G000010000500050000FF00
+      // ^G000010000500050000FF00|-18506
       case 'G':
         if (inputString.length() < 23) {
           if (inputString.length() < 3) { // Allow for \r\n
@@ -195,18 +217,18 @@ void serialEvent() {
         setR = hexInputToByte(17);
         setG = hexInputToByte(19);
         setB = hexInputToByte(21);
-        colorSet = true;
+        SoftTimer.add(&T_updateColors);
         serialSend(F("G OK"));
         break;
       // F [MMMMMMMM D NNNNNN]
       // M = milliseconds (Dec), D = dots (Bitmask Dec) to show the message, N = Nixie message (Dec)
       // Shows a "flash"/"alert" message on the clock (will show this message instead of the time for <M> milliseconds. Does not use/reset hold when 0). Dots are bit 1 for lower and bit 2 for upper. Turned off when HIGH
       // If sent without any parameters, resets current flash message and goes back to clock mode
-      // F0000100021337NA
+      // ^F0000100021337NA|-15360
       case 'F':
         if (inputString.length() < 16) {
           if (inputString.length() < 3) { // Allow for \r\n
-            holdDisplayUntil = 0;
+            changeUpdater(NULL);
             serialSend(F("F OK"));
             break;
           }
@@ -214,7 +236,8 @@ void serialEvent() {
           break;
         }
 
-        holdDisplayUntil = millis() + (unsigned long)inputString.substring(1, 9).toInt();
+        holdDisplayUntil = millis() + (unsigned long)inputString.substring(1, 9).toInt(); // TODO
+        
         tmpData = inputString[9] - '0';
         setDots((tmpData & 2) == 2, (tmpData & 1) == 1);
         for (byte i = 0; i < 6; i++) {
@@ -230,27 +253,28 @@ void serialEvent() {
 
         antiPoisonEnd = 0;
 
+        changeUpdater(NULL);
         serialSend(F("F OK"));
         break;
       // C MMMMMMMM
       // M = Time in ms (Dec)
       // Starts a countdown for <M> ms. Stops countdown if <M> = 0
-      // C00010000
+      // ^C00010000|9735
+      // ^C|-26281
       case 'C':
         if (inputString.length() < 9) {
           countdownTo = 0;
         } else {
-          stopwatchEnabled = false;
-          stopwatchRunning = false;
-          stopwatchTime = 0;
           countdownTo = millis() + inputString.substring(1, 9).toInt();
         }
+        changeUpdater(NULL);
         serialSend(F("C OK"));
         break;
       // W C
       // C = subcommand
       // Controls the stopwatch. R for reset/disable, P for pause, U for un-pause, S for start/restart
-      // WS
+      // ^WS|-8015
+      // ^WR|-3952
       case 'W':
         if (inputString.length() < 2) {
           serialSend(F("W BAD (Invalid length; expected 2)"));
@@ -259,7 +283,6 @@ void serialEvent() {
         tmpData = true;
         switch (inputString[1]) {
           case 'R':
-            stopwatchEnabled = false;
             stopwatchRunning = false;
             stopwatchTime = 0;
             break;
@@ -270,10 +293,8 @@ void serialEvent() {
             stopwatchRunning = true;
             break;
           case 'S':
-            countdownTo = 0;
-            stopwatchEnabled = true;
             stopwatchRunning = true;
-            stopwatchTime = 0;
+            stopwatchTime = 1;
             break;
           default:
             tmpData = false;
@@ -281,104 +302,182 @@ void serialEvent() {
             break;
         }
         if (tmpData) {
+          changeUpdater(NULL);
           serialSend(F("W OK"));
         }
         break;
     }
-
-    inputString = "";
   }
 }
 
-void loop() {
-  bool displayDirty = false;
-  const unsigned long curMillis = millis();
-  const unsigned long milliDelta = (curMillis >= prevMillis) ? (curMillis - prevMillis) : 0;
-  prevMillis = curMillis;
-
-  // Handle color logic
-  if (colorSet) {
-    float factor = 1.0;
-    if (curMillis < holdColorEaseInTarget) {
-      factor = 1.0 - ((float)(holdColorEaseInTarget - curMillis) / (float)(holdColorEaseInTarget - holdColorStartTime));
-    } else if (curMillis > holdColorEaseOutTarget) {
-      colorSet = false;
-      factor = 0.0;
-    } else if (curMillis > holdColorSteadyTarget) {
-      factor = (float)(holdColorEaseOutTarget - curMillis) / (float)(holdColorEaseOutTarget - holdColorSteadyTarget);
+/********************/
+/* DISPLAY UPDATERS */
+/********************/
+byte nextTaskHiPri = 0;
+Task* getNextDisplayTaskHiPri(byte initialTask) {
+  do {
+    switch (nextTaskHiPri++) {
+      case 0:
+        if (stopwatchTime <= 0) {
+          break;
+        }
+        return &T_updateDisplayStopwatch;
+      case 1:
+        if (countdownTo <= 0) {
+          break;
+        }
+        return &T_updateDisplayCountdown;
+      default:
+        nextTaskHiPri = 0;
+        break;
     }
-    analogWrite(PIN_LED_RED, setR * factor);
-    analogWrite(PIN_LED_GREEN, setG * factor);
-    analogWrite(PIN_LED_BLUE, setB * factor);
+  } while(nextTaskHiPri != initialTask);
+  return NULL;
+}
+
+byte nextTaskLoPri = 0;
+Task* getNextDisplayTaskLoPri(byte initialTask) {
+  return &T_updateDisplayClock; // Currently, only clock present as LowPri
+}
+
+void changeUpdater(Task *me) {
+  static Task *lastTask;
+  Task *newTask;
+  if (holdDisplayUntil > millis() || antiPoisonEnd > millis()) {
+    if (lastTask) {
+      SoftTimer.remove(lastTask);
+      lastTask = NULL;
+    }
+    return;
   }
 
-  // Handle other stuff
-  if (stopwatchRunning) {
-    stopwatchTime += milliDelta;
+  newTask = getNextDisplayTaskHiPri(nextTaskHiPri);
+  if (!newTask) {
+    newTask = getNextDisplayTaskLoPri(nextTaskLoPri);
   }
 
-  // Handle "what to display" logic
-  if (antiPoisonEnd > curMillis) {
-    const uint16_t sym = getNumber((antiPoisonEnd - curMillis) / ANTI_POISON_DELAY);
-    for (byte i = 0; i < 6; i++) {
-      dataToDisplay[i] = sym;
-      dataIsTransitioning[i] = 0;
-    }
-    displayDirty = false;
-  } else if (holdDisplayUntil <= curMillis) {
-    holdDisplayUntil = curMillis + 10;
-    if (countdownTo > 0) {
-      if (countdownTo <= curMillis) {
-        displayDirty = showShortTime(0, true);
-      } else {
-        displayDirty = showShortTime(countdownTo - curMillis, true);
-      }
-    } else if (stopwatchEnabled) {
-      displayDirty = showShortTime(stopwatchTime, true);
-    } else {
-      const time_t _n = now();
-      const byte h = hour(_n);
-      const byte s = second(_n);
-
-      if (s % 2) {
-        setDotsConst(true, true);
-      } else {
-        setDotsConst(false, false);
-      }
-
-#ifdef CLOCK_TRIM_HOURS
-      insert1(0, h / 10, true);
-      insert1(1, h, false);
-#else
-      insert2(0, h, false);
-#endif
-      insert2(2, minute(_n), false);
-      insert2(4, s, false);
-
-      if (h < 4 && s % 5 == 2) {
-        displayAntiPoison(1);
-      }
-
-      displayDirty = true;
-    }
+  if (lastTask == newTask) {
+    return;
   }
+  if (lastTask) {
+    SoftTimer.remove(lastTask);
+  }
+  SoftTimer.add(newTask);
+  lastTask = newTask;
+}
 
+void displayTriggerEffects() {
 #ifdef EFFECT_ENABLED
+  bool hasEffects = false;
   for (byte i = 0; i < 6; i++) {
-    if (displayDirty && dataToDisplayOld[i] != dataToDisplay[i]) {
+    if (dataToDisplayOld[i] != dataToDisplay[i]) {
       dataToDisplayOld[i] = dataToDisplay[i];
       dataIsTransitioning[i] = EFFECT_SPEED;
-    } else if (dataIsTransitioning[i] > 0) {
-      if (dataIsTransitioning[i] > milliDelta) {
-        dataIsTransitioning[i] -= milliDelta;
-      } else {
-        dataIsTransitioning[i] = 0;
-      }
+      hasEffects = true;
     }
   }
+
+  if (hasEffects) {
+    SoftTimer.add(&T_displayEffectsUpdate);
+  }
+#endif
+}
+
+#ifdef EFFECT_ENABLED
+void displayEffectsUpdate(Task *me) {
+  const unsigned long milliDelta = (me->nowMicros - me->lastCallTimeMicros) / 1000UL;
+  bool hadEffects = false;
+  for (byte i = 0; i < 6; i++) {
+    if (dataIsTransitioning[i] > milliDelta) {
+      dataIsTransitioning[i] -= milliDelta;
+      hadEffects = true;
+    } else {
+      dataIsTransitioning[i] = 0;
+    }
+  }
+  if (!hadEffects) {
+    SoftTimer.remove(me);
+  }
+}
 #endif
 
-  renderNixies();
+void updateDisplayCountdown(Task *me) {
+  if (countdownTo < millis()) {
+    const uint16_t sym = (second() % 2) ? NO_TUBES : getNumber(0);
+    for (byte i = 0; i < 6; i++) {
+      dataToDisplay[i] = sym;
+    }
+    return;
+  }
+  if (showShortTime(countdownTo - millis(), true)) {
+    displayTriggerEffects();
+  }
+}
+
+void updateDisplayStopwatch(Task *me) {
+  if (stopwatchRunning) {
+    stopwatchTime += (me->nowMicros - me->lastCallTimeMicros) / 1000UL;
+  }
+
+  if (showShortTime(stopwatchTime, true)) {
+    displayTriggerEffects();
+  }
+}
+
+void updateDisplayAntiPoison(Task *me) {
+  if (antiPoisonEnd <= millis()) {
+    SoftTimer.remove(me);
+    changeUpdater(NULL);
+    return;
+  }
+  const uint16_t sym = getNumber((antiPoisonEnd - millis()) / ANTI_POISON_DELAY);
+  for (byte i = 0; i < 6; i++) {
+    dataToDisplay[i] = sym;
+    dataIsTransitioning[i] = 0;
+  }
+}
+
+void updateDisplayClock(Task *me) {
+  const time_t _n = now();
+  const byte h = hour(_n);
+  const byte s = second(_n);
+
+  if (s % 2) {
+    setDotsConst(true, true);
+  } else {
+    setDotsConst(false, false);
+  }
+
+#ifdef CLOCK_TRIM_HOURS
+  insert1(0, h / 10, true);
+  insert1(1, h, false);
+#else
+  insert2(0, h, false);
+#endif
+  insert2(2, minute(_n), false);
+  insert2(4, s, false);
+
+  if (h < 4 && s % 5 == 2) {
+    displayAntiPoison(1);
+    return;
+  }
+
+  displayTriggerEffects();
+}
+
+void updateColors(Task *me) {
+  float factor = 1.0;
+  if (millis() < holdColorEaseInTarget) {
+    factor = 1.0 - ((float)(holdColorEaseInTarget - millis()) / (float)(holdColorEaseInTarget - holdColorStartTime));
+  } else if (millis() > holdColorEaseOutTarget) {
+    SoftTimer.remove(me);
+    factor = 0.0;
+  } else if (millis() > holdColorSteadyTarget) {
+    factor = (float)(holdColorEaseOutTarget - millis()) / (float)(holdColorEaseOutTarget - holdColorSteadyTarget);
+  }
+  analogWrite(PIN_LED_RED, setR * factor);
+  analogWrite(PIN_LED_GREEN, setG * factor);
+  analogWrite(PIN_LED_BLUE, setB * factor);
 }
 
 /*********************/
@@ -400,14 +499,16 @@ void setDots(const bool upper, const bool lower) {
 }
 
 void noColor() {
-  colorSet = false;
   analogWrite(PIN_LED_RED, 0);
   analogWrite(PIN_LED_GREEN, 0);
   analogWrite(PIN_LED_BLUE, 0);
+  SoftTimer.remove(&T_updateColors);
 }
 
 void displayAntiPoison(const unsigned long count) {
   antiPoisonEnd = millis() + (ANTI_POISON_DELAY * 10UL * count);
+  changeUpdater(NULL);
+  SoftTimer.add(&T_updateDisplayAntiPoison);
 }
 
 bool showShortTime(const unsigned long timeMs, bool trimLZ) {
@@ -460,28 +561,8 @@ void displaySelfTest() {
   displayAntiPoison(2);
 }
 
-void renderNixies() {
+void renderNixies(Task *me) {
   static byte anodeGroup = 0;
-  static unsigned long lastTimeInterval1Started;
-
-  const unsigned long curMicros = micros();
-  if (curMicros >= lastTimeInterval1Started) {
-    const unsigned long timeSinceLastRender = curMicros - lastTimeInterval1Started;
-    if (timeSinceLastRender < DISPLAY_DELAY_MICROS) {
-#ifdef RENDER_USE_DELAY
-      delayMicroseconds(DISPLAY_DELAY_MICROS - timeSinceLastRender);
-#else // RENDER_USE_DELAY
-      return;
-#endif // RENDER_USE_DELAY
-    }
-  } else if (curMicros < DISPLAY_DELAY_MICROS) {
-#ifdef RENDER_USE_DELAY
-    delayMicroseconds(DISPLAY_DELAY_MICROS - curMicros);
-#else // RENDER_USE_DELAY
-    return;
-#endif // RENDER_USE_DELAY
-  }
-  lastTimeInterval1Started = curMicros;
 
   const byte curTubeL = anodeGroup << 1;
   const byte curTubeR = curTubeL + 1;
