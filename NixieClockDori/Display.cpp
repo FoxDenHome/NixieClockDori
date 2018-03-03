@@ -2,6 +2,10 @@
 #include "DisplayTask.h"
 #include "const.h"
 #include <SPI.h>
+#include <SoftTimer.h>
+
+void renderNixies(Task *me);
+Task T_renderNixies(5, renderNixies);
 
 #ifdef EFFECT_ENABLED
 byte dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
@@ -11,6 +15,10 @@ uint16_t dataToDisplay[6] = { 0, 0, 0, 0, 0, 0 }; // This will be displayed on t
 byte dotMask;
 
 unsigned long antiPoisonEnd = 0;
+
+void displayInit() {
+	SoftTimer.add(&T_renderNixies);
+}
 
 void displayAntiPoison(const unsigned long count) {
 	antiPoisonEnd = millis() + (ANTI_POISON_DELAY * 10UL * count);
