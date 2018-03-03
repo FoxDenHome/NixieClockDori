@@ -18,9 +18,9 @@
 /* PROGRAM CODE */
 /****************/
 
-/********************/
-/* FUNCTION ALIASES */
-/********************/
+/******************/
+/* TASK VARIABLES */
+/******************/
 
 void renderNixies(Task *me);
 void cycleDisplayUpdater(Task *me);
@@ -37,6 +37,7 @@ Task T_serialReader(0, serialReader);
 /**************************/
 /* ARDUINO EVENT HANDLERS */
 /**************************/
+
 void setup() {
 	// Pin setup
 	pinMode(PIN_HIGH_VOLTAGE_ENABLE, OUTPUT);
@@ -254,6 +255,7 @@ void cycleDisplayUpdater(Task *me) {
 /*********************/
 /* UTILITY FUNCTIONS */
 /*********************/
+
 #define hexCharToNum(c) ((c <= '9') ? c - '0' : c - '7')
 byte hexInputToByte(const byte offset) {
 	const byte msn = inputString[offset];
