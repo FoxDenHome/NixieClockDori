@@ -31,7 +31,6 @@ DisplayTask_Stopwatch displayStopwatch;
 DisplayTask_Countdown displayCountdown;
 DisplayTask_Flash displayFlash;
 
-Task T_renderNixies(5, renderNixies);
 Task T_cycleDisplayUpdater(5000, cycleDisplayUpdater);
 Task T_serialReader(0, serialReader);
 
@@ -66,16 +65,16 @@ void setup() {
 	// Begin initialization routines
 	serialInit();
 	rtcInit();
+	displayInit();
 
-	digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);
-
-	SoftTimer.add(&T_renderNixies);
 	SoftTimer.add(&T_serialReader);
 	SoftTimer.add(&T_cycleDisplayUpdater);
 
 	displayClock.add();
 
 	cycleDisplayUpdater(NULL);
+
+	digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);
 
 	serialSend(F("< Ready"));
 }

@@ -2,7 +2,6 @@
 #define _DISPLAY_H_INCLUDED
 
 #include <arduino.h>
-#include <SoftTimer.h>
 
 #include "config.h"
 #ifdef EFFECT_SLOT_MACHINE
@@ -27,6 +26,9 @@ extern byte dotMask;
 #define setDotsConst setDots
 
 extern unsigned long antiPoisonEnd;
+
+void displayInit();
+
 void displayAntiPoison(const unsigned long count);
 
 byte makeDotMask(const bool upper, const bool lower);
@@ -37,7 +39,6 @@ uint16_t getNumber(const byte idx);
 void insert1(const byte offset, const byte data, const bool trimLeadingZero);
 bool insert2(const byte offset, const byte data, const bool trimLeadingZero);
 bool showShortTime(const unsigned long timeMs, bool trimLZ);
-void renderNixies(Task *me);
 
 #endif
 
