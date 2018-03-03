@@ -5,12 +5,12 @@ const bool DisplayTask_Stopwatch::_canShow() {
 	return this->time > 0;
 }
 
-bool DisplayTask_Stopwatch::render(const unsigned long microDelta, uint16_t dataToDisplay[], byte *dotMask) {
+bool DisplayTask_Stopwatch::render(const unsigned long microDelta) {
 	if (this->running) {
 		this->time += microDelta / 1000UL;
 	}
 
-	return showShortTime(this->time, true, dataToDisplay, dotMask);
+	return showShortTime(this->time, true, this->dataToDisplay, &this->dotMask);
 }
 
 void DisplayTask_Stopwatch::reset() {

@@ -69,13 +69,14 @@ void renderNixies(Task *me) {
 	static unsigned long dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
 	static uint16_t dataToDisplayOld[6] = { INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES };
 #endif
-	static uint16_t dataToDisplayCurrent[6] = { 0, 0, 0, 0, 0, 0 };
 
 	static byte anodeGroup = 0;
-	byte dotMask = 0;
+	const byte curTubeL = anodeGroup << 1;
+	const byte curTubeR = curTubeL + 1;
 
 	const unsigned long curMillis = millis();
-	uint16_t tubeL = INVALID_TUBES, tubeR = INVALID_TUBES;
+	uint16_t tubeL = 0, tubeR = 0;
+	byte dotMask = 0;
 
 	const unsigned long microDelta = me->nowMicros - me->lastCallTimeMicros;
 
@@ -88,15 +89,14 @@ void renderNixies(Task *me) {
 		analogWrite(PIN_LED_BLUE, 0);
 	}
 	else if (DisplayTask::current) {
-		if (DisplayTask::current->render(microDelta, dataToDisplayCurrent, &dotMask)) {
+		if (DisplayTask::current->render(microDelta)) {
 			// Start necessary effects (when display changed)
 #ifdef EFFECT_ENABLED
-			bool hasEffects = false;
 			for (byte i = 0; i < 6; i++) {
-				if (dataToDisplayOld[i] != dataToDisplayCurrent[i]) {
-					dataToDisplayOld[i] = dataToDisplayCurrent[i];
+				const uint16_t cur = DisplayTask::current->dataToDisplay[i];
+				if (dataToDisplayOld[i] != cur) {
+					dataToDisplayOld[i] = cur;
 					dataIsTransitioning[i] = EFFECT_SPEED;
-					hasEffects = true;
 				}
 			}
 #endif
@@ -104,48 +104,36 @@ void renderNixies(Task *me) {
 		analogWrite(PIN_LED_RED, DisplayTask::current->red);
 		analogWrite(PIN_LED_GREEN, DisplayTask::current->green);
 		analogWrite(PIN_LED_BLUE, DisplayTask::current->blue);
+		tubeL = DisplayTask::current->dataToDisplay[curTubeL];
+		tubeR = DisplayTask::current->dataToDisplay[curTubeR];
+		dotMask = DisplayTask::current->dotMask;
 	}
 
 	// Progress through effect
 #ifdef EFFECT_ENABLED
-	bool hadEffects = false;
 	for (byte i = 0; i < 6; i++) {
 		if (dataIsTransitioning[i] > microDelta) {
 			dataIsTransitioning[i] -= microDelta;
-			hadEffects = true;
 		}
 		else {
 			dataIsTransitioning[i] = 0;
 		}
 	}
-#endif
 
-	const byte curTubeL = anodeGroup << 1;
-	const byte curTubeR = curTubeL + 1;
-
-	if (tubeL == INVALID_TUBES) {
-		tubeL = dataToDisplayCurrent[curTubeL];
-#ifdef EFFECT_ENABLED
-		unsigned long tubeTrans = dataIsTransitioning[curTubeL];
-		if (tubeTrans > 0) {
+	unsigned long tubeTrans = dataIsTransitioning[curTubeL];
+	if (tubeTrans > 0) {
 #ifdef EFFECT_SLOT_MACHINE
-			tubeL = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
-#endif
-		}
+		tubeL = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
 #endif
 	}
 
-	if (tubeR == INVALID_TUBES) {
-		tubeR = dataToDisplayCurrent[curTubeR];
-#ifdef EFFECT_ENABLED
-		unsigned long tubeTrans = dataIsTransitioning[curTubeR];
-		if (tubeTrans > 0) {
+	tubeTrans = dataIsTransitioning[curTubeR];
+	if (tubeTrans > 0) {
 #ifdef EFFECT_SLOT_MACHINE
-			tubeR = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
-#endif
-		}
+		tubeR = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
 #endif
 	}
+#endif
 
 	digitalWrite(PIN_DISPLAY_LATCH, LOW);
 	SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE2));
