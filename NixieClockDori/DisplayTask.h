@@ -1,6 +1,7 @@
 #ifndef _DISPLAYTASK_H_INCLUDED
 #define _DISPLAYTASK_H_INCLUDED
 
+#include "Display.h"
 #include <SoftTimer.h>
 #include <arduino.h>
 
@@ -18,7 +19,7 @@ public:
 	static DisplayTask* findNextValid(DisplayTask *dt_current);
 
 	byte red, green, blue;
-	uint16_t dataToDisplay[6] = { 0, 0, 0, 0, 0 };
+	uint16_t dataToDisplay[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
 	byte dotMask;
 
 	static DisplayTask *current;

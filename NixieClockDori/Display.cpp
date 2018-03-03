@@ -7,8 +7,6 @@
 void renderNixies(Task *me);
 Task T_renderNixies(5, renderNixies);
 
-const uint16_t INVALID_TUBES = 10000;
-
 const byte MASK_UPPER_DOTS = 1;
 const byte MASK_LOWER_DOTS = 2;
 const byte MASK_BOTH_DOTS = MASK_UPPER_DOTS | MASK_LOWER_DOTS;
@@ -67,7 +65,7 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero, uin
 void renderNixies(Task *me) {
 #ifdef EFFECT_ENABLED
 	static unsigned long dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
-	static uint16_t dataToDisplayOld[6] = { INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES };
+	static uint16_t dataToDisplayOld[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
 #endif
 
 	static byte anodeGroup = 0;
