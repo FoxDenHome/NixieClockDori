@@ -6,6 +6,8 @@ DisplayTask *dt_last_lo;
 DisplayTask *dt_first_hi;
 DisplayTask *dt_last_hi;
 
+DisplayTask* DisplayTask::current;
+
 DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopOn) {
 	if (!curPtr) {
 		return NULL;

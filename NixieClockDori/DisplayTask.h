@@ -18,8 +18,8 @@ public:
 	static DisplayTask* findNextValid(DisplayTask *dt_current);
 
 	byte red, green, blue;
+	static DisplayTask *current;
 
-	// Internal use only!
 protected:
 	virtual const bool _removeOnCantShow();
 	virtual const bool _canShow();
