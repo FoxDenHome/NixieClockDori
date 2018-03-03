@@ -23,7 +23,7 @@
 /********************/
 
 void renderNixies(Task *me);
-void changeUpdater(Task *me);
+void cycleDisplayUpdater(Task *me);
 void serialReader(Task *me);
 
 DisplayTask_Clock displayClock;
@@ -34,7 +34,7 @@ DisplayTask_Flash displayFlash;
 DisplayTask* displayUpdateTask;
 
 Task T_renderNixies(5, renderNixies);
-Task T_changeUpdater(5000, changeUpdater);
+Task T_cycleDisplayUpdater(5000, cycleDisplayUpdater);
 Task T_serialReader(0, serialReader);
 
 /**************************/
@@ -73,11 +73,11 @@ void setup() {
 
 	SoftTimer.add(&T_renderNixies);
 	SoftTimer.add(&T_serialReader);
-	SoftTimer.add(&T_changeUpdater);
+	SoftTimer.add(&T_cycleDisplayUpdater);
 
 	displayClock.add();
 
-	changeUpdater(NULL);
+	cycleDisplayUpdater(NULL);
 
 	serialSend(F("< Ready"));
 }
@@ -117,8 +117,8 @@ void serialReader(Task *me) {
 			displayCountdown.to = 0;
 			displayStopwatch.reset();
 			if (!displayUpdateTask->canShow()) {
-				changeUpdater(NULL);
-				T_changeUpdater.lastCallTimeMicros = micros();
+				cycleDisplayUpdater(NULL);
+				T_cycleDisplayUpdater.lastCallTimeMicros = micros();
 			}
 			serialSend(F("X OK"));
 			break;
@@ -142,7 +142,7 @@ void serialReader(Task *me) {
 		case 'F':
 			if (inputString.length() < 16) {
 				if (inputString.length() < 3) { // Allow for \r\n
-					changeUpdater(NULL);
+					cycleDisplayUpdater(NULL);
 					serialSend(F("F OK"));
 					break;
 				}
@@ -242,15 +242,15 @@ void showIfPossibleOtherwiseRotateIfCurrent(DisplayTask *displayTask) {
 		displayUpdateTask = displayTask;
 	}
 	else if (displayTask == displayUpdateTask) {
-		changeUpdater(NULL);
+		cycleDisplayUpdater(NULL);
 	}
 	else {
 		return;
 	}
-	T_changeUpdater.lastCallTimeMicros = micros();
+	T_cycleDisplayUpdater.lastCallTimeMicros = micros();
 }
 
-void changeUpdater(Task *me) {
+void cycleDisplayUpdater(Task *me) {
 	displayUpdateTask = DisplayTask::findNextValid(displayUpdateTask);
 }
 
