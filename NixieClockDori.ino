@@ -67,6 +67,22 @@ unsigned long stopwatchTime, countdownTo;
 /****************/
 /* PROGRAM CODE */
 /****************/
+
+/********************/
+/* FUNCTION ALIASES */
+/********************/
+
+//#define setDotsC_false_false() { dotMask = MASK_BOTH_DOTS; }
+//#define setDotsC_true_false() { dotMask = MASK_LOWER_DOTS; }
+//#define setDotsC_false_true() { dotMask = MASK_UPPER_DOTS; }
+//#define setDotsC_true_true() { dotMask = 0; }
+//#define setDotsC_conc(upper, lower) setDotsC_##upper##_##lower
+//#define setDotsConst(upper, lower) setDotsC_conc(upper, lower)()
+#define setDotsConst setDots
+
+/**************************/
+/* ARDUINO EVENT HANDLERS */
+/**************************/
 void setup() {
   // Pin setup
   pinMode(PIN_HIGH_VOLTAGE_ENABLE, OUTPUT);
@@ -274,39 +290,6 @@ void serialEvent() {
   }
 }
 
-#define hexCharToNum(c) ((c <= '9') ? c - '0' : c - '7')
-byte hexInputToByte(const byte offset) {
-  const byte msn = inputString[offset];
-  const byte lsn = inputString[offset + 1];
-  return (hexCharToNum(msn) << 4) + hexCharToNum(lsn);
-}
-
-uint16_t getNumber(const byte idx) {
-  return 1 << (idx % 10);
-}
-
-//#define setDotsC_false_false() { dotMask = MASK_BOTH_DOTS; }
-//#define setDotsC_true_false() { dotMask = MASK_LOWER_DOTS; }
-//#define setDotsC_false_true() { dotMask = MASK_UPPER_DOTS; }
-//#define setDotsC_true_true() { dotMask = 0; }
-//#define setDotsC_conc(upper, lower) setDotsC_##upper##_##lower
-//#define setDotsConst(upper, lower) setDotsC_conc(upper, lower)()
-#define setDotsConst setDots
-void setDots(const bool upper, const bool lower) {
-  dotMask = (upper ? 0 : MASK_UPPER_DOTS) | (lower ? 0 : MASK_LOWER_DOTS);
-}
-
-void noColor() {
-  colorSet = false;
-  analogWrite(PIN_LED_RED, 0);
-  analogWrite(PIN_LED_GREEN, 0);
-  analogWrite(PIN_LED_BLUE, 0);
-}
-
-void displayAntiPoison(const unsigned long count) {
-  antiPoisonEnd = millis() + (ANTI_POISON_DELAY * 10UL * count);
-}
-
 void loop() {
   bool displayDirty = false;
   const unsigned long curMillis = millis();
@@ -385,7 +368,7 @@ void loop() {
     if (displayDirty && dataToDisplayOld[i] != dataToDisplay[i]) {
       dataToDisplayOld[i] = dataToDisplay[i];
       dataIsTransitioning[i] = EFFECT_SPEED;
-    } else if(dataIsTransitioning[i] > 0) {
+    } else if (dataIsTransitioning[i] > 0) {
       if (dataIsTransitioning[i] > milliDelta) {
         dataIsTransitioning[i] -= milliDelta;
       } else {
@@ -396,6 +379,35 @@ void loop() {
 #endif
 
   renderNixies();
+}
+
+/*********************/
+/* UTILITY FUNCTIONS */
+/*********************/
+#define hexCharToNum(c) ((c <= '9') ? c - '0' : c - '7')
+byte hexInputToByte(const byte offset) {
+  const byte msn = inputString[offset];
+  const byte lsn = inputString[offset + 1];
+  return (hexCharToNum(msn) << 4) + hexCharToNum(lsn);
+}
+
+uint16_t getNumber(const byte idx) {
+  return 1 << (idx % 10);
+}
+
+void setDots(const bool upper, const bool lower) {
+  dotMask = (upper ? 0 : MASK_UPPER_DOTS) | (lower ? 0 : MASK_LOWER_DOTS);
+}
+
+void noColor() {
+  colorSet = false;
+  analogWrite(PIN_LED_RED, 0);
+  analogWrite(PIN_LED_GREEN, 0);
+  analogWrite(PIN_LED_BLUE, 0);
+}
+
+void displayAntiPoison(const unsigned long count) {
+  antiPoisonEnd = millis() + (ANTI_POISON_DELAY * 10UL * count);
 }
 
 bool showShortTime(const unsigned long timeMs, bool trimLZ) {
