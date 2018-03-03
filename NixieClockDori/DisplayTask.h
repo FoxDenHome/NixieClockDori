@@ -10,7 +10,7 @@ public:
 	virtual const bool isLoPri();
 
 	// Returns true if change-effects should show
-	virtual bool render(const Task* renderTask) = 0;
+	virtual bool render(const unsigned long microDelta) = 0;
 
 	void add();
 	void remove();

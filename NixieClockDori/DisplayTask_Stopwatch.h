@@ -5,7 +5,7 @@
 
 class DisplayTask_Stopwatch : public DisplayTask {
 public:
-	bool render(const Task* renderTask) override;
+	bool render(const unsigned long microDelta) override;
 
 	void pause();
 	void resume();
