@@ -218,6 +218,10 @@ void serialReader(Task *me) {
 				serialSend(F("W OK"));
 			}
 			break;
+			// ^D|-5712
+		case 'D':
+			serialSend("D OK " + String(me->nowMicros - me->lastCallTimeMicros));
+			break;
 		}
 	}
 }
