@@ -9,7 +9,7 @@ bool DisplayTask_Flash::render(const unsigned long microDelta) {
 	for (byte idx = 0; idx < 6; idx++) {
 		dataToDisplay[idx] = this->symbols[idx];
 	}
-	dotMask = this->dotsMask;
+	setDotsMask(this->dotsMask);
 
 	return true;
 }
