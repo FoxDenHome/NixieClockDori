@@ -14,6 +14,10 @@ uint16_t dataToDisplayOld[6] = { INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, IN
 uint16_t dataToDisplay[6] = { 0, 0, 0, 0, 0, 0 }; // This will be displayed on tubes
 byte dotMask;
 
+const byte MASK_UPPER_DOTS = 1;
+const byte MASK_LOWER_DOTS = 2;
+const byte MASK_BOTH_DOTS = MASK_UPPER_DOTS | MASK_LOWER_DOTS;
+
 unsigned long antiPoisonEnd = 0;
 
 void displayInit() {
@@ -32,8 +36,12 @@ byte makeDotMask(const bool upper, const bool lower) {
 	return (upper ? 0 : MASK_UPPER_DOTS) | (lower ? 0 : MASK_LOWER_DOTS);
 }
 
+void setDotsMask(const byte mask) {
+	dotMask = mask;
+}
+
 void setDots(const bool upper, const bool lower) {
-	dotMask = makeDotMask(upper, lower);
+	setDotsMask(makeDotMask(upper, lower));
 }
 
 bool showShortTime(const unsigned long timeMs, bool trimLZ) {
