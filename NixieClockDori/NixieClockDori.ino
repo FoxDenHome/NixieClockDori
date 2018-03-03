@@ -267,9 +267,9 @@ void displayTriggerEffects() {
 #endif
 }
 
-void displayEffectsUpdate(Task *me) {
+void displayEffectsUpdate(const unsigned long microDelta) {
 #ifdef EFFECT_ENABLED
-	const unsigned long milliDelta = (me->nowMicros - me->lastCallTimeMicros) / 1000UL;
+	const unsigned long milliDelta = microDelta / 1000UL;
 	bool hadEffects = false;
 	for (byte i = 0; i < 6; i++) {
 		if (dataIsTransitioning[i] > milliDelta) {
@@ -319,6 +319,8 @@ void renderNixies(Task *me) {
 	const unsigned long curMillis = millis();
 	uint16_t tubeL = INVALID_TUBES, tubeR = INVALID_TUBES;
 
+	const unsigned long microDelta = me->nowMicros - me->lastCallTimeMicros;
+
 	if (antiPoisonEnd > curMillis) {
 		const uint16_t sym = getNumber((antiPoisonEnd - curMillis) / ANTI_POISON_DELAY);
 		tubeL = sym;
@@ -327,7 +329,7 @@ void renderNixies(Task *me) {
 		analogWrite(PIN_LED_GREEN, 0);
 		analogWrite(PIN_LED_BLUE, 0);
 	} else if (displayUpdateTask) {
-		if (displayUpdateTask->render(me)) {
+		if (displayUpdateTask->render(microDelta)) {
 			displayTriggerEffects();
 		}
 		analogWrite(PIN_LED_RED, displayUpdateTask->red);
@@ -335,7 +337,7 @@ void renderNixies(Task *me) {
 		analogWrite(PIN_LED_BLUE, displayUpdateTask->blue);
 	}
 
-	displayEffectsUpdate(me);
+	displayEffectsUpdate(microDelta);
 
 	const byte curTubeL = anodeGroup << 1;
 	const byte curTubeR = curTubeL + 1;

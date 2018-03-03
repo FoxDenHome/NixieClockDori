@@ -5,9 +5,9 @@ const bool DisplayTask_Stopwatch::_canShow() {
 	return this->time > 0;
 }
 
-bool DisplayTask_Stopwatch::render(const Task* renderTask) {
+bool DisplayTask_Stopwatch::render(const unsigned long microDelta) {
 	if (this->running) {
-		this->time += (renderTask->nowMicros - renderTask->lastCallTimeMicros) / 1000UL;
+		this->time += microDelta / 1000UL;
 	}
 
 	return showShortTime(this->time, true);
