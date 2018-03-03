@@ -2,32 +2,32 @@
 #include "Display.h"
 
 const bool DisplayTask_Stopwatch::_canShow() {
-  return this->time > 0;
+	return this->time > 0;
 }
 
 bool DisplayTask_Stopwatch::render(const Task* renderTask) {
-  if (this->running) {
-    this->time += (renderTask->nowMicros - renderTask->lastCallTimeMicros) / 1000UL;
-  }
+	if (this->running) {
+		this->time += (renderTask->nowMicros - renderTask->lastCallTimeMicros) / 1000UL;
+	}
 
-  return showShortTime(this->time, true);
+	return showShortTime(this->time, true);
 }
 
 void DisplayTask_Stopwatch::reset() {
-  this->time = 0;
-  this->running = false;
+	this->time = 0;
+	this->running = false;
 }
 
 void DisplayTask_Stopwatch::pause() {
-  this->running = false;
+	this->running = false;
 }
 
 void DisplayTask_Stopwatch::resume() {
-  this->running = true;
+	this->running = true;
 }
 
 void DisplayTask_Stopwatch::start() {
-  this->time = 1;
-  this->running = true;
+	this->time = 1;
+	this->running = true;
 }
 

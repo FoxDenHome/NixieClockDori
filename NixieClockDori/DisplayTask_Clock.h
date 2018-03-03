@@ -4,9 +4,9 @@
 #include "DisplayTask.h"
 
 class DisplayTask_Clock : public DisplayTask {
-  public:
-    const bool isLoPri() override;
-    bool render(const Task* renderTask) override;
+public:
+	const bool isLoPri() override;
+	bool render(const Task* renderTask) override;
 };
 
 #endif

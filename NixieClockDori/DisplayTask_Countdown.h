@@ -4,11 +4,11 @@
 #include "DisplayTask.h"
 
 class DisplayTask_Countdown : public DisplayTask {
-  public:
-    bool render(const Task* renderTask) override;
-    unsigned long to;
-  protected:
-    const bool _canShow() override;
+public:
+	bool render(const Task* renderTask) override;
+	unsigned long to;
+protected:
+	const bool _canShow() override;
 };
 
 #endif

@@ -4,20 +4,20 @@
 #include "DisplayTask.h"
 
 class DisplayTask_Stopwatch : public DisplayTask {
-  public:
-    bool render(const Task* renderTask) override;
+public:
+	bool render(const Task* renderTask) override;
 
-    void pause();
-    void resume();
-    void reset();
-    void start();
+	void pause();
+	void resume();
+	void reset();
+	void start();
 
-  protected:
-    const bool _canShow() override;
+protected:
+	const bool _canShow() override;
 
-  private:
-    bool running;
-    unsigned long time;
+private:
+	bool running;
+	unsigned long time;
 };
 
 #endif
