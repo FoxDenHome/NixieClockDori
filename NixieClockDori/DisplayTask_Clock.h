@@ -6,7 +6,7 @@
 class DisplayTask_Clock : public DisplayTask {
 public:
 	const bool isLoPri() override;
-	bool render(const unsigned long microDelta) override;
+	bool render(const unsigned long microDelta, uint16_t dataToDisplay[], byte *dotMask) override;
 };
 
 #endif
