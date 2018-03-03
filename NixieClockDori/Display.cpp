@@ -23,6 +23,7 @@ const byte MASK_BOTH_DOTS = MASK_UPPER_DOTS | MASK_LOWER_DOTS;
 unsigned long antiPoisonEnd = 0;
 
 void displayInit() {
+	SPI.begin();
 	SoftTimer.add(&T_renderNixies);
 }
 
