@@ -60,9 +60,6 @@ void setup() {
 	pinMode(PIN_BUTTON_UP, INPUT_PULLUP);
 	pinMode(PIN_BUTTON_DOWN, INPUT_PULLUP);
 
-	// Lib setup
-	SPI.begin();
-
 	// Begin initialization routines
 	serialInit();
 	rtcInit();
