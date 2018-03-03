@@ -23,12 +23,6 @@ extern uint16_t dataToDisplayOld[6];
 extern uint16_t dataToDisplay[6];
 extern byte dotMask;
 
-//#define setDotsC_false_false() { dotMask = MASK_BOTH_DOTS; }
-//#define setDotsC_true_false() { dotMask = MASK_LOWER_DOTS; }
-//#define setDotsC_false_true() { dotMask = MASK_UPPER_DOTS; }
-//#define setDotsC_true_true() { dotMask = 0; }
-//#define setDotsC_conc(upper, lower) setDotsC_##upper##_##lower
-//#define setDotsConst(upper, lower) setDotsC_conc(upper, lower)()
 #define setDotsConst setDots
 
 extern unsigned long antiPoisonEnd;
