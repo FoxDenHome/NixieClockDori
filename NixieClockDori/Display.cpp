@@ -221,7 +221,10 @@ void displayLoop(const unsigned long curMicros) {
 
 	if (nextDisplayRender <= curMicros) {
 #ifdef DISPLAY_BLANK_PERIOD
+		renderNixiesInt(blankNext);
 		if (blankNext) {
+#else
+		renderNixiesInt();
 #endif
 			if (++anodeGroup > 2) {
 				anodeGroup = 0;
@@ -230,11 +233,9 @@ void displayLoop(const unsigned long curMicros) {
 			}
 #ifdef DISPLAY_BLANK_PERIOD
 		}
-		renderNixiesInt(blankNext);
 		blankNext = !blankNext;
 		nextDisplayRender = curMicros + (blankNext ? DISPLAY_RENDER_PERIOD : DISPLAY_BLANK_PERIOD);
 #else
-		renderNixiesInt();
 		nextDisplayRender = curMicros + DISPLAY_RENDER_PERIOD;
 #endif
 	}
