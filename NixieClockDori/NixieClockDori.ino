@@ -233,6 +233,15 @@ void serialEvent() {
 	}
 }
 
+void cycleDisplayUpdater() {
+	DisplayTask::current = DisplayTask::findNextValid(DisplayTask::current);
+	nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
+}
+
+/*********************/
+/* UTILITY FUNCTIONS */
+/*********************/
+
 void setColorFromInput(DisplayTask *displayTask, const byte offset) {
 	if (inputString.length() < offset + 6) {
 		return;
@@ -255,15 +264,6 @@ void showIfPossibleOtherwiseRotateIfCurrent(DisplayTask *displayTask) {
 		return;
 	}
 }
-
-void cycleDisplayUpdater() {
-	DisplayTask::current = DisplayTask::findNextValid(DisplayTask::current);
-	nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
-}
-
-/*********************/
-/* UTILITY FUNCTIONS */
-/*********************/
 
 #define hexCharToNum(c) ((c <= '9') ? c - '0' : c - '7')
 byte hexInputToByte(const byte offset) {
