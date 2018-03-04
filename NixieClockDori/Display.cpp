@@ -139,34 +139,40 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 			allTubesOld = true;
 		}
 
+		byte redNow = redOld, greenNow = greenOld, blueNow = blueOld;
+
+		if (colorTransProg > 0 && allowEffects && colorTransProg > microDelta) {
+			colorTransProg -= microDelta;
+			redNow = redOld + (((redPrevious - redOld) * colorTransProg) / EFFECT_SPEED);
+			greenNow = greenOld + (((greenPrevious - greenOld) * colorTransProg) / EFFECT_SPEED);
+			blueNow = blueOld + (((bluePrevious - blueOld) * colorTransProg) / EFFECT_SPEED);
+			analogWrite(PIN_LED_RED, redNow);
+			analogWrite(PIN_LED_GREEN, greenNow);
+			analogWrite(PIN_LED_BLUE, blueNow);
+		}
+		else if (colorTransProg >= 0) {
+			colorTransProg = -1;
+			analogWrite(PIN_LED_RED, redNow);
+			analogWrite(PIN_LED_GREEN, greenNow);
+			analogWrite(PIN_LED_BLUE, blueNow);
+		}
+
 		if (DisplayTask::current->red != redOld) {
-			redPrevious = redOld;
+			redPrevious = redNow;
 			redOld = DisplayTask::current->red;
 			colorTransProg = EFFECT_SPEED;
 		}
 		if (DisplayTask::current->green != greenOld) {
-			greenPrevious = greenOld;
+			greenPrevious = greenNow;
 			greenOld = DisplayTask::current->green;
 			colorTransProg = EFFECT_SPEED;
 		}
 		if (DisplayTask::current->blue != blueOld) {
-			bluePrevious = blueOld;
+			bluePrevious = blueNow;
 			blueOld = DisplayTask::current->blue;
 			colorTransProg = EFFECT_SPEED;
 		}
 
-		if (colorTransProg > 0 && allowEffects && colorTransProg > microDelta) {
-			colorTransProg -= microDelta;
-			analogWrite(PIN_LED_RED, redOld + (((redPrevious - redOld) * colorTransProg) / EFFECT_SPEED));
-			analogWrite(PIN_LED_GREEN, greenOld + (((greenPrevious - greenOld) * colorTransProg) / EFFECT_SPEED));
-			analogWrite(PIN_LED_BLUE, blueOld + (((bluePrevious - blueOld) * colorTransProg) / EFFECT_SPEED));
-		}
-		else if (colorTransProg >= 0) {
-			colorTransProg = -1;
-			analogWrite(PIN_LED_RED, redOld);
-			analogWrite(PIN_LED_GREEN, greenOld);
-			analogWrite(PIN_LED_BLUE, blueOld);
-		}
 #else
 		if (DisplayTask::current->red != redOld) {
 			redOld = DisplayTask::current->red;
