@@ -226,7 +226,7 @@ void serialReader(Task *me) {
 		case 'D':
 			serialSendFirst(F("D OK "));
 			serialSendNext(String(me->nowMicros - me->lastCallTimeMicros));
-			serialSendNext(F(" "));
+			serialSendNext(" ");
 			serialSendNext(String(mu_freeRam()));
 			serialSendEnd();
 			break;
