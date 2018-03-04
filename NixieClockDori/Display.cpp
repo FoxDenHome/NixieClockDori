@@ -59,11 +59,11 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero, uin
 	return data == 0;
 }
 
-#ifdef DISPLAY_BLANK_PERIOD
-void renderNixies(const boolean blank, const unsigned long curMicros, const unsigned long microDelta) {
-#else
+byte anodeGroup = 0;
+uint16_t tubeL = 0, tubeR = 0;
+byte dotMask = 0;
+
 void renderNixies(const unsigned long curMicros, const unsigned long microDelta) {
-#endif
 	static byte oldAntiPoisonIdx = 255;
 	static uint16_t antiPoisonTable[6];
 	static uint16_t antiPoisonOld[6];
@@ -76,12 +76,10 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 	static long colorTransProg;
 #endif
 
-	static byte anodeGroup = 0;
 	const byte curTubeL = anodeGroup << 1;
 	const byte curTubeR = curTubeL + 1;
 
 	const unsigned long curMillis = millis();
-	uint16_t tubeL = 0, tubeR = 0;
 	byte dotMask = 0;
 
 	if (antiPoisonEnd > curMillis) {
@@ -145,7 +143,8 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 #endif
 			}
 			allTubesOld = false;
-		} else {
+		}
+		else {
 			allTubesOld = true;
 		}
 
@@ -197,12 +196,10 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 		}
 	}
 #endif
+}
 
-#ifdef DISPLAY_BLANK_PERIOD
+void renderNixiesInt(bool blank) {
 	const byte anodeControl = blank ? 0 : 1 << (anodeGroup + 4);
-#else
-	const byte anodeControl = 1 << (anodeGroup + 4);
-#endif
 
 	digitalWrite(PIN_DISPLAY_LATCH, LOW);
 	SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE2));
@@ -213,11 +210,9 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 	SPI.endTransaction();
 	digitalWrite(PIN_DISPLAY_LATCH, HIGH);
 
-#ifdef DISPLAY_BLANK_PERIOD
 	if (blank) {
 		return;
 	}
-#endif
 
 	if (++anodeGroup > 2) {
 		anodeGroup = 0;
@@ -230,13 +225,11 @@ void displayInit() {
 
 void displayLoop(const unsigned long curMicros) {
 	if (nextDisplayRender <= curMicros) {
-#ifdef DISPLAY_BLANK_PERIOD
-		renderNixies(blankNext, curMicros, curMicros - (nextDisplayRender - (blankNext ? DISPLAY_RENDER_PERIOD : DISPLAY_BLANK_PERIOD)));
+		if (blankNext) {
+			renderNixies(curMicros, curMicros - (nextDisplayRender - (blankNext ? DISPLAY_RENDER_PERIOD : DISPLAY_BLANK_PERIOD)));
+		}
+		renderNixiesInt(blankNext);
 		blankNext = !blankNext;
 		nextDisplayRender = curMicros + (blankNext ? DISPLAY_RENDER_PERIOD : DISPLAY_BLANK_PERIOD);
-#else
-		renderNixies(curMicros, curMicros - (nextDisplayRender - DISPLAY_RENDER_PERIOD)));
-		nextDisplayRender = curMicros + DISPLAY_RENDER_PERIOD;
-#endif
 	}
 }
