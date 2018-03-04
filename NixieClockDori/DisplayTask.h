@@ -2,7 +2,6 @@
 #define _DISPLAYTASK_H_INCLUDED
 
 #include "Display.h"
-#include <SoftTimer.h>
 #include <arduino.h>
 
 class DisplayTask {
@@ -10,7 +9,7 @@ public:
 	bool canShow();
 
 	// Returns true if change-effects should show
-	virtual bool render(const unsigned long microDelta) = 0;
+	virtual bool render() = 0;
 
 	void add();
 	void remove();

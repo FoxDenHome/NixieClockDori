@@ -1,6 +1,5 @@
 #include <SPI.h>
 #include <TimeLib.h>
-#include <SoftTimer.h>
 #include <MemoryUsage.h>
 
 #include "rtc.h"
@@ -23,17 +22,14 @@
 /* TASK VARIABLES */
 /******************/
 
-void renderNixies(Task *me);
-void cycleDisplayUpdater(Task *me);
-void serialReader(Task *me);
-
 DisplayTask_Clock displayClock;
 DisplayTask_Stopwatch displayStopwatch;
 DisplayTask_Countdown displayCountdown;
 DisplayTask_Flash displayFlash;
 
-Task T_cycleDisplayUpdater(5000, cycleDisplayUpdater);
-Task T_serialReader(0, serialReader);
+const unsigned long DISPLAY_CYCLE_PERIOD = 5000000;
+
+unsigned long nextDisplayCycleMicros = 0;
 
 /**************************/
 /* ARDUINO EVENT HANDLERS */
@@ -68,20 +64,25 @@ void setup() {
 
 	randomSeed(analogRead(A3) + now());
 
-	SoftTimer.add(&T_serialReader);
-	SoftTimer.add(&T_cycleDisplayUpdater);
-
 	displayClock.loPri = true;
 	displayClock.add();
 
-	cycleDisplayUpdater(NULL);
+	cycleDisplayUpdater();
 
 	digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);
 
 	serialSendSimple(F("< Ready"));
 }
 
-void serialReader(Task *me) {
+void loop() {
+	const unsigned long curMicros = micros();
+	displayLoop(curMicros);
+	if (nextDisplayCycleMicros <= curMicros) {
+		cycleDisplayUpdater();
+	}
+}
+
+void serialEvent() {
 	while (Serial.available()) {
 		if (!serialReadNext()) {
 			continue;
@@ -116,8 +117,7 @@ void serialReader(Task *me) {
 			displayCountdown.to = 0;
 			displayStopwatch.reset();
 			if (!DisplayTask::current->canShow()) {
-				cycleDisplayUpdater(NULL);
-				T_cycleDisplayUpdater.lastCallTimeMicros = micros();
+				cycleDisplayUpdater();
 			}
 			serialSendSimple(F("X OK"));
 			break;
@@ -141,7 +141,7 @@ void serialReader(Task *me) {
 		case 'F':
 			if (inputString.length() < 16) {
 				if (inputString.length() < 3) { // Allow for \r\n
-					cycleDisplayUpdater(NULL);
+					cycleDisplayUpdater();
 					serialSendSimple(F("F OK"));
 					break;
 				}
@@ -225,8 +225,6 @@ void serialReader(Task *me) {
 			// ^D|-5712
 		case 'D':
 			serialSendFirst(F("D OK "));
-			serialSendNext(String(me->nowMicros - me->lastCallTimeMicros));
-			serialSendNext(" ");
 			serialSendNext(String(mu_freeRam()));
 			serialSendEnd();
 			break;
@@ -247,18 +245,19 @@ void showIfPossibleOtherwiseRotateIfCurrent(DisplayTask *displayTask) {
 	if (displayTask->canShow()) {
 		displayTask->add();
 		DisplayTask::current = displayTask;
+		nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
 	}
 	else if (displayTask == DisplayTask::current) {
-		cycleDisplayUpdater(NULL);
+		cycleDisplayUpdater();
 	}
 	else {
 		return;
 	}
-	T_cycleDisplayUpdater.lastCallTimeMicros = micros();
 }
 
-void cycleDisplayUpdater(Task *me) {
+void cycleDisplayUpdater() {
 	DisplayTask::current = DisplayTask::findNextValid(DisplayTask::current);
+	nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
 }
 
 /*********************/

@@ -5,7 +5,7 @@
 
 class DisplayTask_Clock : public DisplayTask {
 public:
-	bool render(const unsigned long microDelta) override;
+	bool render() override;
 };
 
 #endif

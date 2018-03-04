@@ -4,7 +4,7 @@
 
 #include <TimeLib.h>
 
-bool DisplayTask_Clock::render(const unsigned long microDelta) {
+bool DisplayTask_Clock::render() {
 	const time_t _n = now();
 	const byte h = hour(_n);
 	const byte s = second(_n);
