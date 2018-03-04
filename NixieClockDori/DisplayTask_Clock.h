@@ -6,6 +6,8 @@
 class DisplayTask_Clock : public DisplayTask {
 public:
 	bool render() override;
+private:
+	byte h, m, s;
 };
 
 #endif
