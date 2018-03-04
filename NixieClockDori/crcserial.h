@@ -7,9 +7,9 @@ extern String inputString;
 
 void serialInit();
 
-void serialSendSimple(const String data);
-void serialSendFirst(const String str);
-void serialSendNext(const String str);
+void serialSendSimple(const String &str);
+void serialSendFirst(const String &str);
+void serialSendNext(const String &str);
 void serialSendEnd();
 
 bool serialReadNext();
