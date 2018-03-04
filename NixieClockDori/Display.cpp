@@ -67,11 +67,12 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 	static byte oldAntiPoisonIdx = 255;
 	static uint16_t antiPoisonTable[6];
 
+	static byte redOld, greenOld, blueOld;
 #ifdef EFFECT_ENABLED
 	static unsigned long dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
 	static boolean allTubesOld = true;
 	static uint16_t dataToDisplayOld[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
-	static byte redOld, greenOld, blueOld, redPrevious, greenPrevious, bluePrevious;
+	static byte redPrevious, greenPrevious, bluePrevious;
 	static long colorTransProg;
 #endif
 
@@ -119,7 +120,7 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 					}
 				}
 			}
-			
+
 			for (byte i = 0; i < 6; i++) {
 				unsigned long tubeTrans = dataIsTransitioning[i];
 				if (tubeTrans > 0) {
@@ -167,9 +168,18 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 			analogWrite(PIN_LED_BLUE, blueOld);
 		}
 #else
-		analogWrite(PIN_LED_RED, DisplayTask::current->red);
-		analogWrite(PIN_LED_GREEN, DisplayTask::current->green);
-		analogWrite(PIN_LED_BLUE, DisplayTask::current->blue);
+		if (DisplayTask::current->red != redOld) {
+			redOld = DisplayTask::current->red;
+			analogWrite(PIN_LED_RED, redOld);
+		}
+		if (DisplayTask::current->green != greenOld) {
+			greenOld = DisplayTask::current->green;
+			analogWrite(PIN_LED_GREEN, greenOld);
+		}
+		if (DisplayTask::current->blue != blueOld) {
+			blueOld = DisplayTask::current->blue;
+			analogWrite(PIN_LED_BLUE, blueOld);
+		}
 #endif
 
 		dotMask = DisplayTask::current->dotMask;
