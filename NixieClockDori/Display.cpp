@@ -12,6 +12,7 @@ unsigned long antiPoisonEnd = 0;
 unsigned long nextDisplayRender = 0;
 
 uint16_t displayData[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
+
 byte dotMask = 0;
 byte anodeGroup = 9;
 
@@ -100,36 +101,16 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 		}
 	}
 	else if (DisplayTask::current) {
-		const boolean doRender = DisplayTask::current->nextRender <= curMicros;
-
-		boolean allowEffects = true;
-		if (doRender) {
-			DisplayTask::current->nextRender = curMicros + DisplayTask::current->renderPeriodMicros;
-			allowEffects = DisplayTask::current->render();
-		}
+		const boolean allowEffects = DisplayTask::current->refresh(displayData);
 
 #ifdef EFFECT_ENABLED
 		if (allowEffects) {
 			// Start necessary effects (when display changed)
-			if (doRender) {
-				for (byte i = 0; i < 6; i++) {
-					const uint16_t cur = DisplayTask::current->dataToDisplay[i];
-					if (dataToDisplayOld[i] != cur || allTubesOld) {
-						dataToDisplayOld[i] = cur;
-						dataIsTransitioning[i] = EFFECT_SPEED;
-					}
-				}
-			}
-
 			for (byte i = 0; i < 6; i++) {
-				unsigned long tubeTrans = dataIsTransitioning[i];
-				if (tubeTrans > 0) {
-#ifdef EFFECT_SLOT_MACHINE
-					displayData[i] = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
-#endif
-				}
-				else {
-					displayData[i] = DisplayTask::current->dataToDisplay[i];
+				const uint16_t cur = displayData[i];
+				if (dataToDisplayOld[i] != cur || allTubesOld) {
+					dataToDisplayOld[i] = cur;
+					dataIsTransitioning[i] = EFFECT_SPEED;
 				}
 			}
 
@@ -194,10 +175,16 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 	// Progress through effect
 #ifdef EFFECT_ENABLED
 	for (byte i = 0; i < 6; i++) {
-		if (dataIsTransitioning[i] > microDelta) {
+		const unsigned long tubeTrans = dataIsTransitioning[i];
+
+		if (tubeTrans > microDelta) {
+#ifdef EFFECT_SLOT_MACHINE
+			displayData[i] = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
+#endif
 			dataIsTransitioning[i] -= microDelta;
 		}
-		else {
+		else if (tubeTrans > 0) {
+			displayData[i] = dataToDisplayOld[i];
 			dataIsTransitioning[i] = 0;
 		}
 	}
@@ -232,13 +219,13 @@ void displayInit() {
 	SPI.begin();
 }
 
-void displayLoop(const unsigned long curMicros) {
+bool displayLoop(const unsigned long curMicros) {
 	static unsigned long lastRenderTime = 0;
 
 	if (nextDisplayRender <= curMicros) {
 #ifdef DISPLAY_BLANK_PERIOD
 		renderNixiesInt(blankNext);
-		if (blankNext) {
+		if (!blankNext) {
 #else
 		renderNixiesInt();
 #endif
@@ -249,10 +236,13 @@ void displayLoop(const unsigned long curMicros) {
 			}
 #ifdef DISPLAY_BLANK_PERIOD
 		}
+
 		blankNext = !blankNext;
 		nextDisplayRender = curMicros + (blankNext ? DISPLAY_RENDER_PERIOD : DISPLAY_BLANK_PERIOD);
 #else
 		nextDisplayRender = curMicros + DISPLAY_RENDER_PERIOD;
 #endif
 	}
+
+	return blankNext;
 }

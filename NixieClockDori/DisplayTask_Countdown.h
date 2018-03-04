@@ -5,8 +5,7 @@
 
 class DisplayTask_Countdown : public DisplayTask {
 public:
-	DisplayTask_Countdown();
-	bool render() override;
+	bool refresh(uint16_t displayData[]) override;
 	unsigned long to;
 protected:
 	const bool _canShow() override;

@@ -5,7 +5,7 @@
 
 class DisplayTask_Clock : public DisplayTask {
 public:
-	bool render() override;
+	bool refresh(uint16_t displayData[]) override;
 private:
 	byte h, m, s;
 };
