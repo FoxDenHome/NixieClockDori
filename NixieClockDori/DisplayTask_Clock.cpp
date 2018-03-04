@@ -31,7 +31,6 @@ bool DisplayTask_Clock::render(const unsigned long microDelta) {
 
 	if (h < 4 && s % 5 == 2) {
 		displayAntiPoison(1);
-		return false;
 	}
 
 	return true;
