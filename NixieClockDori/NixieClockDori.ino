@@ -1,6 +1,7 @@
 #include <SPI.h>
 #include <TimeLib.h>
 #include <SoftTimer.h>
+#include <MemoryUsage.h>
 
 #include "rtc.h"
 #include "config.h"
@@ -220,7 +221,7 @@ void serialReader(Task *me) {
 			break;
 			// ^D|-5712
 		case 'D':
-			serialSend("D OK " + String(me->nowMicros - me->lastCallTimeMicros));
+			serialSend("D OK " + String(me->nowMicros - me->lastCallTimeMicros) + " " + String(mu_freeRam()));
 			break;
 		}
 	}
