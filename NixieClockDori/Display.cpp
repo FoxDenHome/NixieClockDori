@@ -198,8 +198,13 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 #endif
 }
 
+#ifdef DISPLAY_BLANK_PERIOD
 void renderNixiesInt(bool blank) {
 	const byte anodeControl = blank ? 0 : 1 << (anodeGroup + 4);
+#else
+void renderNixiesInt() {
+	const byte anodeControl = 1 << (anodeGroup + 4);
+#endif
 
 	digitalWrite(PIN_DISPLAY_LATCH, LOW);
 	SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE2));
@@ -210,9 +215,11 @@ void renderNixiesInt(bool blank) {
 	SPI.endTransaction();
 	digitalWrite(PIN_DISPLAY_LATCH, HIGH);
 
+#ifdef DISPLAY_BLANK_PERIOD
 	if (blank) {
 		return;
 	}
+#endif
 
 	if (++anodeGroup > 2) {
 		anodeGroup = 0;
@@ -225,11 +232,17 @@ void displayInit() {
 
 void displayLoop(const unsigned long curMicros) {
 	if (nextDisplayRender <= curMicros) {
+#ifdef DISPLAY_BLANK_PERIOD
 		if (blankNext) {
 			renderNixies(curMicros, curMicros - (nextDisplayRender - (blankNext ? DISPLAY_RENDER_PERIOD : DISPLAY_BLANK_PERIOD)));
 		}
 		renderNixiesInt(blankNext);
 		blankNext = !blankNext;
 		nextDisplayRender = curMicros + (blankNext ? DISPLAY_RENDER_PERIOD : DISPLAY_BLANK_PERIOD);
+#else
+		renderNixies(curMicros, curMicros - (nextDisplayRender - DISPLAY_RENDER_PERIOD));
+		renderNixiesInt();
+		nextDisplayRender = curMicros + DISPLAY_RENDER_PERIOD;
+#endif
 	}
 }
