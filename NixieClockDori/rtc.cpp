@@ -18,7 +18,7 @@ void rtcSetTime(tmElements_t& tm) {
 void rtcInit() {
 	const time_t prevT = RTC.get();
 	if (!RTC.chipPresent()) {
-		serialSend(F("< Warning! RTC NOT ON BOARD!"));
+		serialSendSimple(F("< Warning! RTC NOT ON BOARD!"));
 		return;
 	}
 
@@ -30,7 +30,7 @@ void rtcInit() {
 		}
 		delay(100);
 		if (RTC.get() <= 5) {
-			serialSend(F("< Warning! RTC ZERO!"));
+			serialSendSimple(F("< Warning! RTC ZERO!"));
 			return;
 		}
 	}

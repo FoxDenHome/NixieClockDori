@@ -14,13 +14,23 @@ void serialInit() {
 	inputString.reserve(32);
 }
 
-#define _serialSendNext(str) Serial.print(str); crcCalc = stringCRCUpdate(str);
-#define _serialSendFirst(str) uint16_t crcCalc; Serial.print('^'); Serial.print(str); crcCalc = stringCRC(str);
-#define _serialSendEnd() Serial.print('|'); Serial.println(String(crcCalc));
-
-void serialSend(const String data) {
-	_serialSendFirst(data);
-	_serialSendEnd();
+uint16_t crcCalc;
+void serialSendFirst(String str) {
+	Serial.print('^');
+	Serial.print(str);
+	crcCalc = stringCRC(str);
+}
+void serialSendNext(String str) {
+	Serial.print(str);
+	crcCalc = stringCRCUpdate(str);
+}
+void serialSendEnd() {
+	Serial.print('|');
+	Serial.println(String(crcCalc));
+}
+void serialSendSimple(const String data) {
+	serialSendFirst(data);
+	serialSendEnd();
 }
 
 bool serialReadNext() {
@@ -47,7 +57,7 @@ bool serialReadNext() {
 	if (inChar == '|') {
 		if (inChecksum) {
 			receivedStart = false;
-			serialSend(F("< Double checksum delimiter. Buffer reset."));
+			serialSendSimple(F("< Double checksum delimiter. Buffer reset."));
 			return false;
 		}
 		inChecksum = true;
@@ -57,24 +67,26 @@ bool serialReadNext() {
 	if (inChar == '\n') {
 		receivedStart = false;
 		if (!inChecksum) {
-			_serialSendFirst(String(F("> NOCRC ")));
-			_serialSendNext(inputString);
-			_serialSendEnd();
+			serialSendFirst(F("> NOCRC "));
+			serialSendNext(inputString);
+			serialSendEnd();
 			return false;
 		}
 		int computedCRC = stringCRC(inputString);
 		int receivedCRC = inputChecksum.toInt();
 		if (computedCRC != receivedCRC) {
-			_serialSendFirst(String(F("> BADCRC ")));
-			_serialSendNext(String(computedCRC));
-			_serialSendNext(String(" "));
-			_serialSendNext(String(receivedCRC));
-			_serialSendNext(String(" "));
-			_serialSendNext(inputString);
-			_serialSendEnd();
+			serialSendFirst(F("> BADCRC "));
+			serialSendNext(String(computedCRC));
+			serialSendNext(" ");
+			serialSendNext(String(receivedCRC));
+			serialSendNext(" ");
+			serialSendNext(inputString);
+			serialSendEnd();
 			return false;
 		}
-		serialSend("> OK " + inputString);
+		serialSendFirst(F("> OK "));
+		serialSendNext(inputString);
+		serialSendEnd();
 		return true;
 	}
 
@@ -86,7 +98,7 @@ bool serialReadNext() {
 	}
 	if (inputString.length() >= 30) {
 		receivedStart = false;
-		serialSend(F("< Serial line too long. Buffer reset."));
+		serialSendSimple(F("< Serial line too long. Buffer reset."));
 	}
 	return false;
 }

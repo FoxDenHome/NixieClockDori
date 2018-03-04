@@ -78,7 +78,7 @@ void setup() {
 
 	digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);
 
-	serialSend(F("< Ready"));
+	serialSendSimple(F("< Ready"));
 }
 
 void serialReader(Task *me) {
@@ -96,7 +96,7 @@ void serialReader(Task *me) {
 			// T1756300103180
 		case 'T':
 			if (inputString.length() < 14) {
-				serialSend(F("T BAD (Invalid length; expected 16)"));
+				serialSendSimple(F("T BAD (Invalid length; expected 16)"));
 				break;
 			}
 			tmElements_t tm;
@@ -108,7 +108,7 @@ void serialReader(Task *me) {
 			tm.Year = inputString.substring(11, 13).toInt();
 			tm.Wday = inputString.substring(13, 14).toInt();
 			rtcSetTime(tm);
-			serialSend(F("T OK"));
+			serialSendSimple(F("T OK"));
 			break;
 			// X
 			// Performs a display reset of all modes
@@ -119,7 +119,7 @@ void serialReader(Task *me) {
 				cycleDisplayUpdater(NULL);
 				T_cycleDisplayUpdater.lastCallTimeMicros = micros();
 			}
-			serialSend(F("X OK"));
+			serialSendSimple(F("X OK"));
 			break;
 			// P CC
 			// C = Count (Dec)
@@ -127,11 +127,11 @@ void serialReader(Task *me) {
 			// ^P01|-20043
 		case 'P':
 			if (inputString.length() < 2) {
-				serialSend(F("P BAD (Invalid length; expected 2)"));
+				serialSendSimple(F("P BAD (Invalid length; expected 2)"));
 				break;
 			}
 			displayAntiPoison(inputString.substring(1, 3).toInt());
-			serialSend(F("P OK"));
+			serialSendSimple(F("P OK"));
 			break;
 			// F [MMMMMMMM D NNNNNN [RR GG BB]]
 			// M = milliseconds (Dec), D = dots (Bitmask Dec) to show the message, N = Nixie message (Dec), R = Red (Hex), G = Green (Hex), B = Blue (Hex)
@@ -142,10 +142,10 @@ void serialReader(Task *me) {
 			if (inputString.length() < 16) {
 				if (inputString.length() < 3) { // Allow for \r\n
 					cycleDisplayUpdater(NULL);
-					serialSend(F("F OK"));
+					serialSendSimple(F("F OK"));
 					break;
 				}
-				serialSend(F("F BAD (Invalid length; expected 16 or 1)"));
+				serialSendSimple(F("F BAD (Invalid length; expected 16 or 1)"));
 				break;
 			}
 
@@ -169,7 +169,7 @@ void serialReader(Task *me) {
 			setColorFromInput(&displayFlash, 16);
 			showIfPossibleOtherwiseRotateIfCurrent(&displayFlash);
 
-			serialSend(F("F OK"));
+			serialSendSimple(F("F OK"));
 			break;
 			// C [MMMMMMMM [RR GG BB]]
 			// M = Time in ms (Dec), R = Red (Hex), G = Green (Hex), B = Blue (Hex)
@@ -185,7 +185,7 @@ void serialReader(Task *me) {
 			}
 			setColorFromInput(&displayCountdown, 9);
 			showIfPossibleOtherwiseRotateIfCurrent(&displayCountdown);
-			serialSend(F("C OK"));
+			serialSendSimple(F("C OK"));
 			break;
 			// W C [RR GG BB]
 			// C = subcommand, R = Red (Hex), G = Green (Hex), B = Blue (Hex)
@@ -194,7 +194,7 @@ void serialReader(Task *me) {
 			// ^WR|-3952
 		case 'W':
 			if (inputString.length() < 2) {
-				serialSend(F("W BAD (Invalid length; expected 2)"));
+				serialSendSimple(F("W BAD (Invalid length; expected 2)"));
 				break;
 			}
 			setColorFromInput(&displayStopwatch, 2);
@@ -219,12 +219,16 @@ void serialReader(Task *me) {
 			}
 			if (tmpData) {
 				showIfPossibleOtherwiseRotateIfCurrent(&displayStopwatch);
-				serialSend(F("W OK"));
+				serialSendSimple(F("W OK"));
 			}
 			break;
 			// ^D|-5712
 		case 'D':
-			serialSend("D OK " + String(me->nowMicros - me->lastCallTimeMicros) + " " + String(mu_freeRam()));
+			serialSendFirst(F("D OK"));
+			serialSendNext(String(me->nowMicros - me->lastCallTimeMicros));
+			serialSendNext(F(" "));
+			serialSendNext(String(mu_freeRam()));
+			serialSendEnd();
 			break;
 		}
 	}

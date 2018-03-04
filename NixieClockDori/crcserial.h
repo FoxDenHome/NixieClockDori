@@ -6,7 +6,12 @@
 extern String inputString;
 
 void serialInit();
-void serialSend(const String data);
+
+void serialSendSimple(const String data);
+void serialSendFirst(const String str);
+void serialSendNext(const String str);
+void serialSendEnd();
+
 bool serialReadNext();
 
 #endif // _CRCSERIAL_H_INCLUDED
