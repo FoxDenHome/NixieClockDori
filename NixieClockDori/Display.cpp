@@ -99,6 +99,9 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 			}
 			oldAntiPoisonIdx = idx;
 		}
+		else {
+			return;
+		}
 	}
 	else if (DisplayTask::current) {
 		const boolean allowEffects = DisplayTask::current->refresh(displayDataBack);
