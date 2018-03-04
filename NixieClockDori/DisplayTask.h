@@ -8,8 +8,7 @@ class DisplayTask {
 public:
 	bool canShow();
 
-	// Returns true if change-effects should show
-	virtual bool render() = 0;
+	virtual bool refresh(uint16_t displayData[]) = 0;
 
 	void add();
 	void remove();
@@ -17,13 +16,10 @@ public:
 	static DisplayTask* findNextValid(DisplayTask *dt_current);
 
 	byte red, green, blue;
-	uint16_t dataToDisplay[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
 	byte dotMask;
 
 	bool loPri = false;
 	bool removeOnCantShow = true;
-	unsigned long renderPeriodMicros = 50000;
-	unsigned long nextRender = 0;
 
 	static DisplayTask *current;
 

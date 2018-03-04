@@ -3,23 +3,20 @@
 
 #include <TimeLib.h>
 
-DisplayTask_Countdown::DisplayTask_Countdown() {
-	this->renderPeriodMicros = 500;
-}
-
 const bool DisplayTask_Countdown::_canShow() {
 	return this->to != 0;
 }
 
-bool DisplayTask_Countdown::render() {
+bool DisplayTask_Countdown::refresh(uint16_t displayData[]) {
 	const unsigned long curMillis = millis();
+
 	if (this->to < curMillis) {
-		const uint16_t sym = (second() % 2) ? NO_TUBES : getNumber(0);
+		const uint16_t osym = (second() % 2) ? NO_TUBES : getNumber(0);
 		for (byte i = 0; i < 6; i++) {
-			this->dataToDisplay[i] = sym;
+			displayData[i] = osym;
 		}
 		return false;
 	}
-	return showShortTime(this->to - curMillis, true, this->dataToDisplay, &this->dotMask);
-}
 
+	return showShortTime(this->to - curMillis, true, displayData, &this->dotMask);
+}

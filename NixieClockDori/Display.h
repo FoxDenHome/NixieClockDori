@@ -12,7 +12,7 @@ const uint16_t ALL_TUBES = (1 << 10) - 1; // Bitmask to enable all tubes
 const uint16_t NO_TUBES = 0;
 
 void displayInit();
-void displayLoop(const unsigned long curMicros);
+bool displayLoop(const unsigned long curMicros);
 
 void displayAntiPoison(const unsigned long count);
 

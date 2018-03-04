@@ -1,22 +1,18 @@
 #include "DisplayTask_Stopwatch.h"
 #include "Display.h"
 
-DisplayTask_Stopwatch::DisplayTask_Stopwatch() {
-	this->renderPeriodMicros = 500;
-}
-
 const bool DisplayTask_Stopwatch::_canShow() {
 	return this->time > 0;
 }
 
-bool DisplayTask_Stopwatch::render() {
+bool DisplayTask_Stopwatch::refresh(uint16_t displayData[]) {
 	if (this->running) {
 		const unsigned long curMillis = millis();
 		this->time += curMillis - this->lastCall;
 		this->lastCall = curMillis;
 	}
 
-	return showShortTime(this->time, true, this->dataToDisplay, &this->dotMask);
+	return showShortTime(this->time, true, displayData, &this->dotMask);
 }
 
 void DisplayTask_Stopwatch::reset() {
