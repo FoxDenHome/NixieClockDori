@@ -11,8 +11,12 @@ const byte MASK_BOTH_DOTS = MASK_UPPER_DOTS | MASK_LOWER_DOTS;
 unsigned long antiPoisonEnd = 0;
 unsigned long nextDisplayRender = 0;
 
+uint16_t displayData[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
+byte dotMask = 0;
+byte anodeGroup = 9;
+
 #ifdef DISPLAY_BLANK_PERIOD
-boolean blankNext = false;
+boolean blankNext = true;
 #endif
 
 void displayAntiPoison(const unsigned long count) {
@@ -58,9 +62,6 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero, uin
 	insert1(offset + 1, data, trimLeadingZero, dataToDisplay);
 	return data == 0;
 }
-
-uint16_t displayData[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
-byte dotMask = 0;
 
 void renderNixies(const unsigned long curMicros, const unsigned long microDelta) {
 	static byte oldAntiPoisonIdx = 255;
@@ -189,14 +190,9 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 
 #ifdef DISPLAY_BLANK_PERIOD
 void renderNixiesInt(bool blank) {
-#else
-void renderNixiesInt() {
-#endif
-	static byte anodeGroup = 0;
-
-#ifdef DISPLAY_BLANK_PERIOD
 	const byte anodeControl = blank ? 0 : 1 << (anodeGroup + 4);
 #else
+void renderNixiesInt() {
 	const byte anodeControl = 1 << (anodeGroup + 4);
 #endif
 
@@ -214,16 +210,6 @@ void renderNixiesInt() {
 	SPI.transfer(tubeL);                              // [LC7][LC6][LC5][LC4][LC3][LC2][LC1][LC0] - LC9 - LC0 - Left tubes cathodes
 	SPI.endTransaction();
 	digitalWrite(PIN_DISPLAY_LATCH, HIGH);
-
-#ifdef DISPLAY_BLANK_PERIOD
-	if (blank) {
-		return;
-	}
-#endif
-
-	if (++anodeGroup > 2) {
-		anodeGroup = 0;
-	}
 }
 
 void displayInit() {
@@ -231,21 +217,23 @@ void displayInit() {
 }
 
 void displayLoop(const unsigned long curMicros) {
-#ifdef DISPLAY_BLANK_PERIOD
 	static unsigned long lastRenderTime = 0;
-#endif
 
 	if (nextDisplayRender <= curMicros) {
 #ifdef DISPLAY_BLANK_PERIOD
 		if (blankNext) {
-			renderNixies(curMicros, curMicros - lastRenderTime);
-			lastRenderTime = curMicros;
+#endif
+			if (++anodeGroup > 2) {
+				anodeGroup = 0;
+				renderNixies(curMicros, curMicros - lastRenderTime);
+				lastRenderTime = curMicros;
+			}
+#ifdef DISPLAY_BLANK_PERIOD
 		}
 		renderNixiesInt(blankNext);
 		blankNext = !blankNext;
 		nextDisplayRender = curMicros + (blankNext ? DISPLAY_RENDER_PERIOD : DISPLAY_BLANK_PERIOD);
 #else
-		renderNixies(curMicros, curMicros - (nextDisplayRender - DISPLAY_RENDER_PERIOD));
 		renderNixiesInt();
 		nextDisplayRender = curMicros + DISPLAY_RENDER_PERIOD;
 #endif
