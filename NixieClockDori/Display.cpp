@@ -1,9 +1,8 @@
 #include "Display.h"
 #include "DisplayTask.h"
 #include "const.h"
+#include "config.h"
 #include <SPI.h>
-
-const unsigned long DISPLAY_RENDER_PERIOD = 5000;
 
 const byte MASK_UPPER_DOTS = 1;
 const byte MASK_LOWER_DOTS = 2;
@@ -11,6 +10,10 @@ const byte MASK_BOTH_DOTS = MASK_UPPER_DOTS | MASK_LOWER_DOTS;
 
 unsigned long antiPoisonEnd = 0;
 unsigned long nextDisplayRender = 0;
+
+#ifdef DISPLAY_BLANK_PERIOD
+boolean blankNext = false;
+#endif
 
 void displayAntiPoison(const unsigned long count) {
 	antiPoisonEnd = millis() + (ANTI_POISON_DELAY * 10UL * count);
@@ -56,7 +59,11 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero, uin
 	return data == 0;
 }
 
+#ifdef DISPLAY_BLANK_PERIOD
+void renderNixies(const boolean blank, const unsigned long curMicros, const unsigned long microDelta) {
+#else
 void renderNixies(const unsigned long curMicros, const unsigned long microDelta) {
+#endif
 	static byte oldAntiPoisonIdx = 255;
 	static uint16_t antiPoisonTable[6];
 	static uint16_t antiPoisonOld[6];
@@ -191,14 +198,26 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 	}
 #endif
 
+#ifdef DISPLAY_BLANK_PERIOD
+	const byte anodeControl = blank ? 0 : 1 << (anodeGroup + 4);
+#else
+	const byte anodeControl = 1 << (anodeGroup + 4);
+#endif
+
 	digitalWrite(PIN_DISPLAY_LATCH, LOW);
 	SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE2));
 	SPI.transfer(dotMask);                            // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
-	SPI.transfer(tubeR >> 6 | 1 << (anodeGroup + 4)); // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes
+	SPI.transfer(tubeR >> 6 | anodeControl);          // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes
 	SPI.transfer(tubeR << 2 | tubeL >> 8);            // [RC5][RC4][RC3][RC2][RC1][RC0][LC9][LC8] - RC9 - RC0 - Right tubes cathodes
 	SPI.transfer(tubeL);                              // [LC7][LC6][LC5][LC4][LC3][LC2][LC1][LC0] - LC9 - LC0 - Left tubes cathodes
 	SPI.endTransaction();
 	digitalWrite(PIN_DISPLAY_LATCH, HIGH);
+
+#ifdef DISPLAY_BLANK_PERIOD
+	if (blank) {
+		return;
+	}
+#endif
 
 	if (++anodeGroup > 2) {
 		anodeGroup = 0;
@@ -211,7 +230,13 @@ void displayInit() {
 
 void displayLoop(const unsigned long curMicros) {
 	if (nextDisplayRender <= curMicros) {
-		renderNixies(curMicros, curMicros - (nextDisplayRender - DISPLAY_RENDER_PERIOD));
+#ifdef DISPLAY_BLANK_PERIOD
+		renderNixies(blankNext, curMicros, curMicros - (nextDisplayRender - (blankNext ? DISPLAY_RENDER_PERIOD : DISPLAY_BLANK_PERIOD)));
+		blankNext = !blankNext;
+		nextDisplayRender = curMicros + (blankNext ? DISPLAY_RENDER_PERIOD : DISPLAY_BLANK_PERIOD);
+#else
+		renderNixies(curMicros, curMicros - (nextDisplayRender - DISPLAY_RENDER_PERIOD)));
 		nextDisplayRender = curMicros + DISPLAY_RENDER_PERIOD;
+#endif
 	}
 }
