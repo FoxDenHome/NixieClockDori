@@ -80,9 +80,10 @@ void loop() {
 	if (nextDisplayCycleMicros <= curMicros) {
 		cycleDisplayUpdater();
 	}
+	serialPoll();
 }
 
-void serialEvent() {
+void serialPoll() {
 	while (Serial.available()) {
 		if (!serialReadNext()) {
 			continue;
