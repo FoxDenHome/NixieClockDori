@@ -12,7 +12,10 @@ const byte MASK_BOTH_DOTS = MASK_UPPER_DOTS | MASK_LOWER_DOTS;
 unsigned long antiPoisonEnd = 0;
 unsigned long nextDisplayRender = 0;
 
-uint16_t displayData[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
+uint16_t displayDataA[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
+uint16_t displayDataB[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
+uint16_t* displayDataBack = displayDataA;
+uint16_t* displayDataFront = displayDataB;
 
 byte dotMask = 0;
 byte anodeGroup = 9;
@@ -92,19 +95,19 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 					}
 				}
 				antiPoisonTable[i] |= randNbr;
-				displayData[i] = randNbr;
+				displayDataBack[i] = randNbr;
 			}
 			oldAntiPoisonIdx = idx;
 		}
 	}
 	else if (DisplayTask::current) {
-		const boolean allowEffects = DisplayTask::current->refresh(displayData);
+		const boolean allowEffects = DisplayTask::current->refresh(displayDataBack);
 
 #ifdef EFFECT_ENABLED
 		if (allowEffects) {
 			// Start necessary effects (when display changed)
 			for (byte i = 0; i < 6; i++) {
-				const uint16_t cur = displayData[i];
+				const uint16_t cur = displayDataBack[i];
 				if (dataToDisplayOld[i] != cur || allTubesOld) {
 					dataToDisplayOld[i] = cur;
 					dataIsTransitioning[i] = EFFECT_SPEED;
@@ -179,16 +182,20 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 
 		if (tubeTrans > microDelta) {
 #ifdef EFFECT_SLOT_MACHINE
-			displayData[i] = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
+			displayDataBack[i] = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
 #endif
 			dataIsTransitioning[i] -= microDelta;
 		}
 		else if (tubeTrans > 0) {
-			displayData[i] = dataToDisplayOld[i];
+			displayDataBack[i] = dataToDisplayOld[i];
 			dataIsTransitioning[i] = 0;
 		}
 	}
 #endif
+
+	uint16_t *tmp = displayDataFront;
+	displayDataFront = displayDataBack;
+	displayDataBack = tmp;
 }
 
 void renderNixiesInt(bool blank) {
@@ -197,8 +204,8 @@ void renderNixiesInt(bool blank) {
 	const byte curTubeL = anodeGroup << 1;
 	const byte curTubeR = curTubeL + 1;
 
-	const uint16_t tubeL = displayData[curTubeL];
-	const uint16_t tubeR = displayData[curTubeR];
+	const uint16_t tubeL = displayDataFront[curTubeL];
+	const uint16_t tubeR = displayDataFront[curTubeR];
 
 	digitalWrite(PIN_DISPLAY_LATCH, LOW);
 	SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE2));
