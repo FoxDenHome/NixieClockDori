@@ -116,6 +116,7 @@ void serialEvent() {
 		case 'X':
 			displayCountdown.to = 0;
 			displayStopwatch.reset();
+			displayFlash.endTime = 0;
 			if (!DisplayTask::current->canShow()) {
 				cycleDisplayUpdater();
 			}
