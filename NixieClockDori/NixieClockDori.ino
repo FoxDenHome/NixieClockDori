@@ -30,8 +30,6 @@ DisplayTask_Flash displayFlash;
 const unsigned long DISPLAY_CYCLE_PERIOD = 5000000;
 
 unsigned long nextDisplayCycleMicros = 0;
-unsigned long longestRender = 0;
-unsigned long longestRefresh = 0;
 
 /**************************/
 /* ARDUINO EVENT HANDLERS */
@@ -78,28 +76,13 @@ void setup() {
 
 void loop() {
 	const unsigned long curMicros = micros();
-	const boolean allowLongTasks = displayLoop(curMicros);
-	if (allowLongTasks) {
-		if (nextDisplayCycleMicros <= curMicros) {
-			cycleDisplayUpdater();
-		}
-		serailReadAll();
-	}
-
-	const unsigned long taken = micros() - curMicros;
-	if (allowLongTasks) {
-		if (taken > longestRefresh) {
-			longestRefresh = taken;
-		}
-	}
-	else {
-		if (taken > longestRender) {
-			longestRender = taken;
-		}
+	displayLoop(curMicros);
+	if (nextDisplayCycleMicros <= curMicros) {
+		cycleDisplayUpdater();
 	}
 }
 
-void serailReadAll() {
+void serialEvent() {
 	while (Serial.available()) {
 		if (!serialReadNext()) {
 			continue;
@@ -244,13 +227,7 @@ void serailReadAll() {
 		case 'D':
 			serialSendFirst(F("D OK "));
 			serialSendNext(String(mu_freeRam()));
-			serialSendNext(" ");
-			serialSendNext(String(longestRender));
-			serialSendNext(" ");
-			serialSendNext(String(longestRefresh));
 			serialSendEnd();
-			longestRender = 0;
-			longestRefresh = 0;
 			break;
 		}
 	}

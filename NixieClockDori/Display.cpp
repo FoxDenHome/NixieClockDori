@@ -3,6 +3,7 @@
 #include "const.h"
 #include "config.h"
 #include <SPI.h>
+#include <TimerOne.h>
 
 const byte MASK_UPPER_DOTS = 1;
 const byte MASK_LOWER_DOTS = 2;
@@ -15,10 +16,6 @@ uint16_t displayData[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO
 
 byte dotMask = 0;
 byte anodeGroup = 9;
-
-#ifdef DISPLAY_BLANK_PERIOD
-boolean blankNext = true;
-#endif
 
 void displayAntiPoison(const unsigned long count) {
 	antiPoisonEnd = millis() + (ANTI_POISON_DELAY * 10UL * count);
@@ -127,13 +124,15 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 			redNow = redOld + (((redPrevious - redOld) * colorTransProg) / EFFECT_SPEED);
 			greenNow = greenOld + (((greenPrevious - greenOld) * colorTransProg) / EFFECT_SPEED);
 			blueNow = blueOld + (((bluePrevious - blueOld) * colorTransProg) / EFFECT_SPEED);
-			analogWrite(PIN_LED_RED, redNow);
+			//analogWrite(PIN_LED_RED, redNow);
+			Timer1.pwm(PIN_LED_RED, redNow << 2);
 			analogWrite(PIN_LED_GREEN, greenNow);
 			analogWrite(PIN_LED_BLUE, blueNow);
 		}
 		else if (colorTransProg >= 0) {
 			colorTransProg = -1;
-			analogWrite(PIN_LED_RED, redNow);
+			//analogWrite(PIN_LED_RED, redNow);
+			Timer1.pwm(PIN_LED_RED, redNow << 2);
 			analogWrite(PIN_LED_GREEN, greenNow);
 			analogWrite(PIN_LED_BLUE, blueNow);
 		}
@@ -157,7 +156,8 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 #else
 		if (DisplayTask::current->red != redOld) {
 			redOld = DisplayTask::current->red;
-			analogWrite(PIN_LED_RED, redOld);
+			//analogWrite(PIN_LED_RED, redOld);
+			Timer1.pwm(PIN_LED_RED, redOld << 2);
 		}
 		if (DisplayTask::current->green != greenOld) {
 			greenOld = DisplayTask::current->green;
@@ -191,13 +191,8 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 #endif
 }
 
-#ifdef DISPLAY_BLANK_PERIOD
 void renderNixiesInt(bool blank) {
 	const byte anodeControl = blank ? 0 : 1 << (anodeGroup + 4);
-#else
-void renderNixiesInt() {
-	const byte anodeControl = 1 << (anodeGroup + 4);
-#endif
 
 	const byte curTubeL = anodeGroup << 1;
 	const byte curTubeR = curTubeL + 1;
@@ -215,34 +210,33 @@ void renderNixiesInt() {
 	digitalWrite(PIN_DISPLAY_LATCH, HIGH);
 }
 
-void displayInit() {
-	SPI.begin();
+void displayInterrupt() {
+	static byte ctr = 0;
+	static boolean blankNext = true;
+	if (!blankNext || ++ctr >= 10) {
+		ctr = 0;
+		if (blankNext) {
+			if (++anodeGroup > 2) {
+				anodeGroup = 0;
+			}
+		}
+		renderNixiesInt(blankNext);
+		blankNext = !blankNext;
+	}
 }
 
-bool displayLoop(const unsigned long curMicros) {
+void displayInit() {
+	SPI.begin();
+	Timer1.initialize(200);
+	Timer1.attachInterrupt(&displayInterrupt);
+}
+
+void displayLoop(const unsigned long curMicros) {
 	static unsigned long lastRenderTime = 0;
 
 	if (nextDisplayRender <= curMicros) {
-#ifdef DISPLAY_BLANK_PERIOD
-		renderNixiesInt(blankNext);
-		if (!blankNext) {
-#else
-		renderNixiesInt();
-#endif
-			if (++anodeGroup > 2) {
-				anodeGroup = 0;
-				renderNixies(curMicros, curMicros - lastRenderTime);
-				lastRenderTime = curMicros;
-			}
-#ifdef DISPLAY_BLANK_PERIOD
-		}
-
-		blankNext = !blankNext;
-		nextDisplayRender = curMicros + (blankNext ? DISPLAY_RENDER_PERIOD : DISPLAY_BLANK_PERIOD);
-#else
-		nextDisplayRender = curMicros + DISPLAY_RENDER_PERIOD;
-#endif
+		renderNixies(curMicros, curMicros - lastRenderTime);
+		lastRenderTime = curMicros;
+		nextDisplayRender = curMicros + (DISPLAY_RENDER_PERIOD * 3UL);
 	}
-
-	return blankNext;
 }
