@@ -5,7 +5,7 @@
 
 class DisplayTask_Flash : public DisplayTask {
 public:
-	bool render(const unsigned long microDelta) override;
+	bool render() override;
 
 	uint16_t symbols[6];
 	byte dotsMask;

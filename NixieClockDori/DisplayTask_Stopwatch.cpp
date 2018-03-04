@@ -5,14 +5,15 @@ DisplayTask_Stopwatch::DisplayTask_Stopwatch() {
 	this->renderPeriodMicros = 500;
 }
 
-
 const bool DisplayTask_Stopwatch::_canShow() {
 	return this->time > 0;
 }
 
-bool DisplayTask_Stopwatch::render(const unsigned long microDelta) {
+bool DisplayTask_Stopwatch::render() {
 	if (this->running) {
-		this->time += microDelta / 1000UL;
+		const unsigned long curMillis = millis();
+		this->time += curMillis - this->lastCall;
+		this->lastCall = curMillis;
 	}
 
 	return showShortTime(this->time, true, this->dataToDisplay, &this->dotMask);
@@ -28,11 +29,15 @@ void DisplayTask_Stopwatch::pause() {
 }
 
 void DisplayTask_Stopwatch::resume() {
+	if (!this->running) {
+		this->lastCall = millis();
+	}
 	this->running = true;
 }
 
 void DisplayTask_Stopwatch::start() {
 	this->time = 1;
+	this->lastCall = millis();
 	this->running = true;
 }
 

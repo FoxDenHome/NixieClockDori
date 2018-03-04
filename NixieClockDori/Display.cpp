@@ -2,21 +2,15 @@
 #include "DisplayTask.h"
 #include "const.h"
 #include <SPI.h>
-#include <SoftTimer.h>
 
-void renderNixies(Task *me);
-Task T_renderNixies(5, renderNixies);
+const unsigned long DISPLAY_RENDER_PERIOD = 5000;
 
 const byte MASK_UPPER_DOTS = 1;
 const byte MASK_LOWER_DOTS = 2;
 const byte MASK_BOTH_DOTS = MASK_UPPER_DOTS | MASK_LOWER_DOTS;
 
 unsigned long antiPoisonEnd = 0;
-
-void displayInit() {
-	SPI.begin();
-	SoftTimer.add(&T_renderNixies);
-}
+unsigned long nextDisplayRender = 0;
 
 void displayAntiPoison(const unsigned long count) {
 	antiPoisonEnd = millis() + (ANTI_POISON_DELAY * 10UL * count);
@@ -62,7 +56,7 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero, uin
 	return data == 0;
 }
 
-void renderNixies(Task *me) {
+void renderNixies(const unsigned long curMicros, const unsigned long microDelta) {
 	static byte oldAntiPoisonIdx = 255;
 	static uint16_t antiPoisonTable[6];
 	static uint16_t antiPoisonOld[6];
@@ -82,8 +76,6 @@ void renderNixies(Task *me) {
 	const unsigned long curMillis = millis();
 	uint16_t tubeL = 0, tubeR = 0;
 	byte dotMask = 0;
-
-	const unsigned long microDelta = me->nowMicros - me->lastCallTimeMicros;
 
 	if (antiPoisonEnd > curMillis) {
 		const byte idx = ((antiPoisonEnd - curMillis) / ANTI_POISON_DELAY) % 10;
@@ -109,12 +101,12 @@ void renderNixies(Task *me) {
 		tubeR = antiPoisonOld[curTubeR];
 	}
 	else if (DisplayTask::current) {
-		const boolean doRender = DisplayTask::current->nextRender <= me->nowMicros;
+		const boolean doRender = DisplayTask::current->nextRender <= curMicros;
 
 		boolean allowEffects = true;
 		if (doRender) {
-			DisplayTask::current->nextRender = me->nowMicros + DisplayTask::current->renderPeriodMicros;
-			allowEffects = DisplayTask::current->render(microDelta);
+			DisplayTask::current->nextRender = curMicros + DisplayTask::current->renderPeriodMicros;
+			allowEffects = DisplayTask::current->render();
 		}
 		tubeL = DisplayTask::current->dataToDisplay[curTubeL];
 		tubeR = DisplayTask::current->dataToDisplay[curTubeR];
@@ -210,5 +202,16 @@ void renderNixies(Task *me) {
 
 	if (++anodeGroup > 2) {
 		anodeGroup = 0;
+	}
+}
+
+void displayInit() {
+	SPI.begin();
+}
+
+void displayLoop(const unsigned long curMicros) {
+	if (nextDisplayRender <= curMicros) {
+		renderNixies(curMicros, curMicros - (nextDisplayRender - DISPLAY_RENDER_PERIOD));
+		nextDisplayRender = curMicros + DISPLAY_RENDER_PERIOD;
 	}
 }

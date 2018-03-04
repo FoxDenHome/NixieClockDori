@@ -11,7 +11,7 @@ const bool DisplayTask_Countdown::_canShow() {
 	return this->to != 0;
 }
 
-bool DisplayTask_Countdown::render(const unsigned long microDelta) {
+bool DisplayTask_Countdown::render() {
 	const unsigned long curMillis = millis();
 	if (this->to < curMillis) {
 		const uint16_t sym = (second() % 2) ? NO_TUBES : getNumber(0);
