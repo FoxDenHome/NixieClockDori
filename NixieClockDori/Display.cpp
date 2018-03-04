@@ -68,6 +68,8 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 	static byte oldAntiPoisonIdx = 255;
 	static uint16_t antiPoisonTable[6];
 
+	boolean allowEffects = false, doFlip = true;
+
 	static byte redOld, greenOld, blueOld;
 #ifdef EFFECT_ENABLED
 	static unsigned long dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
@@ -96,15 +98,16 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 				}
 				antiPoisonTable[i] |= randNbr;
 				displayDataBack[i] = randNbr;
+				dataIsTransitioning[i] = 0;
 			}
 			oldAntiPoisonIdx = idx;
 		}
 		else {
-			return;
+			doFlip = false;
 		}
 	}
 	else if (DisplayTask::current) {
-		const boolean allowEffects = DisplayTask::current->refresh(displayDataBack);
+		allowEffects = DisplayTask::current->refresh(displayDataBack);
 
 #ifdef EFFECT_ENABLED
 		if (allowEffects) {
@@ -118,9 +121,6 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 			}
 
 			allTubesOld = false;
-		}
-		else {
-			allTubesOld = true;
 		}
 
 		byte redNow = redOld, greenNow = greenOld, blueNow = blueOld;
@@ -172,27 +172,43 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 		dotMask = DisplayTask::current->dotMask;
 	}
 
+	
 	// Progress through effect
 #ifdef EFFECT_ENABLED
-	for (byte i = 0; i < 6; i++) {
-		const unsigned long tubeTrans = dataIsTransitioning[i];
+	if (allowEffects) {
+		for (byte i = 0; i < 6; i++) {
+			const uint16_t cur = displayDataBack[i];
+			if (dataToDisplayOld[i] != cur || allTubesOld) {
+				dataToDisplayOld[i] = cur;
+				dataIsTransitioning[i] = EFFECT_SPEED;
+			}
 
-		if (tubeTrans > microDelta) {
+			const unsigned long tubeTrans = dataIsTransitioning[i];
+
+			if (tubeTrans > microDelta) {
 #ifdef EFFECT_SLOT_MACHINE
-			displayDataBack[i] = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
+				displayDataBack[i] = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
 #endif
-			dataIsTransitioning[i] -= microDelta;
+				dataIsTransitioning[i] -= microDelta;
+			}
+			else if (tubeTrans > 0) {
+				displayDataBack[i] = dataToDisplayOld[i];
+				dataIsTransitioning[i] = 0;
+			}
 		}
-		else if (tubeTrans > 0) {
-			displayDataBack[i] = dataToDisplayOld[i];
-			dataIsTransitioning[i] = 0;
-		}
+		allTubesOld = false;
+		doFlip = true;
+	}
+	else {
+		allTubesOld = true;
 	}
 #endif
 
-	uint16_t *tmp = displayDataFront;
-	displayDataFront = displayDataBack;
-	displayDataBack = tmp;
+	if (doFlip) {
+		uint16_t *tmp = displayDataFront;
+		displayDataFront = displayDataBack;
+		displayDataBack = tmp;
+	}
 }
 
 void renderNixiesInt(bool blank) {
@@ -205,12 +221,10 @@ void renderNixiesInt(bool blank) {
 	const uint16_t tubeR = displayDataFront[curTubeR];
 
 	digitalWrite(PIN_DISPLAY_LATCH, LOW);
-	SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE2));
 	SPI.transfer(dotMask);                            // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
 	SPI.transfer(tubeR >> 6 | anodeControl);          // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes
 	SPI.transfer(tubeR << 2 | tubeL >> 8);            // [RC5][RC4][RC3][RC2][RC1][RC0][LC9][LC8] - RC9 - RC0 - Right tubes cathodes
 	SPI.transfer(tubeL);                              // [LC7][LC6][LC5][LC4][LC3][LC2][LC1][LC0] - LC9 - LC0 - Left tubes cathodes
-	SPI.endTransaction();
 	digitalWrite(PIN_DISPLAY_LATCH, HIGH);
 }
 
@@ -231,6 +245,10 @@ void displayInterrupt() {
 
 void displayInit() {
 	SPI.begin();
+	SPI.setDataMode(SPI_MODE2);
+	SPI.setClockDivider(SPI_CLOCK_DIV4);
+	SPI.setBitOrder(MSBFIRST);
+	SPI.usingInterrupt(255);
 	Timer1.initialize(200);
 	Timer1.attachInterrupt(&displayInterrupt);
 }
