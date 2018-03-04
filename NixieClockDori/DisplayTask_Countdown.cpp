@@ -3,6 +3,10 @@
 
 #include <TimeLib.h>
 
+DisplayTask_Countdown::DisplayTask_Countdown() {
+	this->renderPeriodMicros = 500;
+}
+
 const bool DisplayTask_Countdown::_canShow() {
 	return this->to != 0;
 }

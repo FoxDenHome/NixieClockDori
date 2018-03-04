@@ -1,6 +1,11 @@
 #include "DisplayTask_Stopwatch.h"
 #include "Display.h"
 
+DisplayTask_Stopwatch::DisplayTask_Stopwatch() {
+	this->renderPeriodMicros = 500;
+}
+
+
 const bool DisplayTask_Stopwatch::_canShow() {
 	return this->time > 0;
 }

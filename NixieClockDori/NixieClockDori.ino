@@ -71,6 +71,7 @@ void setup() {
 	SoftTimer.add(&T_serialReader);
 	SoftTimer.add(&T_cycleDisplayUpdater);
 
+	displayClock.loPri = true;
 	displayClock.add();
 
 	cycleDisplayUpdater(NULL);

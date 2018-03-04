@@ -38,7 +38,7 @@ DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current) {
 	}
 
 	DisplayTask* curPtr;
-	const bool isLoPri = dt_current->isLoPri();
+	const bool isLoPri = dt_current->loPri;
 
 	if (isLoPri) { // Search for first hi-pri
 		curPtr = DisplayTask::_findNextValid(dt_first_hi, NULL);
@@ -68,23 +68,16 @@ DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current) {
 	return NULL;
 }
 
-const bool DisplayTask::isLoPri() {
-	return false;
-}
-
 bool DisplayTask::canShow() {
 	if (this->_canShow()) {
 		return true;
 	}
-	if (this->_removeOnCantShow()) {
+	if (this->removeOnCantShow) {
 		this->remove();
 	}
 	return false;
 }
 
-const bool DisplayTask::_removeOnCantShow() {
-	return true;
-}
 
 const bool DisplayTask::_canShow() {
 	return true;
@@ -98,7 +91,7 @@ void DisplayTask::add() {
 
 	this->next = NULL;
 
-	if (this->isLoPri()) {
+	if (this->loPri) {
 		if (dt_last_lo) {
 			dt_last_lo->next = this;
 			this->prev = dt_last_lo;
@@ -134,7 +127,7 @@ void DisplayTask::remove() {
 		this->prev->next = this->next;
 	}
 
-	if (this->isLoPri()) {
+	if (this->loPri) {
 		if (this == dt_first_lo) {
 			if (this->next) {
 				dt_first_lo = this->next;
