@@ -9,7 +9,7 @@ String inputChecksum;
 #define stringCRCUpdate(str) crc.ccitt_upd((const uint8_t*)str.c_str(), str.length())
 
 void serialInit() {
-	Serial.begin(2000000);
+	Serial.begin(115200);
 	inputChecksum.reserve(16);
 	inputString.reserve(32);
 }

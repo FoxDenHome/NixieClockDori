@@ -143,17 +143,11 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 			analogWrite(PIN_LED_BLUE, blueNow);
 		}
 
-		if (DisplayTask::current->red != redOld) {
+		if (DisplayTask::current->red != redOld || DisplayTask::current->green != greenOld || DisplayTask::current->blue != blueOld) {
 			redPrevious = redNow;
 			redOld = DisplayTask::current->red;
-			colorTransProg = EFFECT_SPEED;
-		}
-		if (DisplayTask::current->green != greenOld) {
 			greenPrevious = greenNow;
 			greenOld = DisplayTask::current->green;
-			colorTransProg = EFFECT_SPEED;
-		}
-		if (DisplayTask::current->blue != blueOld) {
 			bluePrevious = blueNow;
 			blueOld = DisplayTask::current->blue;
 			colorTransProg = EFFECT_SPEED;
