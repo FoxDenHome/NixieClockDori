@@ -4,10 +4,6 @@
 
 #include <TimeLib.h>
 
-const bool DisplayTask_Clock::isLoPri() {
-	return true;
-}
-
 bool DisplayTask_Clock::render(const unsigned long microDelta) {
 	const time_t _n = now();
 	const byte h = hour(_n);

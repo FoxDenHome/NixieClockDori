@@ -8,7 +8,6 @@
 class DisplayTask {
 public:
 	bool canShow();
-	virtual const bool isLoPri();
 
 	// Returns true if change-effects should show
 	virtual bool render(const unsigned long microDelta) = 0;
@@ -22,10 +21,14 @@ public:
 	uint16_t dataToDisplay[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
 	byte dotMask;
 
+	bool loPri = false;
+	bool removeOnCantShow = true;
+	unsigned long renderPeriodMicros = 50000;
+	unsigned long nextRender = 0;
+
 	static DisplayTask *current;
 
 protected:
-	virtual const bool _removeOnCantShow();
 	virtual const bool _canShow();
 
 private:

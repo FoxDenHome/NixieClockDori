@@ -109,17 +109,41 @@ void renderNixies(Task *me) {
 		tubeR = antiPoisonOld[curTubeR];
 	}
 	else if (DisplayTask::current) {
-		const boolean allowEffects = DisplayTask::current->render(microDelta);
+		const boolean doRender = DisplayTask::current->nextRender <= me->nowMicros;
+
+		boolean allowEffects = true;
+		if (doRender) {
+			DisplayTask::current->nextRender = me->nowMicros + DisplayTask::current->renderPeriodMicros;
+			allowEffects = DisplayTask::current->render(microDelta);
+		}
+		tubeL = DisplayTask::current->dataToDisplay[curTubeL];
+		tubeR = DisplayTask::current->dataToDisplay[curTubeR];
 
 #ifdef EFFECT_ENABLED
 		if (allowEffects) {
 			// Start necessary effects (when display changed)
-			for (byte i = 0; i < 6; i++) {
-				const uint16_t cur = DisplayTask::current->dataToDisplay[i];
-				if (dataToDisplayOld[i] != cur || allTubesOld) {
-					dataToDisplayOld[i] = cur;
-					dataIsTransitioning[i] = EFFECT_SPEED;
+			if (doRender) {
+				for (byte i = 0; i < 6; i++) {
+					const uint16_t cur = DisplayTask::current->dataToDisplay[i];
+					if (dataToDisplayOld[i] != cur || allTubesOld) {
+						dataToDisplayOld[i] = cur;
+						dataIsTransitioning[i] = EFFECT_SPEED;
+					}
 				}
+			}
+
+			unsigned long tubeTrans = dataIsTransitioning[curTubeL];
+			if (tubeTrans > 0) {
+#ifdef EFFECT_SLOT_MACHINE
+				tubeL = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
+#endif
+			}
+
+			tubeTrans = dataIsTransitioning[curTubeR];
+			if (tubeTrans > 0) {
+#ifdef EFFECT_SLOT_MACHINE
+				tubeR = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
+#endif
 			}
 			allTubesOld = false;
 		} else {
@@ -148,7 +172,7 @@ void renderNixies(Task *me) {
 			analogWrite(PIN_LED_GREEN, greenOld + (((greenPrevious - greenOld) * colorTransProg) / EFFECT_SPEED));
 			analogWrite(PIN_LED_BLUE, blueOld + (((bluePrevious - blueOld) * colorTransProg) / EFFECT_SPEED));
 		}
-		else if(colorTransProg >= 0) {
+		else if (colorTransProg >= 0) {
 			colorTransProg = -1;
 			analogWrite(PIN_LED_RED, redOld);
 			analogWrite(PIN_LED_GREEN, greenOld);
@@ -160,8 +184,6 @@ void renderNixies(Task *me) {
 		analogWrite(PIN_LED_BLUE, DisplayTask::current->blue);
 #endif
 
-		tubeL = DisplayTask::current->dataToDisplay[curTubeL];
-		tubeR = DisplayTask::current->dataToDisplay[curTubeR];
 		dotMask = DisplayTask::current->dotMask;
 	}
 
@@ -174,20 +196,6 @@ void renderNixies(Task *me) {
 		else {
 			dataIsTransitioning[i] = 0;
 		}
-	}
-
-	unsigned long tubeTrans = dataIsTransitioning[curTubeL];
-	if (tubeTrans > 0) {
-#ifdef EFFECT_SLOT_MACHINE
-		tubeL = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
-#endif
-	}
-
-	tubeTrans = dataIsTransitioning[curTubeR];
-	if (tubeTrans > 0) {
-#ifdef EFFECT_SLOT_MACHINE
-		tubeR = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
-#endif
 	}
 #endif
 

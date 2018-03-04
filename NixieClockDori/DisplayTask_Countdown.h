@@ -5,6 +5,7 @@
 
 class DisplayTask_Countdown : public DisplayTask {
 public:
+	DisplayTask_Countdown();
 	bool render(const unsigned long microDelta) override;
 	unsigned long to;
 protected:
