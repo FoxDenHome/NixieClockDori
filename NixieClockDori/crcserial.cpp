@@ -15,21 +15,21 @@ void serialInit() {
 }
 
 uint16_t crcCalc;
-void serialSendFirst(String str) {
+void serialSendFirst(const String &str) {
 	Serial.print('^');
 	Serial.print(str);
 	crcCalc = stringCRC(str);
 }
-void serialSendNext(String str) {
+void serialSendNext(const String &str) {
 	Serial.print(str);
 	crcCalc = stringCRCUpdate(str);
 }
 void serialSendEnd() {
 	Serial.print('|');
-	Serial.println(String(crcCalc));
+	Serial.println(crcCalc);
 }
-void serialSendSimple(const String data) {
-	serialSendFirst(data);
+void serialSendSimple(const String &str) {
+	serialSendFirst(str);
 	serialSendEnd();
 }
 
