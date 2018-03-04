@@ -63,6 +63,10 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero, uin
 }
 
 void renderNixies(Task *me) {
+	static byte oldAntiPoisonIdx = 255;
+	static uint16_t antiPoisonTable[6];
+	static uint16_t antiPoisonOld[6];
+
 #ifdef EFFECT_ENABLED
 	static unsigned long dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
 	static boolean allTubesOld = true;
@@ -82,9 +86,27 @@ void renderNixies(Task *me) {
 	const unsigned long microDelta = me->nowMicros - me->lastCallTimeMicros;
 
 	if (antiPoisonEnd > curMillis) {
-		const uint16_t sym = getNumber((antiPoisonEnd - curMillis) / ANTI_POISON_DELAY);
-		tubeL = sym;
-		tubeR = sym;
+		const byte idx = ((antiPoisonEnd - curMillis) / ANTI_POISON_DELAY) % 10;
+		if (idx != oldAntiPoisonIdx) {
+			if (idx == 9) {
+				// Regenerate table
+				memset(antiPoisonTable, 0, sizeof(antiPoisonTable));
+			}
+			for (byte i = 0; i < 6; i++) {
+				uint16_t randNbr = getNumber(random(0, 10));
+				while ((antiPoisonTable[i] & randNbr) == randNbr) {
+					randNbr <<= 1;
+					if (randNbr > ALL_TUBES) {
+						randNbr = 1;
+					}
+				}
+				antiPoisonTable[i] |= randNbr;
+				antiPoisonOld[i] = randNbr;
+			}
+			oldAntiPoisonIdx = idx;
+		}
+		tubeL = antiPoisonOld[curTubeL];
+		tubeR = antiPoisonOld[curTubeR];
 	}
 	else if (DisplayTask::current) {
 		const boolean allowEffects = DisplayTask::current->render(microDelta);

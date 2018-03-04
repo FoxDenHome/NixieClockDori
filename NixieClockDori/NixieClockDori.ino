@@ -66,6 +66,8 @@ void setup() {
 	rtcInit();
 	displayInit();
 
+	randomSeed(analogRead(A3) + now());
+
 	SoftTimer.add(&T_serialReader);
 	SoftTimer.add(&T_cycleDisplayUpdater);
 
