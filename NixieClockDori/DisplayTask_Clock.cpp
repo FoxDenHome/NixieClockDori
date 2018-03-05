@@ -5,6 +5,17 @@
 
 #include <TimeLib.h>
 
+void DisplayTask_Clock::handleButtonPress(Button button, PressType pressType) {
+	if ((button == UP || button == DOWN) && !this->editMode) {
+		currentEffect = static_cast<DisplayEffect>(static_cast<byte>(currentEffect) + 1);
+		if (currentEffect == FIRST_INVALID) {
+			currentEffect = NONE;
+		}
+		return;
+	}
+	DisplayTask::handleButtonPress(button, pressType);
+}
+
 void DisplayTask_Clock::handleEdit(byte digit, bool up) {
 	switch (digit) {
 	case 0:
