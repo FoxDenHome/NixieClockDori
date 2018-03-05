@@ -225,6 +225,17 @@ void serialPoll() {
 				serialSendF("W OK");
 			}
 			break;
+			// ^E0|-9883
+			// ^E1|-14012
+			// ^E2|-1753
+		case 'E':
+			if (inputString.length() < 2) {
+				serialSendF("E BAD (Invalid length; expected 2)");
+				break;
+			}
+			currentEffect = (DisplayEffect)(inputString[1] - '0');
+			serialSendF("E OK");
+			break;
 			// ^D|-5712
 		case 'D':
 			serialSend2(F("D OK "), String(mu_freeRam()));

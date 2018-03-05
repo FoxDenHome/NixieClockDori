@@ -5,6 +5,13 @@
 
 #include "config.h"
 
+enum DisplayEffect {
+	NONE = 0,
+	TRANSITION = 1,
+	SLOT_MACHINE = 2,
+};
+extern DisplayEffect currentEffect;
+
 const uint16_t ALL_TUBES = (1 << 10) - 1; // Bitmask to enable all tubes
 const uint16_t NO_TUBES = 0;
 
