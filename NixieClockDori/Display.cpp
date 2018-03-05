@@ -66,6 +66,12 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero, uin
 	return data == 0;
 }
 
+#ifdef EFFECT_ENABLED
+unsigned long dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
+uint16_t dataToDisplayPrevious[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
+boolean needEffects = false;
+#endif
+
 void renderNixies(const unsigned long curMicros, const unsigned long microDelta) {
 	static byte oldAntiPoisonIdx = 255;
 	static uint16_t antiPoisonTable[6];
@@ -74,9 +80,7 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 
 	static byte redOld, greenOld, blueOld;
 #ifdef EFFECT_ENABLED
-	static unsigned long dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
 	static boolean allTubesOld = true;
-	static uint16_t dataToDisplayPrevious[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
 	static uint16_t dataToDisplayOld[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
 	static byte redPrevious, greenPrevious, bluePrevious;
 	static long colorTransProg;
@@ -166,6 +170,7 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 	// Progress through effect
 #ifdef EFFECT_ENABLED
 	if (allowEffects) {
+		bool hasEffects = false;
 		for (byte i = 0; i < 6; i++) {
 			const uint16_t cur = displayDataBack[i];
 			if (dataToDisplayOld[i] != cur || allTubesOld) {
@@ -181,12 +186,16 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 				displayDataBack[i] = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
 #endif
 				dataIsTransitioning[i] -= microDelta;
+				hasEffects = true;
 			}
 			else if (tubeTrans > 0) {
 				displayDataBack[i] = dataToDisplayOld[i];
 				dataIsTransitioning[i] = 0;
 			}
 		}
+#ifdef EFFECT_TRANSITION
+		needEffects = hasEffects;
+#endif
 		allTubesOld = false;
 		doFlip = true;
 	}
@@ -206,15 +215,20 @@ void displayInterrupt() {
 	static byte ctr = 0;
 
 	const byte ctrL = ctr % 11;
-	if (ctrL <= 1) {
+	if (ctrL <= 1 || needEffects) {
 		const byte anodeGroup = ctr / 11;
 		const byte anodeControl = ctrL ? (1 << (anodeGroup + 4)) : 0;
 
 		const byte curTubeL = anodeGroup << 1;
 		const byte curTubeR = curTubeL + 1;
 
+#ifdef EFFECT_TRANSITION
+		const uint16_t tubeL = (!needEffects || ctrL > (dataIsTransitioning[curTubeL] / (EFFECT_SPEED / 10UL))) ? displayDataFront[curTubeL] : dataToDisplayPrevious[curTubeL];
+		const uint16_t tubeR = (!needEffects || ctrL > (dataIsTransitioning[curTubeR] / (EFFECT_SPEED / 10UL))) ? displayDataFront[curTubeR] : dataToDisplayPrevious[curTubeR];
+#else
 		const uint16_t tubeL = displayDataFront[curTubeL];
 		const uint16_t tubeR = displayDataFront[curTubeR];
+#endif
 
 		PORT_DISPLAY_LATCH &= ~PORT_MASK_DISPLAY_LATCH;
 		SPI.transfer(dotMask);                            // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
