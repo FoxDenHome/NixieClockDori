@@ -82,7 +82,6 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 
 	static byte redOld, greenOld, blueOld;
 
-	static boolean allTubesOld = true;
 	static uint16_t dataToDisplayOld[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
 	static byte redPrevious, greenPrevious, bluePrevious;
 	static long colorTransProg;
@@ -173,7 +172,7 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 		bool hasEffects = false;
 		for (byte i = 0; i < 6; i++) {
 			const uint16_t cur = displayDataBack[i];
-			if (dataToDisplayOld[i] != cur || allTubesOld) {
+			if (dataToDisplayOld[i] != cur) {
 				dataToDisplayPrevious[i] = dataToDisplayOld[i];
 				dataToDisplayOld[i] = cur;
 				dataIsTransitioning[i] = EFFECT_SPEED;
@@ -196,11 +195,7 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 		if (currentEffect == TRANSITION) {
 			renderAlways = hasEffects;
 		}
-		allTubesOld = false;
 		doFlip = true;
-	}
-	else {
-		allTubesOld = true;
 	}
 
 	if (doFlip) {

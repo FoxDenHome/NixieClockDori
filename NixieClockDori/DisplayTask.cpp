@@ -68,11 +68,6 @@ void DisplayTask::handleButtonPress(Button button, PressType pressType) {
 	case UP:
 		if (this->editMode) {
 			handleEdit(DisplayTask::editModePos, button == UP);
-			break;
-		}
-		currentEffect = static_cast<DisplayEffect>(static_cast<byte>(currentEffect) + 1);
-		if (currentEffect == FIRST_INVALID) {
-			currentEffect = NONE;
 		}
 		break;
 	}
