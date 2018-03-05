@@ -243,13 +243,15 @@ void displayInterrupt() {
 	}
 }
 
+#define DISPLAY_RENDER_STEP 200
+
 void displayInit() {
 	SPI.begin();
 	SPI.setDataMode(SPI_MODE2);
 	SPI.setClockDivider(SPI_CLOCK_DIV4);
 	SPI.setBitOrder(MSBFIRST);
 	SPI.usingInterrupt(255);
-	Timer1.initialize(200);
+	Timer1.initialize(DISPLAY_RENDER_STEP);
 	Timer1.attachInterrupt(&displayInterrupt);
 }
 
@@ -259,6 +261,6 @@ void displayLoop(const unsigned long curMicros) {
 	if (nextDisplayRender <= curMicros) {
 		renderNixies(curMicros, curMicros - lastRenderTime);
 		lastRenderTime = curMicros;
-		nextDisplayRender = curMicros + (DISPLAY_RENDER_PERIOD * 3UL);
+		nextDisplayRender = curMicros + (DISPLAY_RENDER_STEP * 33UL);
 	}
 }
