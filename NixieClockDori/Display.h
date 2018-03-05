@@ -19,6 +19,7 @@ const uint16_t NO_TUBES = 0;
 void displayInit();
 void displayLoop(const unsigned long curMicros);
 
+void displayAntiPoisonOff();
 void displayAntiPoison(const unsigned long count);
 
 byte makeDotMask(const bool upper, const bool lower);

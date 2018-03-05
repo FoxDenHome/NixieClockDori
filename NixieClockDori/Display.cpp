@@ -21,6 +21,10 @@ byte dotMask = 0;
 
 DisplayEffect currentEffect = SLOT_MACHINE;
 
+void displayAntiPoisonOff() {
+	antiPoisonEnd = 0;
+}
+
 void displayAntiPoison(const unsigned long count) {
 	const unsigned long newEnd = millis() + (ANTI_POISON_DELAY * 10UL * count);
 	if (newEnd > antiPoisonEnd) {
