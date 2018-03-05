@@ -18,7 +18,6 @@ uint16_t* displayDataBack = displayDataA;
 uint16_t* displayDataFront = displayDataB;
 
 byte dotMask = 0;
-byte anodeGroup = 9;
 
 void displayAntiPoison(const unsigned long count) {
 	antiPoisonEnd = millis() + (ANTI_POISON_DELAY * 10UL * count);
@@ -211,7 +210,7 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 	}
 }
 
-void renderNixiesInt(bool blank) {
+void renderNixiesInt(bool blank, byte anodeGroup) {
 	const byte anodeControl = blank ? 0 : 1 << (anodeGroup + 4);
 
 	const byte curTubeL = anodeGroup << 1;
@@ -230,16 +229,14 @@ void renderNixiesInt(bool blank) {
 
 void displayInterrupt() {
 	static byte ctr = 0;
-	static boolean blankNext = true;
-	if (!blankNext || ++ctr >= 10) {
+
+	const byte ctrL = ctr % 11;
+	if (ctrL <= 1) {
+		renderNixiesInt(!ctrL, ctr / 11);
+	}
+
+	if (++ctr > 33) {
 		ctr = 0;
-		if (blankNext) {
-			if (++anodeGroup > 2) {
-				anodeGroup = 0;
-			}
-		}
-		renderNixiesInt(blankNext);
-		blankNext = !blankNext;
 	}
 }
 
