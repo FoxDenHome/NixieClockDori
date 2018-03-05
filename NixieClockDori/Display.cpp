@@ -69,8 +69,8 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero, uin
 #ifdef EFFECT_ENABLED
 unsigned long dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
 uint16_t dataToDisplayPrevious[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
-boolean needEffects = false;
 #endif
+boolean needEffects = false;
 
 void renderNixies(const unsigned long curMicros, const unsigned long microDelta) {
 	static byte oldAntiPoisonIdx = 255;
