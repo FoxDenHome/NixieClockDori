@@ -10,11 +10,13 @@ bool DisplayTask_Clock::refresh(uint16_t displayData[]) {
 	const byte m = minute(_n);
 	const byte s = second(_n);
 
-	if (h < 4 && s != this->s && s % 5 == 2) {
-		displayAntiPoison(1);
-	}
-	else if (m != this->m && m % 10 == 2) {
-		displayAntiPoison(2);
+	if (!DisplayTask::editMode) {
+		if (h < 4 && s != this->s && s % 5 == 2) {
+			displayAntiPoison(1);
+		}
+		else if (m != this->m && m % 10 == 2) {
+			displayAntiPoison(2);
+		}
 	}
 
 	this->h = h;

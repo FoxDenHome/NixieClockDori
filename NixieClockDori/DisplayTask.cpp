@@ -21,6 +21,7 @@ void DisplayTask::cycleDisplayUpdater() {
 
 void DisplayTask::handleButtonPress(Button button, PressType pressType) {
 	DisplayTask::nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
+	displayAntiPoisonOff();
 
 	switch (button) {
 	case SET:
