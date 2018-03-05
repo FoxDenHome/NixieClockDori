@@ -18,32 +18,122 @@ DisplayTask_Countdown::DisplayTask_Countdown() {
 
 void DisplayTask_Countdown::handleEdit(byte digit, bool up) {
 	unsigned long tDiff = 0UL;
+	byte h = this->timeReset / (60UL * 60UL * 1000UL);
+	byte m = (this->timeReset / (60UL * 1000UL)) % 60;
+	byte s = (this->timeReset / 1000UL) % 60;
+
 	switch (digit) {
 	case 0:
-		tDiff = 10UL * 60UL * 60UL * 1000UL;
+		if (up) {
+			if (h >= 90) {
+				h %= 10;
+			}
+			else {
+				h += 10;
+			}
+		}
+		else {
+			if (h < 10) {
+				h = 90 + m % 10;
+			}
+			else {
+				h -= 10;
+			}
+		}
 		break;
 	case 1:
-		tDiff = 1UL * 60UL * 60UL * 1000UL;
+		if (up) {
+			if ((h % 10) == 9) {
+				h -= 9;
+			}
+			else {
+				h += 1;
+			}
+		}
+		else {
+			if ((h % 10) == 0) {
+				h += 9;
+			}
+			else {
+				h -= 1;
+			}
+		}
 		break;
 	case 2:
-		tDiff = 10UL * 60UL * 1000UL;
+		if (up) {
+			if (m >= 50) {
+				m %= 10;
+			}
+			else {
+				m += 10;
+			}
+		}
+		else {
+			if (m < 10) {
+				m = 50 + m % 10;
+			}
+			else {
+				m -= 10;
+			}
+		}
 		break;
 	case 3:
-		tDiff = 1UL * 60UL * 1000UL;
+		if (up) {
+			if ((m % 10) == 9) {
+				m -= 9;
+			}
+			else {
+				m += 1;
+			}
+		}
+		else {
+			if ((m % 10) == 0) {
+				m += 9;
+			}
+			else {
+				m -= 1;
+			}
+		}
 		break;
 	case 4:
-		tDiff = 10UL * 1000UL;
+		if (up) {
+			if (s >= 50) {
+				s %= 10;
+			}
+			else {
+				s += 10;
+			}
+		}
+		else {
+			if (s < 10) {
+				s = 50 + s % 10;
+			}
+			else {
+				s -= 10;
+			}
+		}
 		break;
 	case 5:
-		tDiff = 1UL * 1000UL;
+		if (up) {
+			if ((s % 10) == 9) {
+				s -= 9;
+			}
+			else {
+				s += 1;
+			}
+		}
+		else {
+			if ((s % 10) == 0) {
+				s += 9;
+			}
+			else {
+				s -= 1;
+			}
+		}
 		break;
 	}
-	if (up) {
-		this->timeReset += tDiff;
-	}
-	else {
-		this->timeReset -= tDiff;
-	}
+	
+	this->timeReset = ((((h * 60UL) + m) * 60UL) + s) * 1000UL;
 
 	if (this->timeReset >= COUNTDOWN_MAX_TIME) {
 		this->timeReset %= COUNTDOWN_MAX_TIME;
