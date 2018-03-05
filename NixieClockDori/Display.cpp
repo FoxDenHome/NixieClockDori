@@ -20,7 +20,10 @@ uint16_t* displayDataFront = displayDataB;
 byte dotMask = 0;
 
 void displayAntiPoison(const unsigned long count) {
-	antiPoisonEnd = millis() + (ANTI_POISON_DELAY * 10UL * count);
+	const unsigned long newEnd = millis() + (ANTI_POISON_DELAY * 10UL * count);
+	if (newEnd > antiPoisonEnd) {
+		antiPoisonEnd = newEnd;
+	}
 }
 
 uint16_t getNumber(const byte idx) {
