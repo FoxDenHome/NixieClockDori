@@ -32,26 +32,29 @@ void DisplayTask_Countdown::handleButtonPress(Button button, PressType press) {
 }
 
 const bool DisplayTask_Countdown::_canShow() {
-	return this->running;
+	return this->running || this->time != this->timeReset;
 }
 
 bool DisplayTask_Countdown::refresh(uint16_t displayData[]) {
-	DisplayTask::editMode = false;
-
 	if (this->running) {
+		DisplayTask::editMode = false;
 		const unsigned long curMillis = millis();
-		this->time -= curMillis - this->lastCall;
+		const unsigned long milliDiff = curMillis - this->lastCall;
+		if (this->time > milliDiff) {
+			this->time -= curMillis - this->lastCall;
+		}
+		else {
+			this->time = 0;
+		}
 		this->lastCall = curMillis;
 	}
-
-	const unsigned long curMillis = millis();
 
 	if (this->time <= 0) {
 		const uint16_t osym = (second() % 2) ? NO_TUBES : getNumber(0);
 		for (byte i = 0; i < 6; i++) {
 			displayData[i] = osym;
 		}
-		return false;
+		return this->running;
 	}
 
 	return showShortTime(this->time, true, displayData);
