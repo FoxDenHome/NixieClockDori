@@ -56,6 +56,9 @@ void DisplayTask::handleButtonPress(Button button, PressType pressType) {
 			}
 			break;
 		case LongPressStart:
+			if (DisplayTask::editMode) {
+				handleEdit(255, false);
+			}
 			DisplayTask::editMode = !DisplayTask::editMode;
 			DisplayTask::editModePos = 0;
 			break;
