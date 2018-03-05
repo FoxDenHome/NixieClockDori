@@ -31,7 +31,7 @@ void DisplayTask::handleButtonPress(Button button, PressType pressType) {
 			}
 			else {
 				DisplayTask::current = DisplayTask::findNextValid(DisplayTask::current, false);
-				nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
+				DisplayTask::nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
 			}
 			break;
 		case LongPressStart:
