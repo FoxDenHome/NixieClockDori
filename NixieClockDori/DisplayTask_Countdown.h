@@ -16,6 +16,7 @@ public:
 	unsigned long timeReset;
 
 	void handleButtonPress(Button button, PressType press) override;
+	void handleEdit(byte digit, bool up) override;
 
 protected:
 	const bool _canShow() override;

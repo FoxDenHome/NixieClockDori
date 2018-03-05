@@ -18,9 +18,11 @@ class DisplayTask {
 public:
 	bool canShow();
 
-	virtual bool refresh(uint16_t displayData[]) = 0;
+	virtual bool refresh(uint16_t displayData[]);
 	virtual void handleButtonPress(Button button, PressType press);
 	static void buttonHandler(Button button, PressType press);
+
+	virtual void handleEdit(byte digit, bool up) { };
 
 	void add();
 	void remove();
@@ -39,12 +41,15 @@ public:
 	static unsigned long nextDisplayCycleMicros;
 
 protected:
+	static unsigned long lastButtonPress;
+
 	virtual const bool _canShow();
 	bool removeOnCantShow = false;
 
 	static byte editModePos;
 
 private:
+
 	static DisplayTask* _findNextValid(DisplayTask *curPtr, DisplayTask *stopOn, const boolean mustCanShow);
 	DisplayTask *next;
 	DisplayTask *prev;
