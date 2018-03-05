@@ -11,7 +11,6 @@ enum Button {
 };
 enum PressType {
 	Click,
-	DoubleClick,
 	LongPressStart,
 };
 
@@ -21,6 +20,7 @@ public:
 
 	virtual bool refresh(uint16_t displayData[]) = 0;
 	virtual void handleButtonPress(Button button, PressType press);
+	static void buttonHandler(Button button, PressType press);
 
 	void add();
 	void remove();
