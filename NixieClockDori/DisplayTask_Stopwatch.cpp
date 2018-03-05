@@ -12,7 +12,7 @@ bool DisplayTask_Stopwatch::refresh(uint16_t displayData[]) {
 		this->lastCall = curMillis;
 	}
 
-	return showShortTime(this->time, true, displayData, &this->dotMask);
+	return showShortTime(this->time, false, displayData, &this->dotMask);
 }
 
 void DisplayTask_Stopwatch::reset() {

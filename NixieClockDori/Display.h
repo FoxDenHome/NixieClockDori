@@ -7,8 +7,9 @@
 
 enum DisplayEffect {
 	NONE = 0,
-	TRANSITION = 1,
-	SLOT_MACHINE = 2,
+	TRANSITION,
+	SLOT_MACHINE,
+	FIRST_INVALID,
 };
 extern DisplayEffect currentEffect;
 

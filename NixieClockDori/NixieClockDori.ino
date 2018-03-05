@@ -1,6 +1,7 @@
 #include <SPI.h>
 #include <TimeLib.h>
 #include <MemoryUsage.h>
+#include <OneButton.h>
 
 #include "rtc.h"
 #include "config.h"
@@ -27,13 +28,34 @@ DisplayTask_Stopwatch displayStopwatch;
 DisplayTask_Countdown displayCountdown;
 DisplayTask_Flash displayFlash;
 
-const unsigned long DISPLAY_CYCLE_PERIOD = 5000000;
-
-unsigned long nextDisplayCycleMicros = 0;
-
 /**************************/
 /* ARDUINO EVENT HANDLERS */
 /**************************/
+
+#define _DECL_BUTTON_FN(NAME, FUNC) \
+	void __ ## NAME ## _BUTTON_ ## FUNC () { \
+		 if (DisplayTask::current) { \
+			DisplayTask::current->handleButtonPress(NAME, FUNC); \
+		 } \
+	}
+
+#define _SETUP_BUTTON_FN(NAME, FUNC) \
+	NAME ## Button.attach ## FUNC (__ ## NAME ## _BUTTON_ ## FUNC);
+
+#define DECL_BUTTON(NAME) \
+	OneButton NAME ## Button(PIN_BUTTON_ ## NAME, true); \
+	_DECL_BUTTON_FN(NAME, Click) \
+	_DECL_BUTTON_FN(NAME, DoubleClick) \
+	_DECL_BUTTON_FN(NAME, LongPressStart)
+
+#define SETUP_BUTTON(NAME) \
+	_SETUP_BUTTON_FN(NAME, Click) \
+	_SETUP_BUTTON_FN(NAME, DoubleClick) \
+	_SETUP_BUTTON_FN(NAME, LongPressStart)
+
+DECL_BUTTON(DOWN)
+DECL_BUTTON(UP)
+DECL_BUTTON(SET)
 
 void setup() {
 	// Pin setup
@@ -68,7 +90,14 @@ void setup() {
 	displayClock.loPri = true;
 	displayClock.add();
 
-	cycleDisplayUpdater();
+	displayStopwatch.add();
+	displayCountdown.add();
+
+	DisplayTask::cycleDisplayUpdater();
+
+	SETUP_BUTTON(UP);
+	SETUP_BUTTON(DOWN);
+	SETUP_BUTTON(SET);
 
 	digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);
 
@@ -76,10 +105,14 @@ void setup() {
 }
 
 void loop() {
+	UPButton.tick();
+	DOWNButton.tick();
+	SETButton.tick();
+
 	const unsigned long curMicros = micros();
 	displayLoop(curMicros);
-	if (nextDisplayCycleMicros <= curMicros) {
-		cycleDisplayUpdater();
+	if (DisplayTask::nextDisplayCycleMicros <= curMicros) {
+		DisplayTask::cycleDisplayUpdater();
 	}
 	serialPoll();
 }
@@ -120,7 +153,7 @@ void serialPoll() {
 			displayStopwatch.reset();
 			displayFlash.endTime = 0;
 			if (!DisplayTask::current->canShow()) {
-				cycleDisplayUpdater();
+				DisplayTask::cycleDisplayUpdater();
 			}
 			serialSendF("X OK");
 			break;
@@ -144,7 +177,7 @@ void serialPoll() {
 		case 'F':
 			if (inputString.length() < 16) {
 				if (inputString.length() < 3) { // Allow for \r\n
-					cycleDisplayUpdater();
+					DisplayTask::cycleDisplayUpdater();
 					serialSendF("F OK");
 					break;
 				}
@@ -244,10 +277,6 @@ void serialPoll() {
 	}
 }
 
-void cycleDisplayUpdater() {
-	DisplayTask::current = DisplayTask::findNextValid(DisplayTask::current);
-	nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
-}
 
 /*********************/
 /* UTILITY FUNCTIONS */
@@ -265,11 +294,12 @@ void setColorFromInput(DisplayTask *displayTask, const byte offset) {
 void showIfPossibleOtherwiseRotateIfCurrent(DisplayTask *displayTask) {
 	if (displayTask->canShow()) {
 		displayTask->add();
+		DisplayTask::editMode = false;
 		DisplayTask::current = displayTask;
-		nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
+		DisplayTask::nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
 	}
 	else if (displayTask == DisplayTask::current) {
-		cycleDisplayUpdater();
+		DisplayTask::cycleDisplayUpdater();
 	}
 	else {
 		return;
