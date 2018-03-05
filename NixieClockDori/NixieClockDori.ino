@@ -2,6 +2,7 @@
 #include <TimeLib.h>
 #include <MemoryUsage.h>
 #include <OneButton.h>
+#include <EEPROM.h>
 
 #include "rtc.h"
 #include "config.h"
@@ -147,6 +148,10 @@ void serialPoll() {
 			// X
 			// Performs a display reset of all modes
 		case 'X':
+			for (int i = 0; i < EEPROM.length(); i++) {
+				EEPROM.write(i, 0);
+			}
+			displayCountdown.timeReset = 10000;
 			displayCountdown.reset();
 			displayStopwatch.reset();
 			displayFlash.endTime = 0;

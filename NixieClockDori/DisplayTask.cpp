@@ -9,6 +9,7 @@ DisplayTask* DisplayTask::current;
 unsigned long DisplayTask::nextDisplayCycleMicros = 0;
 bool DisplayTask::editMode = false;
 byte DisplayTask::editModePos = 0;
+unsigned long DisplayTask::lastButtonPress = 0;
 
 void DisplayTask::cycleDisplayUpdater() {
 	DisplayTask::nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
@@ -22,11 +23,22 @@ void DisplayTask::cycleDisplayUpdater() {
 void DisplayTask::buttonHandler(Button button, PressType pressType) {
 	DisplayTask::nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
 	displayAntiPoisonOff();
+	DisplayTask::lastButtonPress = millis();
 
 	if (!DisplayTask::current) {
 		return;
 	}
 	DisplayTask::current->handleButtonPress(button, pressType);
+}
+
+bool DisplayTask::refresh(uint16_t displayData[]) {
+	if (this->editMode) {
+		if ((millis() - DisplayTask::lastButtonPress) % 1000 >= 500) {
+			displayData[this->editModePos] = NO_TUBES;
+		}
+		return false;
+	}
+	return true;
 }
 
 void DisplayTask::handleButtonPress(Button button, PressType pressType) {
@@ -52,6 +64,7 @@ void DisplayTask::handleButtonPress(Button button, PressType pressType) {
 	case DOWN:
 	case UP:
 		if (this->editMode) {
+			handleEdit(DisplayTask::editModePos, button == UP);
 			break;
 		}
 		currentEffect = static_cast<DisplayEffect>(static_cast<byte>(currentEffect) + 1);
