@@ -19,6 +19,8 @@ uint16_t* displayDataFront = displayDataB;
 
 byte dotMask = 0;
 
+DisplayEffect currentEffect = SLOT_MACHINE;
+
 void displayAntiPoison(const unsigned long count) {
 	const unsigned long newEnd = millis() + (ANTI_POISON_DELAY * 10UL * count);
 	if (newEnd > antiPoisonEnd) {
@@ -66,11 +68,9 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero, uin
 	return data == 0;
 }
 
-#ifdef EFFECT_ENABLED
 unsigned long dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
 uint16_t dataToDisplayPrevious[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
-#endif
-boolean needEffects = false;
+boolean renderAlways = false;
 
 void renderNixies(const unsigned long curMicros, const unsigned long microDelta) {
 	static byte oldAntiPoisonIdx = 255;
@@ -79,12 +79,11 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 	boolean allowEffects = false, doFlip = true;
 
 	static byte redOld, greenOld, blueOld;
-#ifdef EFFECT_ENABLED
+
 	static boolean allTubesOld = true;
 	static uint16_t dataToDisplayOld[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
 	static byte redPrevious, greenPrevious, bluePrevious;
 	static long colorTransProg;
-#endif
 
 	const unsigned long curMillis = millis();
 
@@ -116,60 +115,59 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 	else if (DisplayTask::current) {
 		allowEffects = DisplayTask::current->refresh(displayDataBack);
 
-#ifdef EFFECT_ENABLED
-		byte redNow = redOld, greenNow = greenOld, blueNow = blueOld;
+		if (currentEffect != NONE) {
+			byte redNow = redOld, greenNow = greenOld, blueNow = blueOld;
 
-		if (colorTransProg > 0 && allowEffects && colorTransProg > microDelta) {
-			colorTransProg -= microDelta;
-			redNow = redOld + (((redPrevious - redOld) * colorTransProg) / EFFECT_SPEED);
-			greenNow = greenOld + (((greenPrevious - greenOld) * colorTransProg) / EFFECT_SPEED);
-			blueNow = blueOld + (((bluePrevious - blueOld) * colorTransProg) / EFFECT_SPEED);
-			//analogWrite(PIN_LED_RED, redNow);
-			Timer1.pwm(PIN_LED_RED, redNow << 2);
-			analogWrite(PIN_LED_GREEN, greenNow);
-			analogWrite(PIN_LED_BLUE, blueNow);
-		}
-		else if (colorTransProg >= 0) {
-			colorTransProg = -1;
-			//analogWrite(PIN_LED_RED, redNow);
-			Timer1.pwm(PIN_LED_RED, redNow << 2);
-			analogWrite(PIN_LED_GREEN, greenNow);
-			analogWrite(PIN_LED_BLUE, blueNow);
-		}
+			if (colorTransProg > 0 && allowEffects && colorTransProg > microDelta) {
+				colorTransProg -= microDelta;
+				redNow = redOld + (((redPrevious - redOld) * colorTransProg) / EFFECT_SPEED);
+				greenNow = greenOld + (((greenPrevious - greenOld) * colorTransProg) / EFFECT_SPEED);
+				blueNow = blueOld + (((bluePrevious - blueOld) * colorTransProg) / EFFECT_SPEED);
+				//analogWrite(PIN_LED_RED, redNow);
+				Timer1.pwm(PIN_LED_RED, redNow << 2);
+				analogWrite(PIN_LED_GREEN, greenNow);
+				analogWrite(PIN_LED_BLUE, blueNow);
+			}
+			else if (colorTransProg >= 0) {
+				colorTransProg = -1;
+				//analogWrite(PIN_LED_RED, redNow);
+				Timer1.pwm(PIN_LED_RED, redNow << 2);
+				analogWrite(PIN_LED_GREEN, greenNow);
+				analogWrite(PIN_LED_BLUE, blueNow);
+			}
 
-		if (DisplayTask::current->red != redOld || DisplayTask::current->green != greenOld || DisplayTask::current->blue != blueOld) {
-			redPrevious = redNow;
-			redOld = DisplayTask::current->red;
-			greenPrevious = greenNow;
-			greenOld = DisplayTask::current->green;
-			bluePrevious = blueNow;
-			blueOld = DisplayTask::current->blue;
-			colorTransProg = EFFECT_SPEED;
+			if (DisplayTask::current->red != redOld || DisplayTask::current->green != greenOld || DisplayTask::current->blue != blueOld) {
+				redPrevious = redNow;
+				redOld = DisplayTask::current->red;
+				greenPrevious = greenNow;
+				greenOld = DisplayTask::current->green;
+				bluePrevious = blueNow;
+				blueOld = DisplayTask::current->blue;
+				colorTransProg = EFFECT_SPEED;
+			}
 		}
-
-#else
-		if (DisplayTask::current->red != redOld) {
-			redOld = DisplayTask::current->red;
-			//analogWrite(PIN_LED_RED, redOld);
-			Timer1.pwm(PIN_LED_RED, redOld << 2);
+		else {
+			if (DisplayTask::current->red != redOld) {
+				redOld = DisplayTask::current->red;
+				//analogWrite(PIN_LED_RED, redOld);
+				Timer1.pwm(PIN_LED_RED, redOld << 2);
+			}
+			if (DisplayTask::current->green != greenOld) {
+				greenOld = DisplayTask::current->green;
+				analogWrite(PIN_LED_GREEN, greenOld);
+			}
+			if (DisplayTask::current->blue != blueOld) {
+				blueOld = DisplayTask::current->blue;
+				analogWrite(PIN_LED_BLUE, blueOld);
+			}
 		}
-		if (DisplayTask::current->green != greenOld) {
-			greenOld = DisplayTask::current->green;
-			analogWrite(PIN_LED_GREEN, greenOld);
-		}
-		if (DisplayTask::current->blue != blueOld) {
-			blueOld = DisplayTask::current->blue;
-			analogWrite(PIN_LED_BLUE, blueOld);
-		}
-#endif
 
 		dotMask = DisplayTask::current->dotMask;
 	}
 
 	
 	// Progress through effect
-#ifdef EFFECT_ENABLED
-	if (allowEffects) {
+	if (allowEffects && currentEffect != NONE) {
 		bool hasEffects = false;
 		for (byte i = 0; i < 6; i++) {
 			const uint16_t cur = displayDataBack[i];
@@ -182,9 +180,9 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 			const unsigned long tubeTrans = dataIsTransitioning[i];
 
 			if (tubeTrans > microDelta) {
-#ifdef EFFECT_SLOT_MACHINE
-				displayDataBack[i] = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
-#endif
+				if (currentEffect == SLOT_MACHINE) {
+					displayDataBack[i] = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
+				}
 				dataIsTransitioning[i] -= microDelta;
 				hasEffects = true;
 			}
@@ -193,16 +191,15 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 				dataIsTransitioning[i] = 0;
 			}
 		}
-#ifdef EFFECT_TRANSITION
-		needEffects = hasEffects;
-#endif
+		if (currentEffect == TRANSITION) {
+			renderAlways = hasEffects;
+		}
 		allTubesOld = false;
 		doFlip = true;
 	}
 	else {
 		allTubesOld = true;
 	}
-#endif
 
 	if (doFlip) {
 		uint16_t *tmp = displayDataFront;
@@ -215,20 +212,23 @@ void displayInterrupt() {
 	static byte ctr = 0;
 
 	const byte ctrL = ctr % 11;
-	if (ctrL <= 1 || needEffects) {
+	if (ctrL <= 1 || renderAlways) {
 		const byte anodeGroup = ctr / 11;
 		const byte anodeControl = ctrL ? (1 << (anodeGroup + 4)) : 0;
 
 		const byte curTubeL = anodeGroup << 1;
 		const byte curTubeR = curTubeL + 1;
 
-#ifdef EFFECT_TRANSITION
-		const uint16_t tubeL = (!needEffects || ctrL > (dataIsTransitioning[curTubeL] / (EFFECT_SPEED / 10UL))) ? displayDataFront[curTubeL] : dataToDisplayPrevious[curTubeL];
-		const uint16_t tubeR = (!needEffects || ctrL > (dataIsTransitioning[curTubeR] / (EFFECT_SPEED / 10UL))) ? displayDataFront[curTubeR] : dataToDisplayPrevious[curTubeR];
-#else
-		const uint16_t tubeL = displayDataFront[curTubeL];
-		const uint16_t tubeR = displayDataFront[curTubeR];
-#endif
+		uint16_t tubeL = displayDataFront[curTubeL];
+		uint16_t tubeR = displayDataFront[curTubeR];
+		if (renderAlways && currentEffect == TRANSITION) {
+			if (ctrL <= (dataIsTransitioning[curTubeL] / (EFFECT_SPEED / 10UL))) {
+				tubeL = dataToDisplayPrevious[curTubeL];
+			}
+			if (ctrL <= (dataIsTransitioning[curTubeR] / (EFFECT_SPEED / 10UL))) {
+				tubeR = dataToDisplayPrevious[curTubeR];
+			}
+		}
 
 		PORT_DISPLAY_LATCH &= ~PORT_MASK_DISPLAY_LATCH;
 		SPI.transfer(dotMask);                            // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
@@ -242,8 +242,6 @@ void displayInterrupt() {
 		ctr = 0;
 	}
 }
-
-#define DISPLAY_RENDER_STEP 200
 
 void displayInit() {
 	SPI.begin();
