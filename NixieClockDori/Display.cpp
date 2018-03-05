@@ -76,6 +76,7 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 #ifdef EFFECT_ENABLED
 	static unsigned long dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
 	static boolean allTubesOld = true;
+	static uint16_t dataToDisplayPrevious[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
 	static uint16_t dataToDisplayOld[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
 	static byte redPrevious, greenPrevious, bluePrevious;
 	static long colorTransProg;
@@ -112,19 +113,6 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 		allowEffects = DisplayTask::current->refresh(displayDataBack);
 
 #ifdef EFFECT_ENABLED
-		if (allowEffects) {
-			// Start necessary effects (when display changed)
-			for (byte i = 0; i < 6; i++) {
-				const uint16_t cur = displayDataBack[i];
-				if (dataToDisplayOld[i] != cur || allTubesOld) {
-					dataToDisplayOld[i] = cur;
-					dataIsTransitioning[i] = EFFECT_SPEED;
-				}
-			}
-
-			allTubesOld = false;
-		}
-
 		byte redNow = redOld, greenNow = greenOld, blueNow = blueOld;
 
 		if (colorTransProg > 0 && allowEffects && colorTransProg > microDelta) {
@@ -181,6 +169,7 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 		for (byte i = 0; i < 6; i++) {
 			const uint16_t cur = displayDataBack[i];
 			if (dataToDisplayOld[i] != cur || allTubesOld) {
+				dataToDisplayPrevious[i] = dataToDisplayOld[i];
 				dataToDisplayOld[i] = cur;
 				dataIsTransitioning[i] = EFFECT_SPEED;
 			}
