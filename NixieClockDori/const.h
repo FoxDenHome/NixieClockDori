@@ -1,7 +1,16 @@
 /********************/
 /* PIN DEFINITIONS  */
 /********************/
-const byte PIN_DISPLAY_LATCH = 10; // Passes data from SPI chip to display while HIGH (pulled LOW during SPI write)
+// Passes data from SPI chip to display while HIGH (pulled LOW during SPI write)
+#define PIN_DISPLAY_LATCH 10
+#if PIN_DISPLAY_LATCH > 7
+#define PORT_DISPLAY_LATCH PORTB
+#define PORT_MASK_DISPLAY_LATCH (1 << (PIN_DISPLAY_LATCH - 8))
+#else
+#define PORT_DISPLAY_LATCH PORTD
+#define PORT_MASK_DISPLAY_LATCH (1 << PIN_DISPLAY_LATCH)
+#endif
+
 const byte PIN_HIZ = 8;  // Z state in registers outputs (while LOW level) Always LOW? */
 const byte PIN_HIGH_VOLTAGE_ENABLE = 5;  // High Voltage (tube power) on while HIGH
 const byte PIN_BUZZER = 2;  // Piezo buzzer pin
