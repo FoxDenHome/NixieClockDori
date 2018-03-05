@@ -36,16 +36,14 @@ byte makeDotMask(const bool upper, const bool lower) {
 	return (upper ? 0 : MASK_UPPER_DOTS) | (lower ? 0 : MASK_LOWER_DOTS);
 }
 
-bool showShortTime(const unsigned long timeMs, bool trimLZ, uint16_t dataToDisplay[], byte *dotMask) {
+bool showShortTime(const unsigned long timeMs, bool trimLZ, uint16_t dataToDisplay[]) {
 	if (timeMs >= ONE_HOUR_IN_MS) { // Show H/M/S
-		*dotMask = makeDotMask(true, false);
 		trimLZ = insert2(0, (timeMs / ONE_HOUR_IN_MS) % 100, trimLZ, dataToDisplay);
 		trimLZ = insert2(2, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ, dataToDisplay);
 		insert2(4, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ, dataToDisplay);
 		return true;
 	}
 	else { // Show M/S/MS
-		*dotMask = makeDotMask(false, true);
 		trimLZ = insert2(0, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ, dataToDisplay);
 		trimLZ = insert2(2, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ, dataToDisplay);
 		insert2(4, (timeMs / 10UL) % 100, trimLZ, dataToDisplay);

@@ -1,6 +1,10 @@
 #include "DisplayTask_Stopwatch.h"
 #include "Display.h"
 
+DisplayTask_Stopwatch::DisplayTask_Stopwatch() {
+	this->dotMask = makeDotMask(true, false);
+}
+
 const bool DisplayTask_Stopwatch::_canShow() {
 	return this->time > 0;
 }
@@ -12,7 +16,7 @@ bool DisplayTask_Stopwatch::refresh(uint16_t displayData[]) {
 		this->lastCall = curMillis;
 	}
 
-	return showShortTime(this->time, false, displayData, &this->dotMask);
+	return showShortTime(this->time, false, displayData);
 }
 
 void DisplayTask_Stopwatch::reset() {

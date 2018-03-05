@@ -3,6 +3,10 @@
 
 #include <TimeLib.h>
 
+DisplayTask_Countdown::DisplayTask_Countdown() {
+	this->dotMask = makeDotMask(false, true);
+}
+
 const bool DisplayTask_Countdown::_canShow() {
 	return this->to != 0;
 }
@@ -18,5 +22,5 @@ bool DisplayTask_Countdown::refresh(uint16_t displayData[]) {
 		return false;
 	}
 
-	return showShortTime(this->to - curMillis, true, displayData, &this->dotMask);
+	return showShortTime(this->to - curMillis, true, displayData);
 }
