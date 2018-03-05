@@ -220,12 +220,12 @@ void renderNixiesInt(bool blank) {
 	const uint16_t tubeL = displayDataFront[curTubeL];
 	const uint16_t tubeR = displayDataFront[curTubeR];
 
-	digitalWrite(PIN_DISPLAY_LATCH, LOW);
+	PORT_DISPLAY_LATCH &= ~PORT_MASK_DISPLAY_LATCH;
 	SPI.transfer(dotMask);                            // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
 	SPI.transfer(tubeR >> 6 | anodeControl);          // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes
 	SPI.transfer(tubeR << 2 | tubeL >> 8);            // [RC5][RC4][RC3][RC2][RC1][RC0][LC9][LC8] - RC9 - RC0 - Right tubes cathodes
 	SPI.transfer(tubeL);                              // [LC7][LC6][LC5][LC4][LC3][LC2][LC1][LC0] - LC9 - LC0 - Left tubes cathodes
-	digitalWrite(PIN_DISPLAY_LATCH, HIGH);
+	PORT_DISPLAY_LATCH |= PORT_MASK_DISPLAY_LATCH;
 }
 
 void displayInterrupt() {

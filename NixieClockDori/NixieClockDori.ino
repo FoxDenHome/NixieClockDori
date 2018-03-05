@@ -50,6 +50,7 @@ void setup() {
 	pinMode(PIN_BUZZER, OUTPUT);
 
 	pinMode(PIN_DISPLAY_LATCH, OUTPUT);
+	digitalWrite(PIN_DISPLAY_LATCH, LOW);
 	pinMode(PIN_HIZ, OUTPUT);
 	digitalWrite(PIN_HIZ, LOW);
 
