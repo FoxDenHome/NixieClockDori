@@ -34,9 +34,7 @@ DisplayTask_Flash displayFlash;
 
 #define _DECL_BUTTON_FN(NAME, FUNC) \
 	void __ ## NAME ## _BUTTON_ ## FUNC () { \
-		 if (DisplayTask::current) { \
-			DisplayTask::current->handleButtonPress(NAME, FUNC); \
-		 } \
+		DisplayTask::buttonHandler(NAME, FUNC); \
 	}
 
 #define _SETUP_BUTTON_FN(NAME, FUNC) \
@@ -45,12 +43,12 @@ DisplayTask_Flash displayFlash;
 #define DECL_BUTTON(NAME) \
 	OneButton NAME ## Button(PIN_BUTTON_ ## NAME, true); \
 	_DECL_BUTTON_FN(NAME, Click) \
-	_DECL_BUTTON_FN(NAME, DoubleClick) \
 	_DECL_BUTTON_FN(NAME, LongPressStart)
 
 #define SETUP_BUTTON(NAME) \
+	NAME ## Button.setClickTicks(200); \
+	NAME ## Button.setPressTicks(500); \
 	_SETUP_BUTTON_FN(NAME, Click) \
-	_SETUP_BUTTON_FN(NAME, DoubleClick) \
 	_SETUP_BUTTON_FN(NAME, LongPressStart)
 
 DECL_BUTTON(DOWN)
@@ -149,7 +147,7 @@ void serialPoll() {
 			// X
 			// Performs a display reset of all modes
 		case 'X':
-			displayCountdown.to = 0;
+			displayCountdown.reset();
 			displayStopwatch.reset();
 			displayFlash.endTime = 0;
 			if (!DisplayTask::current->canShow()) {
@@ -214,10 +212,11 @@ void serialPoll() {
 			// ^C|-26281
 		case 'C':
 			if (inputString.length() < 9) {
-				displayCountdown.to = 0;
+				displayCountdown.reset();
 			}
 			else {
-				displayCountdown.to = millis() + inputString.substring(1, 9).toInt();
+				displayCountdown.timeReset = inputString.substring(1, 9).toInt();
+				displayCountdown.start();
 			}
 			setColorFromInput(&displayCountdown, 9);
 			showIfPossibleOtherwiseRotateIfCurrent(&displayCountdown);

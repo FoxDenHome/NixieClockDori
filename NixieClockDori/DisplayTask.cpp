@@ -19,10 +19,17 @@ void DisplayTask::cycleDisplayUpdater() {
 	DisplayTask::current = DisplayTask::findNextValid(DisplayTask::current, true);
 }
 
-void DisplayTask::handleButtonPress(Button button, PressType pressType) {
+void DisplayTask::buttonHandler(Button button, PressType pressType) {
 	DisplayTask::nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
 	displayAntiPoisonOff();
 
+	if (!DisplayTask::current) {
+		return;
+	}
+	DisplayTask::current->handleButtonPress(button, pressType);
+}
+
+void DisplayTask::handleButtonPress(Button button, PressType pressType) {
 	switch (button) {
 	case SET:
 		switch (pressType) {
@@ -40,19 +47,17 @@ void DisplayTask::handleButtonPress(Button button, PressType pressType) {
 			DisplayTask::editMode = !DisplayTask::editMode;
 			DisplayTask::editModePos = 0;
 			break;
-		case DoubleClick:
-			if (this->editMode) {
-				break;
-			}
-			currentEffect = static_cast<DisplayEffect>(static_cast<byte>(currentEffect) + 1);
-			if (currentEffect == FIRST_INVALID) {
-				currentEffect = NONE;
-			}
-			break;
 		}
 		break;
 	case DOWN:
 	case UP:
+		if (this->editMode) {
+			break;
+		}
+		currentEffect = static_cast<DisplayEffect>(static_cast<byte>(currentEffect) + 1);
+		if (currentEffect == FIRST_INVALID) {
+			currentEffect = NONE;
+		}
 		break;
 	}
 }
