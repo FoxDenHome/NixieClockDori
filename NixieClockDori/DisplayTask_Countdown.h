@@ -5,6 +5,8 @@
 
 class DisplayTask_Countdown : public DisplayTask {
 public:
+	DisplayTask_Countdown();
+
 	bool refresh(uint16_t displayData[]) override;
 	unsigned long to;
 protected:
