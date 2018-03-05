@@ -7,6 +7,9 @@
 #ifdef EFFECT_SLOT_MACHINE
 #define EFFECT_ENABLED
 #endif
+#ifdef EFFECT_TRANSITION
+#define EFFECT_ENABLED
+#endif
 
 const uint16_t ALL_TUBES = (1 << 10) - 1; // Bitmask to enable all tubes
 const uint16_t NO_TUBES = 0;
