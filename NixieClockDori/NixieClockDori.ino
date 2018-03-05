@@ -72,7 +72,7 @@ void setup() {
 
 	digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);
 
-	serialSendSimple(F("< Ready"));
+	serialSendF("< Ready");
 }
 
 void loop() {
@@ -99,7 +99,7 @@ void serialPoll() {
 			// T1756300103180
 		case 'T':
 			if (inputString.length() < 14) {
-				serialSendSimple(F("T BAD (Invalid length; expected 16)"));
+				serialSendF("T BAD (Invalid length; expected 16)");
 				break;
 			}
 			tmElements_t tm;
@@ -111,7 +111,7 @@ void serialPoll() {
 			tm.Year = inputString.substring(11, 13).toInt();
 			tm.Wday = inputString.substring(13, 14).toInt();
 			rtcSetTime(tm);
-			serialSendSimple(F("T OK"));
+			serialSendF("T OK");
 			break;
 			// X
 			// Performs a display reset of all modes
@@ -122,7 +122,7 @@ void serialPoll() {
 			if (!DisplayTask::current->canShow()) {
 				cycleDisplayUpdater();
 			}
-			serialSendSimple(F("X OK"));
+			serialSendF("X OK");
 			break;
 			// P CC
 			// C = Count (Dec)
@@ -130,11 +130,11 @@ void serialPoll() {
 			// ^P01|-20043
 		case 'P':
 			if (inputString.length() < 2) {
-				serialSendSimple(F("P BAD (Invalid length; expected 2)"));
+				serialSendF("P BAD (Invalid length; expected 2)");
 				break;
 			}
 			displayAntiPoison(inputString.substring(1, 3).toInt());
-			serialSendSimple(F("P OK"));
+			serialSendF("P OK");
 			break;
 			// F [MMMMMMMM D NNNNNN [RR GG BB]]
 			// M = milliseconds (Dec), D = dots (Bitmask Dec) to show the message, N = Nixie message (Dec), R = Red (Hex), G = Green (Hex), B = Blue (Hex)
@@ -145,10 +145,10 @@ void serialPoll() {
 			if (inputString.length() < 16) {
 				if (inputString.length() < 3) { // Allow for \r\n
 					cycleDisplayUpdater();
-					serialSendSimple(F("F OK"));
+					serialSendF("F OK");
 					break;
 				}
-				serialSendSimple(F("F BAD (Invalid length; expected 16 or 1)"));
+				serialSendF("F BAD (Invalid length; expected 16 or 1)");
 				break;
 			}
 
@@ -172,7 +172,7 @@ void serialPoll() {
 			setColorFromInput(&displayFlash, 16);
 			showIfPossibleOtherwiseRotateIfCurrent(&displayFlash);
 
-			serialSendSimple(F("F OK"));
+			serialSendF("F OK");
 			break;
 			// C [MMMMMMMM [RR GG BB]]
 			// M = Time in ms (Dec), R = Red (Hex), G = Green (Hex), B = Blue (Hex)
@@ -188,7 +188,7 @@ void serialPoll() {
 			}
 			setColorFromInput(&displayCountdown, 9);
 			showIfPossibleOtherwiseRotateIfCurrent(&displayCountdown);
-			serialSendSimple(F("C OK"));
+			serialSendF("C OK");
 			break;
 			// W C [RR GG BB]
 			// C = subcommand, R = Red (Hex), G = Green (Hex), B = Blue (Hex)
@@ -197,7 +197,7 @@ void serialPoll() {
 			// ^WR|-3952
 		case 'W':
 			if (inputString.length() < 2) {
-				serialSendSimple(F("W BAD (Invalid length; expected 2)"));
+				serialSendF("W BAD (Invalid length; expected 2)");
 				break;
 			}
 			setColorFromInput(&displayStopwatch, 2);
@@ -217,19 +217,17 @@ void serialPoll() {
 				break;
 			default:
 				tmpData = false;
-				Serial.print(F("W BAD (Invalid C)"));
+				serialSendF("W BAD (Invalid C)");
 				break;
 			}
 			if (tmpData) {
 				showIfPossibleOtherwiseRotateIfCurrent(&displayStopwatch);
-				serialSendSimple(F("W OK"));
+				serialSendF("W OK");
 			}
 			break;
 			// ^D|-5712
 		case 'D':
-			serialSendFirst(F("D OK "));
-			serialSendNext(String(mu_freeRam()));
-			serialSendEnd();
+			serialSend2(F("D OK "), String(mu_freeRam()));
 			break;
 		}
 	}

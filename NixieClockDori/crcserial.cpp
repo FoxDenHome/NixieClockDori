@@ -8,6 +8,11 @@ String inputChecksum;
 #define stringCRC(str) crc.ccitt((const uint8_t*)str.c_str(), str.length())
 #define stringCRCUpdate(str) crc.ccitt_upd((const uint8_t*)str.c_str(), str.length())
 
+void serialSend(const String& str) {
+	serialSendFirst(str);
+	serialSendEnd();
+}
+
 void serialInit() {
 	Serial.begin(115200);
 	inputChecksum.reserve(16);
@@ -67,26 +72,16 @@ bool serialReadNext() {
 	if (inChar == '\n') {
 		receivedStart = false;
 		if (!inChecksum) {
-			serialSendFirst(F("> NOCRC "));
-			serialSendNext(inputString);
-			serialSendEnd();
+			serialSend2(F("> NOCRC "), inputString);
 			return false;
 		}
 		int computedCRC = stringCRC(inputString);
 		int receivedCRC = inputChecksum.toInt();
 		if (computedCRC != receivedCRC) {
-			serialSendFirst(F("> BADCRC "));
-			serialSendNext(String(computedCRC));
-			serialSendNext(" ");
-			serialSendNext(String(receivedCRC));
-			serialSendNext(" ");
-			serialSendNext(inputString);
-			serialSendEnd();
+			serialSend6(F("> BADCRC "), String(computedCRC), " ", String(receivedCRC), " ", inputString);
 			return false;
 		}
-		serialSendFirst(F("> OK "));
-		serialSendNext(inputString);
-		serialSendEnd();
+		serialSend2(F("> OK "), inputString);
 		return true;
 	}
 
