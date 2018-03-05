@@ -65,7 +65,7 @@ void insert1(const byte offset, const byte data, const bool trimLeadingZero, uin
 bool insert2(const byte offset, const byte data, const bool trimLeadingZero, uint16_t dataToDisplay[]) {
 	insert1(offset, data / 10, trimLeadingZero, dataToDisplay);
 	insert1(offset + 1, data, trimLeadingZero, dataToDisplay);
-	return data == 0;
+	return data == 0 && trimLeadingZero;
 }
 
 unsigned long dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };

@@ -19,9 +19,9 @@ const byte PIN_LED_RED = 9;  // PWM/analog pin for all red LEDs
 const byte PIN_LED_GREEN = 6;  // PWM/analog pin for all green LEDs
 const byte PIN_LED_BLUE = 3;  // PWM/analog pin for all blue LEDs
 
-const byte PIN_BUTTON_SET = A0; // "set" button
-const byte PIN_BUTTON_UP = A2; // "up" button
-const byte PIN_BUTTON_DOWN = A1; // "down" button
+#define PIN_BUTTON_SET A0
+#define PIN_BUTTON_UP A2
+#define PIN_BUTTON_DOWN A1
 
 /*******************/
 /* OTHER CONSTANTS */

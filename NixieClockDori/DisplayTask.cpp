@@ -1,14 +1,61 @@
 #include "DisplayTask.h"
 #include "Display.h"
 
-DisplayTask *dt_first_lo;
-DisplayTask *dt_last_lo;
 DisplayTask *dt_first_hi;
 DisplayTask *dt_last_hi;
 
 DisplayTask* DisplayTask::current;
 
-DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopOn) {
+unsigned long DisplayTask::nextDisplayCycleMicros = 0;
+bool DisplayTask::editMode = false;
+byte DisplayTask::editModePos = 0;
+
+void DisplayTask::cycleDisplayUpdater() {
+	DisplayTask::nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
+
+	if (DisplayTask::editMode || (DisplayTask::current && !DisplayTask::current->loPri && DisplayTask::current->canShow())) {
+		return;
+	}
+	DisplayTask::current = DisplayTask::findNextValid(DisplayTask::current, true);
+}
+
+void DisplayTask::handleButtonPress(Button button, PressType pressType) {
+	switch (button) {
+	case SET:
+		switch (pressType) {
+		case Click:
+			if (DisplayTask::editMode) {
+				if (++DisplayTask::editModePos > 5) {
+					DisplayTask::editModePos = 0;
+				}
+			}
+			else {
+				DisplayTask::current = DisplayTask::findNextValid(DisplayTask::current, false);
+				nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
+			}
+			break;
+		case LongPressStart:
+			DisplayTask::editMode = !DisplayTask::editMode;
+			DisplayTask::editModePos = 0;
+			break;
+		case DoubleClick:
+			if (this->editMode) {
+				break;
+			}
+			currentEffect = static_cast<DisplayEffect>(static_cast<byte>(currentEffect) + 1);
+			if (currentEffect == FIRST_INVALID) {
+				currentEffect = NONE;
+			}
+			break;
+		}
+		break;
+	case DOWN:
+	case UP:
+		break;
+	}
+}
+
+DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopOn, const boolean mustCanShow) {
 	if (!curPtr) {
 		return NULL;
 	}
@@ -18,7 +65,8 @@ DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopO
 			return NULL;
 		}
 
-		if (curPtr->canShow()) {
+		// Trigger canShow to allow self-remove, then check if added if not must can show
+		if (curPtr->canShow() || (!mustCanShow && curPtr->isAdded)) {
 			return curPtr;
 		}
 	} while (curPtr = curPtr->next);
@@ -26,43 +74,28 @@ DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopO
 	return NULL;
 }
 
-DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current) {
+DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current, const boolean mustCanShow) {
 	if (!dt_current) {
 		if (dt_first_hi) {
-			return DisplayTask::findNextValid(dt_first_hi);
-		}
-		else if (dt_first_lo) {
-			return DisplayTask::findNextValid(dt_first_lo);
+			return DisplayTask::findNextValid(dt_first_hi, mustCanShow);
 		}
 		return NULL;
 	}
 
 	DisplayTask* curPtr;
-	const bool isLoPri = dt_current->loPri;
 
-	if (isLoPri) { // Search for first hi-pri
-		curPtr = DisplayTask::_findNextValid(dt_first_hi, NULL);
-		if (curPtr) {
-			return curPtr;
-		}
-	}
-
-	curPtr = DisplayTask::_findNextValid(dt_current->next, NULL);
+	curPtr = DisplayTask::_findNextValid(dt_current->next, NULL, mustCanShow);
 	if (curPtr) {
 		return curPtr;
 	}
 
-	curPtr = DisplayTask::_findNextValid(isLoPri ? dt_first_lo : dt_first_hi, dt_current);
+	curPtr = DisplayTask::_findNextValid(dt_first_hi, dt_current, mustCanShow);
 	if (curPtr) {
 		return curPtr;
 	}
 
-	if (dt_current->canShow()) {
+	if (dt_current->canShow() || (!mustCanShow && dt_current->isAdded)) {
 		return dt_current;
-	}
-
-	if (!isLoPri) {
-		return DisplayTask::_findNextValid(dt_first_lo, NULL);
 	}
 
 	return NULL;
@@ -91,26 +124,14 @@ void DisplayTask::add() {
 
 	this->next = NULL;
 
-	if (this->loPri) {
-		if (dt_last_lo) {
-			dt_last_lo->next = this;
-			this->prev = dt_last_lo;
-			dt_last_lo = this;
-			return;
-		}
-		dt_first_lo = this;
-		dt_last_lo = this;
-	}
-	else {
-		if (dt_last_hi) {
-			dt_last_hi->next = this;
-			this->prev = dt_last_hi;
-			dt_last_hi = this;
-			return;
-		}
-		dt_first_hi = this;
+	if (dt_last_hi) {
+		dt_last_hi->next = this;
+		this->prev = dt_last_hi;
 		dt_last_hi = this;
+		return;
 	}
+	dt_first_hi = this;
+	dt_last_hi = this;
 }
 
 void DisplayTask::remove() {
@@ -127,40 +148,20 @@ void DisplayTask::remove() {
 		this->prev->next = this->next;
 	}
 
-	if (this->loPri) {
-		if (this == dt_first_lo) {
-			if (this->next) {
-				dt_first_lo = this->next;
-			}
-			else {
-				dt_first_lo = this->prev;
-			}
+	if (this == dt_first_hi) {
+		if (this->next) {
+			dt_first_hi = this->next;
 		}
-		if (this == dt_last_lo) {
-			if (this->prev) {
-				dt_last_lo = this->prev;
-			}
-			else {
-				dt_last_lo = this->next;
-			}
+		else {
+			dt_first_hi = this->prev;
 		}
 	}
-	else {
-		if (this == dt_first_hi) {
-			if (this->next) {
-				dt_first_hi = this->next;
-			}
-			else {
-				dt_first_hi = this->prev;
-			}
+	if (this == dt_last_hi) {
+		if (this->prev) {
+			dt_last_hi = this->prev;
 		}
-		if (this == dt_last_hi) {
-			if (this->prev) {
-				dt_last_hi = this->prev;
-			}
-			else {
-				dt_last_hi = this->next;
-			}
+		else {
+			dt_last_hi = this->next;
 		}
 	}
 
