@@ -7,8 +7,9 @@ class DisplayTask_Date : public DisplayTask {
 public:
 	DisplayTask_Date();
 	bool refresh(uint16_t displayData[]) override;
-	void handleEdit(byte digit, bool up) override;
-	void handleButtonPress(Button button, PressType press) override;
+
+	void handleEdit(const byte digit, const bool up) override;
+	void handleButtonPress(const Button button, const PressType press) override;
 protected:
 	const bool _canShow() override;
 private:

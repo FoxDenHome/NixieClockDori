@@ -6,8 +6,9 @@
 class DisplayTask_Clock : public DisplayTask {
 public:
 	bool refresh(uint16_t displayData[]) override;
-	void handleEdit(byte digit, bool up) override;
-	void handleButtonPress(Button button, PressType press) override;
+
+	void handleEdit(const byte digit, const bool up) override;
+	void handleButtonPress(const Button button, const PressType press) override;
 private:
 	byte h, m, s;
 };

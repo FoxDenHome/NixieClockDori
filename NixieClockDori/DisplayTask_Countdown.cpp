@@ -16,7 +16,7 @@ DisplayTask_Countdown::DisplayTask_Countdown() {
 	this->reset();
 }
 
-void DisplayTask_Countdown::handleEdit(byte digit, bool up) {
+void DisplayTask_Countdown::handleEdit(const byte digit, const bool up) {
 	byte h = this->timeReset / (60UL * 60UL * 1000UL);
 	byte m = (this->timeReset / (60UL * 1000UL)) % 60;
 	byte s = (this->timeReset / 1000UL) % 60;
@@ -35,7 +35,7 @@ void DisplayTask_Countdown::handleEdit(byte digit, bool up) {
 	}
 }
 
-void DisplayTask_Countdown::handleButtonPress(Button button, PressType press) {
+void DisplayTask_Countdown::handleButtonPress(const Button button, const PressType press) {
 	if (DisplayTask::editMode) {
 		DisplayTask::handleButtonPress(button, press);
 		return;

@@ -14,7 +14,7 @@ public:
 	void reset();
 	void start();
 
-	void handleButtonPress(Button button, PressType press) override;
+	void handleButtonPress(const Button button, const PressType press) override;
 
 protected:
 	const bool _canShow() override;

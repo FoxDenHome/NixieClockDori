@@ -15,8 +15,8 @@ public:
 	bool refresh(uint16_t displayData[]) override;
 	unsigned long timeReset;
 
-	void handleButtonPress(Button button, PressType press) override;
-	void handleEdit(byte digit, bool up) override;
+	void handleButtonPress(const Button button, const PressType press) override;
+	void handleEdit(const byte digit, const bool up) override;
 
 protected:
 	const bool _canShow() override;
