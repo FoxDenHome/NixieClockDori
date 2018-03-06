@@ -6,7 +6,7 @@ DisplayTask_Stopwatch::DisplayTask_Stopwatch() {
 	this->reset();
 }
 
-void DisplayTask_Stopwatch::handleButtonPress(Button button, PressType press) {
+void DisplayTask_Stopwatch::handleButtonPress(const Button button, const PressType press) {
 	if (press != Click) {
 		return;
 	}

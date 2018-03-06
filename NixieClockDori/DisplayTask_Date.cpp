@@ -16,7 +16,7 @@ const bool DisplayTask_Date::_canShow() {
 	return this->cycleAuto;
 }
 
-void DisplayTask_Date::handleButtonPress(Button button, PressType pressType) {
+void DisplayTask_Date::handleButtonPress(const Button button, const PressType pressType) {
 	if ((button == UP || button == DOWN) && pressType == Click && !this->editMode) {
 		this->cycleAuto = !this->cycleAuto;
 		EEPROM.put(EEPROM_STORAGE_DATE_AUTO, this->cycleAuto);
@@ -26,7 +26,7 @@ void DisplayTask_Date::handleButtonPress(Button button, PressType pressType) {
 	DisplayTask::handleButtonPress(button, pressType);
 }
 
-void DisplayTask_Date::handleEdit(byte digit, bool up) {
+void DisplayTask_Date::handleEdit(const byte digit, const bool up) {
 	this->_handleEditHelper(digit, up, d, m, y, 31, 12, 99);
 
 	if (digit == 255) {

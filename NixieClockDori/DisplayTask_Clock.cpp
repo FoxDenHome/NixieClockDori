@@ -5,7 +5,7 @@
 
 #include <TimeLib.h>
 
-void DisplayTask_Clock::handleButtonPress(Button button, PressType pressType) {
+void DisplayTask_Clock::handleButtonPress(const Button button, const PressType pressType) {
 	if ((button == UP || button == DOWN) && pressType == Click && !this->editMode) {
 		currentEffect = static_cast<DisplayEffect>(static_cast<byte>(currentEffect) + 1);
 		if (currentEffect == FIRST_INVALID) {
@@ -16,7 +16,7 @@ void DisplayTask_Clock::handleButtonPress(Button button, PressType pressType) {
 	DisplayTask::handleButtonPress(button, pressType);
 }
 
-void DisplayTask_Clock::handleEdit(byte digit, bool up) {
+void DisplayTask_Clock::handleEdit(const byte digit, const bool up) {
 	this->_handleEditHelper(digit, up, h, m, s, 23, 59, 59);
 
 	tmElements_t tm;

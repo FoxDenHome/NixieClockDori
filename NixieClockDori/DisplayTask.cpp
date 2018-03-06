@@ -20,7 +20,7 @@ void DisplayTask::cycleDisplayUpdater() {
 	DisplayTask::current = DisplayTask::findNextValid(DisplayTask::current, true);
 }
 
-void DisplayTask::buttonHandler(Button button, PressType pressType) {
+void DisplayTask::buttonHandler(const Button button, const PressType pressType) {
 	DisplayTask::nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
 	displayAntiPoisonOff();
 	DisplayTask::lastButtonPress = millis();
@@ -41,7 +41,7 @@ bool DisplayTask::refresh(uint16_t displayData[]) {
 	return true;
 }
 
-void __handleEditHelperSingle(byte digit, bool up, byte& a, byte amax) {
+void __handleEditHelperSingle(const byte digit, const bool up, byte& a, const byte amax) {
 	const byte a1 = a % 10;
 	const byte amax1 = amax % 10;
 	const byte amax10 = amax - amax1;
@@ -92,7 +92,7 @@ void __handleEditHelperSingle(byte digit, bool up, byte& a, byte amax) {
 	}
 }
 
-void DisplayTask::_handleEditHelper(byte digit, bool up, byte& a, byte& b, byte& c, byte amax, byte bmax, byte cmax) {
+void DisplayTask::_handleEditHelper(const byte digit, const bool up, byte& a, byte& b, byte& c, const byte amax, const byte bmax, const byte cmax) {
 	switch (digit) {
 	case 0:
 	case 1:
@@ -109,7 +109,7 @@ void DisplayTask::_handleEditHelper(byte digit, bool up, byte& a, byte& b, byte&
 	}
 }
 
-void DisplayTask::handleButtonPress(Button button, PressType pressType) {
+void DisplayTask::handleButtonPress(const Button button, const PressType pressType) {
 	switch (button) {
 	case SET:
 		switch (pressType) {

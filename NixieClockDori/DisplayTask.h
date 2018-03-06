@@ -19,10 +19,10 @@ public:
 	bool canShow();
 
 	virtual bool refresh(uint16_t displayData[]);
-	virtual void handleButtonPress(Button button, PressType press);
-	static void buttonHandler(Button button, PressType press);
+	virtual void handleButtonPress(const Button button, const PressType press);
+	static void buttonHandler(const Button button, const PressType press);
 
-	virtual void handleEdit(byte digit, bool up) { };
+	virtual void handleEdit(const byte digit, const bool up) { };
 
 	void add();
 	void remove();
@@ -48,7 +48,7 @@ protected:
 
 	static byte editModePos;
 
-	void _handleEditHelper(byte digit, bool up, byte& a, byte& b, byte& c, byte amax, byte bmax, byte cmax);
+	void _handleEditHelper(const byte digit, const bool up, byte& a, byte& b, byte& c, const byte amax, const byte bmax, const byte cmax);
 
 private:
 
