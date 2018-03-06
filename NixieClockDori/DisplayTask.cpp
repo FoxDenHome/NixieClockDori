@@ -87,7 +87,7 @@ DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopO
 		if (curPtr->canShow() || (!mustCanShow && curPtr->isAdded)) {
 			return curPtr;
 		}
-	} while (curPtr = curPtr->next);
+	} while ((curPtr = curPtr->next));
 
 	return NULL;
 }
