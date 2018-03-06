@@ -27,118 +27,15 @@ void DisplayTask_Date::handleButtonPress(Button button, PressType pressType) {
 }
 
 void DisplayTask_Date::handleEdit(byte digit, bool up) {
-	switch (digit) {
-	case 0:
-		if (up) {
-			if (d >= 30 || (d >= 20 && (d % 10) > 1)) {
-				d %= 10;
-			}
-			else {
-				d += 10;
-			}
+	this->_handleEditHelper(digit, up, d, m, y, 31, 12, 99);
+
+	if (digit == 255) {
+		if (d == 0) {
+			d = 1;
 		}
-		else {
-			if (d < 10) {
-				d = (((d % 10) > 1) ? 20 : 30) + (d % 10);
-			}
-			else {
-				d -= 10;
-			}
+		if (m == 0) {
+			m = 1;
 		}
-		break;
-	case 1:
-		if (up) {
-			if ((d % 10) == 9 || ((d % 10) > 1 && d >= 30)) {
-				d -= d % 10;
-			}
-			else {
-				d += 1;
-			}
-		}
-		else {
-			if ((d % 10) == 0) {
-				d -= (d % 10) - ((d >= 30) ? 1 : 9);
-			}
-			else {
-				d -= 1;
-			}
-		}
-		break;
-	case 2:
-		if (up) {
-			if (m > 2) {
-				m %= 10;
-			}
-			else {
-				m += 10;
-			}
-		}
-		else {
-			if (m <= 2) {
-				m = 10 + (m % 10);
-			}
-			else if (m >= 10) {
-				m -= 10;
-			}
-		}
-		break;
-	case 3:
-		if (up) {
-			if ((m % 10) == 9 || (m >= 12)) {
-				m -= m % 10;
-			}
-			else {
-				m += 1;
-			}
-		}
-		else {
-			if (m == 10) {
-				m = 12;
-			}
-			else if (m == 0) {
-				m = 9;
-			}
-			else {
-				m -= 1;
-			}
-		}
-		break;
-	case 4:
-		if (up) {
-			if (y >= 90) {
-				y %= 10;
-			}
-			else {
-				y += 10;
-			}
-		}
-		else {
-			if (y < 10) {
-				y = 90 + y % 10;
-			}
-			else {
-				y -= 10;
-			}
-		}
-		break;
-	case 5:
-		if (up) {
-			if ((y % 10) == 9) {
-				y -= 9;
-			}
-			else {
-				y += 1;
-			}
-		}
-		else {
-			if ((y % 10) == 0) {
-				y += 9;
-			}
-			else {
-				y -= 1;
-			}
-		}
-		break;
 	}
 
 	tmElements_t tm;

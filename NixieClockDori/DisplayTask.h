@@ -48,6 +48,8 @@ protected:
 
 	static byte editModePos;
 
+	void _handleEditHelper(byte digit, bool up, byte& a, byte& b, byte& c, byte amax, byte bmax, byte cmax);
+
 private:
 
 	static DisplayTask* _findNextValid(DisplayTask *curPtr, DisplayTask *stopOn, const bool mustCanShow);
