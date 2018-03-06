@@ -72,13 +72,13 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero, uin
 
 unsigned long dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
 uint16_t dataToDisplayPrevious[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
-boolean renderAlways = false;
+bool renderAlways = false;
 
 void renderNixies(const unsigned long curMicros, const unsigned long microDelta) {
 	static byte oldAntiPoisonIdx = 255;
 	static uint16_t antiPoisonTable[6];
 
-	boolean allowEffects = false, doFlip = true;
+	bool allowEffects = false, doFlip = true;
 
 	static byte redOld, greenOld, blueOld;
 

@@ -27,7 +27,7 @@ public:
 	void add();
 	void remove();
 
-	static DisplayTask* findNextValid(DisplayTask *dt_current, const boolean mustCanShow);
+	static DisplayTask* findNextValid(DisplayTask *dt_current, const bool mustCanShow);
 	static void cycleDisplayUpdater();
 
 	byte red, green, blue;
@@ -50,7 +50,7 @@ protected:
 
 private:
 
-	static DisplayTask* _findNextValid(DisplayTask *curPtr, DisplayTask *stopOn, const boolean mustCanShow);
+	static DisplayTask* _findNextValid(DisplayTask *curPtr, DisplayTask *stopOn, const bool mustCanShow);
 	DisplayTask *next;
 	DisplayTask *prev;
 	bool isAdded;
