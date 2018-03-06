@@ -15,14 +15,16 @@ void DisplayTask_Stopwatch::handleButtonPress(Button button, PressType press) {
 	case SET:
 		break;
 	case UP:
-		this->resume();
+		if (!this->running) {
+			this->reset();
+		}
 		return;
 	case DOWN:
 		if (this->running) {
 			this->pause();
 		}
 		else {
-			this->reset();
+			this->resume();
 		}
 		return;
 	}
