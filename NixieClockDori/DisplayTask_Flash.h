@@ -1,5 +1,4 @@
-#ifndef _DISPLAYTASK_FLASH_H_INCLUDED
-#define _DISPLAYTASK_FLASH_H_INCLUDED
+#pragma once
 
 #include "DisplayTask.h"
 
@@ -15,6 +14,3 @@ public:
 protected:
 	const bool _canShow() override;
 };
-
-#endif
-

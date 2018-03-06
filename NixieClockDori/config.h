@@ -1,3 +1,5 @@
+#pragma once
+
 //#define CLOCK_TRIM_HOURS
 
 #define EFFECT_SPEED 200000

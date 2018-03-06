@@ -1,5 +1,4 @@
-#ifndef _DISPLAY_H_INCLUDED
-#define _DISPLAY_H_INCLUDED
+#pragma once
 
 #include <arduino.h>
 
@@ -29,6 +28,3 @@ uint16_t getNumber(const byte idx);
 void insert1(const byte offset, const byte data, const bool trimLeadingZero, uint16_t dataToDisplay[]);
 bool insert2(const byte offset, const byte data, const bool trimLeadingZero, uint16_t dataToDisplay[]);
 bool showShortTime(const unsigned long timeMs, bool trimLZ, uint16_t dataToDisplay[], bool alwaysLong);
-
-#endif
-

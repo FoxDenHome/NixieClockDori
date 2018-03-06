@@ -1,5 +1,4 @@
-#ifndef _DISPLAYTASK_CLOCK_H_INCLUDED
-#define _DISPLAYTASK_CLOCK_H_INCLUDED
+#pragma once
 
 #include "DisplayTask.h"
 
@@ -12,6 +11,3 @@ public:
 private:
 	byte h, m, s;
 };
-
-#endif
-

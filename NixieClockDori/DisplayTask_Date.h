@@ -1,5 +1,4 @@
-#ifndef _DISPLAYTASK_DATE_H_INCLUDED
-#define _DISPLAYTASK_DATE_H_INCLUDED
+#pragma once
 
 #include "DisplayTask.h"
 
@@ -16,5 +15,3 @@ private:
 	bool cycleAuto;
 	byte d, m, y;
 };
-
-#endif

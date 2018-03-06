@@ -1,5 +1,4 @@
-#ifndef _CRCSERIAL_H_INCLUDED
-#define _CRCSERIAL_H_INCLUDED
+#pragma once
 
 #include <arduino.h>
 
@@ -22,6 +21,3 @@ void serialSendEnd();
 #define serialSendF(a) { serialSend(F(a)); }
 
 bool serialReadNext();
-
-#endif // _CRCSERIAL_H_INCLUDED
-
