@@ -25,6 +25,9 @@ const byte PIN_LED_BLUE = 3;  // PWM/analog pin for all blue LEDs
 #define PIN_BUTTON_UP A2
 #define PIN_BUTTON_DOWN A1
 
+/*******************/
+/* EEPROM LOCATORS */
+/*******************/
 #define EEPROM_STORAGE_BASE 0
 #define EEPROM_STORAGE_COUNTDOWN EEPROM_STORAGE_BASE
 #define EEPROM_STORAGE_COUNTDOWN_RGB (EEPROM_STORAGE_COUNTDOWN + sizeof(unsigned long))
