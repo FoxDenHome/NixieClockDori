@@ -90,7 +90,7 @@ bool DisplayTask_Countdown::refresh(uint16_t displayData[]) {
 		}
 	}
 
-	return (!this->running || showShortTime(DisplayTask::editMode ? this->timeReset : this->time, !DisplayTask::editMode, displayData, DisplayTask::editMode)) && DisplayTask::refresh(displayData);
+	return (showShortTime(DisplayTask::editMode ? this->timeReset : this->time, !DisplayTask::editMode, displayData, DisplayTask::editMode) || !this->running) && DisplayTask::refresh(displayData);
 }
 
 void DisplayTask_Countdown::reset() {
