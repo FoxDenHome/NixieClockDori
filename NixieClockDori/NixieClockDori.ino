@@ -12,6 +12,7 @@
 #include "DisplayTask.h"
 
 #include "DisplayTask_Clock.h"
+#include "DisplayTask_Date.h"
 #include "DisplayTask_Stopwatch.h"
 #include "DisplayTask_Countdown.h"
 #include "DisplayTask_Flash.h"
@@ -25,6 +26,7 @@
 /******************/
 
 DisplayTask_Clock displayClock;
+DisplayTask_Date displayDate;
 DisplayTask_Stopwatch displayStopwatch;
 DisplayTask_Countdown displayCountdown;
 DisplayTask_Flash displayFlash;
@@ -88,6 +90,8 @@ void setup() {
 
 	displayClock.loPri = true;
 	displayClock.add();
+	displayDate.loPri = true;
+	displayDate.add();
 
 	displayStopwatch.add();
 	displayCountdown.add();
@@ -140,7 +144,7 @@ void serialPoll() {
 			tm.Second = inputString.substring(5, 7).toInt();
 			tm.Day = inputString.substring(6, 9).toInt();
 			tm.Month = inputString.substring(9, 11).toInt();
-			tm.Year = inputString.substring(11, 13).toInt();
+			tm.Year = inputString.substring(11, 13).toInt() + 30;
 			tm.Wday = inputString.substring(13, 14).toInt();
 			rtcSetTime(tm);
 			serialSendF("T OK");
