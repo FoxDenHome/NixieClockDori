@@ -73,7 +73,7 @@ void DisplayTask::handleButtonPress(Button button, PressType pressType) {
 	}
 }
 
-DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopOn, const boolean mustCanShow) {
+DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopOn, const bool mustCanShow) {
 	if (!curPtr) {
 		return NULL;
 	}
@@ -92,7 +92,7 @@ DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopO
 	return NULL;
 }
 
-DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current, const boolean mustCanShow) {
+DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current, const bool mustCanShow) {
 	if (!dt_current) {
 		if (dt_first_hi) {
 			return DisplayTask::findNextValid(dt_first_hi, mustCanShow);
