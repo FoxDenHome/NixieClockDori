@@ -2,12 +2,8 @@
 #include "crcserial.h"
 #include "rtc.h"
 
-void setTimeTM(const tmElements_t& tm) {
-	setTime(tm.Hour, tm.Minute, tm.Second, tm.Day, tm.Month, tm.Year);
-}
-
 void rtcSetTime(tmElements_t& tm) {
-	setTimeTM(tm);
+	setTime(makeTime(tm));
 	if (!RTC.chipPresent()) {
 		return;
 	}

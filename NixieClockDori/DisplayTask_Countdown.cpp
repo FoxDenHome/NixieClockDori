@@ -34,7 +34,7 @@ void DisplayTask_Countdown::handleEdit(byte digit, bool up) {
 		}
 		else {
 			if (h < 10) {
-				h = 90 + m % 10;
+				h = 90 + h % 10;
 			}
 			else {
 				h -= 10;
