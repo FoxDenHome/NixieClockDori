@@ -12,6 +12,8 @@ From the Arduino library manager:
 - Time
 - DS1307RTC
 - TimerOne
+- MemoryUsage
+- OneButton
 
 From other sources:
 - FastCRC (https://github.com/FrankBoesing/FastCRC)
