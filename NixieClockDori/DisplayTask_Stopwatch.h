@@ -1,5 +1,4 @@
-#ifndef _DISPLAYTASK_STOPWATCH_H_INCLUDED
-#define _DISPLAYTASK_STOPWATCH_H_INCLUDED
+#pragma once
 
 #include "DisplayTask.h"
 
@@ -24,5 +23,3 @@ private:
 	unsigned long time;
 	unsigned long lastCall;
 };
-
-#endif

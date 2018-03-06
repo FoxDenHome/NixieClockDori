@@ -1,5 +1,4 @@
-#ifndef _DISPLAYTASK_H_INCLUDED
-#define _DISPLAYTASK_H_INCLUDED
+#pragma once
 
 #include "Display.h"
 #include <arduino.h>
@@ -57,6 +56,3 @@ private:
 	DisplayTask *prev;
 	bool isAdded;
 };
-
-#endif
-

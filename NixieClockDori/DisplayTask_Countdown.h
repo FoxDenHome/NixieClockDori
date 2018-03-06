@@ -1,5 +1,4 @@
-#ifndef _DISPLAYTASK_COUNTDOWN_H_INCLUDED
-#define _DISPLAYTASK_COUNTDOWN_H_INCLUDED
+#pragma once
 
 #include "DisplayTask.h"
 
@@ -26,6 +25,3 @@ private:
 	unsigned long time;
 	unsigned long lastCall;
 };
-
-#endif
-
