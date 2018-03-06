@@ -1,8 +1,14 @@
 #include <SPI.h>
+#include <EEPROM.h>
+#include <Wire.h>
+
 #include <TimeLib.h>
+#include <DS1307RTC.h>
+#include <TimerOne.h>
+
 #include <MemoryUsage.h>
 #include <OneButton.h>
-#include <EEPROM.h>
+#include <FastCRC.h>
 
 #include "rtc.h"
 #include "config.h"
