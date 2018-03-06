@@ -318,6 +318,7 @@ void showIfPossibleOtherwiseRotateIfCurrent(DisplayTask *displayTask) {
 	else {
 		return;
 	}
+	displayAntiPoisonOff();
 }
 
 #define hexCharToNum(c) ((c <= '9') ? c - '0' : c - '7')
