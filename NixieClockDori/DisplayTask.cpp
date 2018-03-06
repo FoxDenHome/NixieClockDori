@@ -41,6 +41,74 @@ bool DisplayTask::refresh(uint16_t displayData[]) {
 	return true;
 }
 
+void __handleEditHelperSingle(byte digit, bool up, byte& a, byte amax) {
+	const byte a1 = a % 10;
+	const byte amax1 = amax % 10;
+	const byte amax10 = amax - amax1;
+
+	switch (digit % 2) {
+	case 0:
+		if (up) {
+			a += 10;
+			if (a > amax) {
+				a = a1;
+			}
+		}
+		else {
+			if (a < 10) {
+				a = a1 + amax10;
+				if (a > amax) {
+					a -= 10;
+				}
+			}
+			else {
+				a -= 10;
+			}
+		}
+		break;
+	case 1:
+		if (up) {
+			if (a1 == 9 || a >= amax) {
+				a -= a1;
+			}
+			else {
+				a += 1;
+			}
+		}
+		else {
+			if (a1 == 0) {
+				if (a >= amax10) {
+					a += amax1;
+				}
+				else {
+					a += 9;
+				}
+			}
+			else {
+				a -= 1;
+			}
+		}
+		break;
+	}
+}
+
+void DisplayTask::_handleEditHelper(byte digit, bool up, byte& a, byte& b, byte& c, byte amax, byte bmax, byte cmax) {
+	switch (digit) {
+	case 0:
+	case 1:
+		__handleEditHelperSingle(digit, up, a, amax);
+		break;
+	case 2:
+	case 3:
+		__handleEditHelperSingle(digit, up, b, bmax);
+		break;
+	case 4:
+	case 5:
+		__handleEditHelperSingle(digit, up, c, cmax);
+		break;
+	}
+}
+
 void DisplayTask::handleButtonPress(Button button, PressType pressType) {
 	switch (button) {
 	case SET:

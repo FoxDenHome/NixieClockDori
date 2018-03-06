@@ -21,116 +21,7 @@ void DisplayTask_Countdown::handleEdit(byte digit, bool up) {
 	byte m = (this->timeReset / (60UL * 1000UL)) % 60;
 	byte s = (this->timeReset / 1000UL) % 60;
 
-	switch (digit) {
-	case 0:
-		if (up) {
-			if (h >= 90) {
-				h %= 10;
-			}
-			else {
-				h += 10;
-			}
-		}
-		else {
-			if (h < 10) {
-				h = 90 + h % 10;
-			}
-			else {
-				h -= 10;
-			}
-		}
-		break;
-	case 1:
-		if (up) {
-			if ((h % 10) == 9) {
-				h -= 9;
-			}
-			else {
-				h += 1;
-			}
-		}
-		else {
-			if ((h % 10) == 0) {
-				h += 9;
-			}
-			else {
-				h -= 1;
-			}
-		}
-		break;
-	case 2:
-		if (up) {
-			if (m >= 50) {
-				m %= 10;
-			}
-			else {
-				m += 10;
-			}
-		}
-		else {
-			if (m < 10) {
-				m = 50 + m % 10;
-			}
-			else {
-				m -= 10;
-			}
-		}
-		break;
-	case 3:
-		if (up) {
-			if ((m % 10) == 9) {
-				m -= 9;
-			}
-			else {
-				m += 1;
-			}
-		}
-		else {
-			if ((m % 10) == 0) {
-				m += 9;
-			}
-			else {
-				m -= 1;
-			}
-		}
-		break;
-	case 4:
-		if (up) {
-			if (s >= 50) {
-				s %= 10;
-			}
-			else {
-				s += 10;
-			}
-		}
-		else {
-			if (s < 10) {
-				s = 50 + s % 10;
-			}
-			else {
-				s -= 10;
-			}
-		}
-		break;
-	case 5:
-		if (up) {
-			if ((s % 10) == 9) {
-				s -= 9;
-			}
-			else {
-				s += 1;
-			}
-		}
-		else {
-			if ((s % 10) == 0) {
-				s += 9;
-			}
-			else {
-				s -= 1;
-			}
-		}
-		break;
-	}
+	this->_handleEditHelper(digit, up, h, m, s, 99, 59, 59);
 	
 	this->timeReset = ((((h * 60UL) + m) * 60UL) + s) * 1000UL;
 
@@ -138,7 +29,10 @@ void DisplayTask_Countdown::handleEdit(byte digit, bool up) {
 		this->timeReset %= COUNTDOWN_MAX_TIME;
 	}
 
-	EEPROM.put(EEPROM_STORAGE_COUNTDOWN, this->timeReset);
+	if (digit == 255) {
+		this->time = this->timeReset;
+		EEPROM.put(EEPROM_STORAGE_COUNTDOWN, this->timeReset);
+	}
 }
 
 void DisplayTask_Countdown::handleButtonPress(Button button, PressType press) {
