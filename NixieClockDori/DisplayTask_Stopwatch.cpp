@@ -12,6 +12,8 @@ void DisplayTask_Stopwatch::handleButtonPress(Button button, PressType press) {
 	}
 
 	switch (button) {
+	case SET:
+		break;
 	case UP:
 		this->resume();
 		return;

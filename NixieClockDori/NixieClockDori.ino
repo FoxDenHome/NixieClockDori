@@ -158,7 +158,7 @@ void serialPoll() {
 			// X
 			// Performs a display reset of all modes
 		case 'X':
-			for (int i = 0; i < EEPROM.length(); i++) {
+			for (uint16_t i = 0; i < EEPROM.length(); i++) {
 				EEPROM.write(i, 0);
 			}
 			displayCountdown.timeReset = 10000;
@@ -297,7 +297,7 @@ void serialPoll() {
 /*********************/
 
 void setColorFromInput(DisplayTask *displayTask, const byte offset) {
-	if (inputString.length() < offset + 6) {
+	if (inputString.length() < (unsigned int)offset + 6) {
 		return;
 	}
 	displayTask->red = hexInputToByte(offset);

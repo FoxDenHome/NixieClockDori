@@ -17,7 +17,6 @@ DisplayTask_Countdown::DisplayTask_Countdown() {
 }
 
 void DisplayTask_Countdown::handleEdit(byte digit, bool up) {
-	unsigned long tDiff = 0UL;
 	byte h = this->timeReset / (60UL * 60UL * 1000UL);
 	byte m = (this->timeReset / (60UL * 1000UL)) % 60;
 	byte s = (this->timeReset / 1000UL) % 60;
@@ -153,6 +152,8 @@ void DisplayTask_Countdown::handleButtonPress(Button button, PressType press) {
 	}
 
 	switch (button) {
+	case SET:
+		break;
 	case UP:
 		this->resume();
 		return;

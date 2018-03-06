@@ -119,7 +119,7 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 		if (currentEffect != NONE) {
 			byte redNow = redOld, greenNow = greenOld, blueNow = blueOld;
 
-			if (colorTransProg > 0 && allowEffects && colorTransProg > microDelta) {
+			if (colorTransProg > 0 && allowEffects && colorTransProg > (long)microDelta) {
 				colorTransProg -= microDelta;
 				redNow = redOld + (((redPrevious - redOld) * colorTransProg) / EFFECT_SPEED);
 				greenNow = greenOld + (((greenPrevious - greenOld) * colorTransProg) / EFFECT_SPEED);
