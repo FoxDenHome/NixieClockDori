@@ -15,6 +15,13 @@ extern DisplayEffect currentEffect;
 const uint16_t ALL_TUBES = (1 << 10) - 1; // Bitmask to enable all tubes
 const uint16_t NO_TUBES = 0;
 
+extern byte dotMask;
+extern bool renderAlways;
+extern uint16_t *displayDataFront;
+extern uint16_t *displayDataBack;
+extern unsigned long dataIsTransitioning[6];
+extern uint16_t dataToDisplayPrevious[6];
+
 void displayInit();
 void displayLoop(const unsigned long curMicros);
 

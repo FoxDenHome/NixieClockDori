@@ -15,6 +15,7 @@
 #include "const.h"
 #include "crcserial.h"
 #include "Display.h"
+#include "DisplayDriver.h"
 #include "DisplayTask.h"
 
 #include "DisplayTask_Clock.h"
@@ -91,6 +92,7 @@ void setup() {
 	serialInit();
 	rtcInit();
 	displayInit();
+	displayDriverInit();
 
 	randomSeed(analogRead(A3) + now());
 
@@ -127,9 +129,11 @@ void loop() {
 
 	const unsigned long curMicros = micros();
 	displayLoop(curMicros);
+	displayDriverLoop(curMicros);
 	if (DisplayTask::nextDisplayCycleMicros <= curMicros) {
 		DisplayTask::cycleDisplayUpdater();
 	}
+
 	serialPoll();
 }
 
