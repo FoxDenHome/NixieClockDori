@@ -93,6 +93,7 @@
     <ClInclude Include="const.h" />
     <ClInclude Include="crcserial.h" />
     <ClInclude Include="Display.h" />
+    <ClInclude Include="DisplayDriver.h" />
     <ClInclude Include="DisplayTask.h" />
     <ClInclude Include="DisplayTask_Clock.h" />
     <ClInclude Include="DisplayTask_Countdown.h" />
@@ -103,6 +104,7 @@
     <ClInclude Include="__vm\.NixieClockDori.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DisplayDriver.cpp" />
     <ClCompile Include="DisplayTask.cpp" />
     <ClCompile Include="DisplayTask_Clock.cpp" />
     <ClCompile Include="DisplayTask_Countdown.cpp" />
