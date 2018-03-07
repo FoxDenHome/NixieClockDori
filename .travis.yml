@@ -4,6 +4,7 @@ before_install:
   - source <(curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/install.sh)
 install:
   - arduino --install-library "Time","DS1307RTC","TimerOne","MemoryUsage","OneButton"
+  - git clone https://github.com/FrankBoesing/FastCRC.git ~/arduino_ide/libraries/FastCRC
 script:
   - cd NixieClockDori
   - build_platform uno
