@@ -8,6 +8,7 @@
 #define COUNTDOWN_MAX_TIME (100UL * 60UL * 60UL * 1000UL)
 
 DisplayTask_Countdown::DisplayTask_Countdown() {
+	this->base = -1;
 	this->dotMask = makeDotMask(false, true);
 }
 
