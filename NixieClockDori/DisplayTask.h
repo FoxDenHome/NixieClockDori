@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Display.h"
-#include <arduino.h>
+
+#include <Arduino.h>
 
 enum Button {
 	SET,
