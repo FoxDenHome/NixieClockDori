@@ -19,7 +19,7 @@ protected:
 	const bool _canShow() override;
 
 private:
-	bool running;
-	unsigned long time;
-	unsigned long lastCall;
+	bool running = false;
+	unsigned long time = 0;
+	unsigned long lastCall = 0;
 };

@@ -29,8 +29,8 @@ public:
 	static DisplayTask* findNextValid(DisplayTask *dt_current, const bool mustCanShow);
 	static void cycleDisplayUpdater();
 
-	byte red, green, blue;
-	byte dotMask;
+	byte red = 0, green = 0, blue = 0;
+	byte dotMask = 0;
 
 	bool loPri = false;
 	static bool editMode;
@@ -57,5 +57,5 @@ private:
 	static DisplayTask* _findNextValid(DisplayTask *curPtr, DisplayTask *stopOn, const bool mustCanShow);
 	DisplayTask *next;
 	DisplayTask *prev;
-	bool isAdded;
+	bool isAdded = false;
 };
