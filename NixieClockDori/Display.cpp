@@ -4,8 +4,26 @@
 #include "const.h"
 #include "config.h"
 
-#ifdef DISPLAY_NEEDS_TIMER1
+#if !defined(DISPLAY_NEEDS_TIMER1)
+#define autoAnalogWrite analogWrite
+#elif defined(TIMER1_C_PIN)
 #include <TimerOne.h>
+#define autoAnalogWrite(PIN, VALUE) \
+	if ((PIN) == TIMER1_A_PIN || (PIN) == TIMER1_B_PIN || (PIN) == TIMER1_C_PIN) { \
+		Timer1.pwm(PIN, (VALUE) << 2); \
+	} \
+	else { \
+		analogWrite(PIN, VALUE); \
+	}
+#else
+#include <TimerOne.h>
+#define autoAnalogWrite(PIN, VALUE) \
+	if ((PIN) == TIMER1_A_PIN || (PIN) == TIMER1_B_PIN) { \
+		Timer1.pwm(PIN, (VALUE) << 2); \
+	} \
+	else { \
+		analogWrite(PIN, VALUE); \
+	}
 #endif
 
 const byte MASK_UPPER_DOTS = 1;
