@@ -173,6 +173,7 @@ void serialPoll() {
 			break;
 			// X
 			// Performs a display reset of all modes
+			// ^X|14861
 		case 'X':
 			for (uint16_t i = 0; i < EEPROM.length(); i++) {
 				EEPROM.write(i, 0);
