@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Display.h"
+
 /********************/
 /* PIN DEFINITIONS  */
 /********************/
@@ -38,7 +40,7 @@ const byte PIN_BUZZER = 2;  // Piezo buzzer pin
 #define EEPROM_STORAGE_DATE_AUTO (EEPROM_STORAGE_CLOCK_RGB + EEPROM_SIZEOF_RGB)
 #define EEPROM_STORAGE_DATE_RGB (EEPROM_STORAGE_DATE_AUTO + sizeof(bool))
 #define EEPROM_STORAGE_CURRENT_EFFECT (EEPROM_STORAGE_DATE_RGB + EEPROM_SIZEOF_RGB)
-#define EEPROM_END (EEPROM_STORAGE_CURRENT_EFFECT + 1)
+#define EEPROM_END (EEPROM_STORAGE_CURRENT_EFFECT + sizeof(DisplayEffect))
 
 /*******************/
 /* OTHER CONSTANTS */
