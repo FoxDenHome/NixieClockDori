@@ -97,7 +97,9 @@ void setup() {
 	displayInit();
 	displayDriverInit();
 
-	randomSeed(analogRead(A3) + now());
+	randomSeed(analogRead(A4) + now());
+
+	EEPROM.get(EEPROM_STORAGE_CURRENT_EFFECT, currentEffect);
 
 	displayClock.loPri = true;
 	displayClock.add();
