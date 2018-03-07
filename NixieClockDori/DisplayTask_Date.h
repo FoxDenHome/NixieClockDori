@@ -7,6 +7,8 @@ public:
 	DisplayTask_Date();
 	bool refresh(uint16_t displayData[]) override;
 
+	void loadConfig(const int16_t base);
+
 	void handleEdit(const byte digit, const bool up) override;
 	void handleButtonPress(const Button button, const PressType press) override;
 protected:
@@ -14,4 +16,5 @@ protected:
 private:
 	bool cycleAuto;
 	byte d, m, y;
+	int16_t base;
 };

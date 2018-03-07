@@ -6,6 +6,8 @@ class DisplayTask_Countdown : public DisplayTask {
 public:
 	DisplayTask_Countdown();
 
+	void loadConfig(const int16_t base);
+
 	void reset();
 	void pause();
 	void resume();
@@ -24,4 +26,5 @@ private:
 	bool running;
 	unsigned long time;
 	unsigned long lastCall;
+	int16_t base;
 };

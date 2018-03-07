@@ -9,7 +9,15 @@
 
 DisplayTask_Countdown::DisplayTask_Countdown() {
 	this->dotMask = makeDotMask(false, true);
-	EEPROM.get(EEPROM_STORAGE_COUNTDOWN, this->timeReset);
+}
+
+void DisplayTask_Countdown::loadConfig(const int16_t base) {
+	this->base = base;
+	if (base < 0) {
+		return;
+	}
+
+	EEPROM.get(base, this->timeReset);
 	if (!this->timeReset || this->timeReset >= COUNTDOWN_MAX_TIME) {
 		this->timeReset = 10000;
 	}
@@ -31,7 +39,9 @@ void DisplayTask_Countdown::handleEdit(const byte digit, const bool up) {
 
 	if (digit == 255) {
 		this->time = this->timeReset;
-		EEPROM.put(EEPROM_STORAGE_COUNTDOWN, this->timeReset);
+		if (this->base >= 0) {
+			EEPROM.put(this->base, this->timeReset);
+		}
 	}
 }
 

@@ -102,6 +102,13 @@ void setup() {
 	displayStopwatch.add();
 	displayCountdown.add();
 
+	displayClock.loadColor(EEPROM_STORAGE_CLOCK_RGB);
+	displayDate.loadColor(EEPROM_STORAGE_DATE_RGB);
+	displayDate.loadConfig(EEPROM_STORAGE_DATE_AUTO);
+	displayStopwatch.loadColor(EEPROM_STORAGE_STOPWATCH_RGB);
+	displayCountdown.loadColor(EEPROM_STORAGE_COUNTDOWN_RGB);
+	displayCountdown.loadConfig(EEPROM_STORAGE_COUNTDOWN);
+
 	DisplayTask::cycleDisplayUpdater();
 
 	SETUP_BUTTON(UP);
@@ -215,7 +222,7 @@ void serialPoll() {
 				}
 			}
 
-			setColorFromInput(&displayFlash, 16);
+			setColorFromInput(&displayFlash, 16, -1);
 			showIfPossibleOtherwiseRotateIfCurrent(&displayFlash);
 
 			serialSendF("F OK");
@@ -233,7 +240,7 @@ void serialPoll() {
 				displayCountdown.timeReset = inputString.substring(1, 9).toInt();
 				displayCountdown.start();
 			}
-			setColorFromInput(&displayCountdown, 9);
+			setColorFromInput(&displayCountdown, 9, EEPROM_STORAGE_COUNTDOWN_RGB);
 			showIfPossibleOtherwiseRotateIfCurrent(&displayCountdown);
 			serialSendF("C OK");
 			break;
@@ -247,7 +254,7 @@ void serialPoll() {
 				serialSendF("W BAD (Invalid length; expected 2)");
 				break;
 			}
-			setColorFromInput(&displayStopwatch, 2);
+			setColorFromInput(&displayStopwatch, 2, EEPROM_STORAGE_STOPWATCH_RGB);
 			tmpData = true;
 			switch (inputString[1]) {
 			case 'R':
@@ -296,13 +303,14 @@ void serialPoll() {
 /* UTILITY FUNCTIONS */
 /*********************/
 
-void setColorFromInput(DisplayTask *displayTask, const byte offset) {
+void setColorFromInput(DisplayTask *displayTask, const byte offset, const int16_t eepromBase) {
 	if (inputString.length() < (unsigned int)offset + 6) {
 		return;
 	}
 	displayTask->red = hexInputToByte(offset);
 	displayTask->green = hexInputToByte(offset + 2);
 	displayTask->blue = hexInputToByte(offset + 4);
+	displayTask->saveColor(eepromBase);
 }
 
 void showIfPossibleOtherwiseRotateIfCurrent(DisplayTask *displayTask) {
