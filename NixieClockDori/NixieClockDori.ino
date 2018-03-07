@@ -4,7 +4,6 @@
 
 #include <TimeLib.h>
 #include <DS1307RTC.h>
-#include <TimerOne.h>
 
 #include <MemoryUsage.h>
 #include <OneButton.h>
@@ -23,6 +22,10 @@
 #include "DisplayTask_Stopwatch.h"
 #include "DisplayTask_Countdown.h"
 #include "DisplayTask_Flash.h"
+
+#ifdef DISPLAY_NEEDS_TIMER1
+#include <TimerOne.h>
+#endif
 
 /****************/
 /* PROGRAM CODE */
