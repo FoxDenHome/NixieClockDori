@@ -1,7 +1,12 @@
 #include "Display.h"
 #include "DisplayTask.h"
+#include "DisplayDriver.h"
 #include "const.h"
 #include "config.h"
+
+#ifdef DISPLAY_NEEDS_TIMER1
+#include <TimerOne.h>
+#endif
 
 const byte MASK_UPPER_DOTS = 1;
 const byte MASK_LOWER_DOTS = 2;
@@ -122,17 +127,15 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 				redNow = redOld + (((redPrevious - redOld) * colorTransProg) / EFFECT_SPEED);
 				greenNow = greenOld + (((greenPrevious - greenOld) * colorTransProg) / EFFECT_SPEED);
 				blueNow = blueOld + (((bluePrevious - blueOld) * colorTransProg) / EFFECT_SPEED);
-				//analogWrite(PIN_LED_RED, redNow);
-				Timer1.pwm(PIN_LED_RED, redNow << 2);
-				analogWrite(PIN_LED_GREEN, greenNow);
-				analogWrite(PIN_LED_BLUE, blueNow);
+				autoAnalogWrite(PIN_LED_RED, redNow);
+				autoAnalogWrite(PIN_LED_GREEN, greenNow);
+				autoAnalogWrite(PIN_LED_BLUE, blueNow);
 			}
 			else if (colorTransProg >= 0) {
 				colorTransProg = -1;
-				//analogWrite(PIN_LED_RED, redNow);
-				Timer1.pwm(PIN_LED_RED, redNow << 2);
-				analogWrite(PIN_LED_GREEN, greenNow);
-				analogWrite(PIN_LED_BLUE, blueNow);
+				autoAnalogWrite(PIN_LED_RED, redNow);
+				autoAnalogWrite(PIN_LED_GREEN, greenNow);
+				autoAnalogWrite(PIN_LED_BLUE, blueNow);
 			}
 
 			if (DisplayTask::current->red != redOld || DisplayTask::current->green != greenOld || DisplayTask::current->blue != blueOld) {
@@ -148,16 +151,15 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 		else {
 			if (DisplayTask::current->red != redOld) {
 				redOld = DisplayTask::current->red;
-				//analogWrite(PIN_LED_RED, redOld);
-				Timer1.pwm(PIN_LED_RED, redOld << 2);
+				autoAnalogWrite(PIN_LED_RED, redOld);
 			}
 			if (DisplayTask::current->green != greenOld) {
 				greenOld = DisplayTask::current->green;
-				analogWrite(PIN_LED_GREEN, greenOld);
+				autoAnalogWrite(PIN_LED_GREEN, greenOld);
 			}
 			if (DisplayTask::current->blue != blueOld) {
 				blueOld = DisplayTask::current->blue;
-				analogWrite(PIN_LED_BLUE, blueOld);
+				autoAnalogWrite(PIN_LED_BLUE, blueOld);
 			}
 		}
 
