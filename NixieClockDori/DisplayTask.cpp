@@ -1,6 +1,8 @@
 #include "DisplayTask.h"
 #include "Display.h"
 
+#include <EEPROM.h>
+
 DisplayTask *dt_first_hi;
 DisplayTask *dt_last_hi;
 
@@ -10,6 +12,26 @@ unsigned long DisplayTask::nextDisplayCycleMicros = 0;
 bool DisplayTask::editMode = false;
 byte DisplayTask::editModePos = 0;
 unsigned long DisplayTask::lastButtonPress = 0;
+
+void DisplayTask::saveColor(const int16_t addr) {
+	if (addr < 0) {
+		return;
+	}
+
+	EEPROM.put(addr, this->red);
+	EEPROM.put(addr + 1, this->green);
+	EEPROM.put(addr + 2, this->blue);
+}
+
+void DisplayTask::loadColor(const int16_t addr) {
+	if (addr < 0) {
+		return;
+	}
+
+	EEPROM.get(addr, this->red);
+	EEPROM.get(addr + 1, this->green);
+	EEPROM.get(addr + 2, this->blue);
+}
 
 void DisplayTask::cycleDisplayUpdater() {
 	DisplayTask::nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;

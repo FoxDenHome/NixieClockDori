@@ -8,8 +8,16 @@
 #include <TimeLib.h>
 
 DisplayTask_Date::DisplayTask_Date() {
-	EEPROM.get(EEPROM_STORAGE_DATE_AUTO, this->cycleAuto);
 	this->dotMask = makeDotMask(!this->cycleAuto, this->cycleAuto);
+}
+
+void DisplayTask_Date::loadConfig(const int16_t base) {
+	this->base = base;
+	if (base < 0) {
+		return;
+	}
+
+	EEPROM.get(base, this->cycleAuto);
 }
 
 const bool DisplayTask_Date::_canShow() {
@@ -19,7 +27,9 @@ const bool DisplayTask_Date::_canShow() {
 void DisplayTask_Date::handleButtonPress(const Button button, const PressType pressType) {
 	if ((button == UP || button == DOWN) && pressType == Click && !this->editMode) {
 		this->cycleAuto = !this->cycleAuto;
-		EEPROM.put(EEPROM_STORAGE_DATE_AUTO, this->cycleAuto);
+		if (this->base >= 0) {
+			EEPROM.put(this->base, this->cycleAuto);
+		}
 		this->dotMask = makeDotMask(!this->cycleAuto, this->cycleAuto);
 		return;
 	}

@@ -39,6 +39,9 @@ public:
 
 	static unsigned long nextDisplayCycleMicros;
 
+	void saveColor(int16_t addr);
+	void loadColor(int16_t addr);
+
 protected:
 	static unsigned long lastButtonPress;
 
