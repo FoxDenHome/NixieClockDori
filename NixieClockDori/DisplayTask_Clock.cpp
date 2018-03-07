@@ -1,8 +1,10 @@
 #include "DisplayTask_Clock.h"
 #include "Display.h"
 #include "config.h"
+#include "const.h"
 #include "rtc.h"
 
+#include <EEPROM.h>
 #include <TimeLib.h>
 
 void DisplayTask_Clock::handleButtonPress(const Button button, const PressType pressType) {
@@ -11,6 +13,7 @@ void DisplayTask_Clock::handleButtonPress(const Button button, const PressType p
 		if (currentEffect == FIRST_INVALID) {
 			currentEffect = NONE;
 		}
+		EEPROM.put(EEPROM_STORAGE_CURRENT_EFFECT, currentEffect);
 		return;
 	}
 	DisplayTask::handleButtonPress(button, pressType);
