@@ -8,7 +8,6 @@
 #include <TimeLib.h>
 
 DisplayTask_Date::DisplayTask_Date() {
-	this->base = -1;
 	this->dotMask = makeDotMask(!this->cycleAuto, this->cycleAuto);
 }
 

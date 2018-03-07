@@ -16,5 +16,5 @@ protected:
 private:
 	bool cycleAuto;
 	byte d, m, y;
-	int16_t base;
+	int16_t base = -1;
 };

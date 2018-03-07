@@ -23,8 +23,8 @@ protected:
 	const bool _canShow() override;
 
 private:
-	bool running;
-	unsigned long time;
-	unsigned long lastCall;
-	int16_t base;
+	bool running = false;
+	unsigned long time = 0;
+	unsigned long lastCall = 0;
+	int16_t base = -1;
 };

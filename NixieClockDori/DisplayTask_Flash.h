@@ -9,7 +9,7 @@ public:
 	bool refresh(uint16_t displayData[]) override;
 
 	uint16_t symbols[6];
-	unsigned long endTime;
+	unsigned long endTime = 0;
 
 protected:
 	const bool _canShow() override;
