@@ -10,7 +10,7 @@ script:
 - cd NixieClockDori
 - arduino --pref "build.path=~/arduino_ide/releases" --save-prefs
 - build_platform uno
-- find ~/arduino_ide/releases | grep hex
+- ls -la ~/arduino_ide/releases
 notifications:
   email:
     on_success: change
