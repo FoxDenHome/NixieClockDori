@@ -45,6 +45,8 @@ DisplayTask_Flash displayFlash;
 /* ARDUINO EVENT HANDLERS */
 /**************************/
 
+void(*resetFunc) (void) = 0;
+
 #define _DECL_BUTTON_FN(NAME, FUNC) \
 	void __ ## NAME ## _BUTTON_ ## FUNC () { \
 		DisplayTask::buttonHandler(NAME, FUNC); \
@@ -178,14 +180,8 @@ void serialPoll() {
 			for (uint16_t i = 0; i < EEPROM.length(); i++) {
 				EEPROM.write(i, 0);
 			}
-			displayCountdown.timeReset = 10000;
-			displayCountdown.reset();
-			displayStopwatch.reset();
-			displayFlash.endTime = 0;
-			if (!DisplayTask::current->canShow()) {
-				DisplayTask::cycleDisplayUpdater();
-			}
 			serialSendF("X OK");
+			resetFunc();
 			break;
 			// P CC
 			// C = Count (Dec)
