@@ -6,7 +6,7 @@ install:
 - arduino --install-library "Time","DS1307RTC","TimerOne","MemoryUsage","OneButton"
 - git clone https://github.com/FrankBoesing/FastCRC.git ~/arduino_ide/libraries/FastCRC
 - mkdir -p ~/arduino_ide/releases
-- arduino "build.path=~/arduino_ide/releases"
+- arduino --pref "build.path=~/arduino_ide/releases" --save-prefs
 script:
 - cd NixieClockDori
 - build_platform uno
