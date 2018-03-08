@@ -32,7 +32,7 @@ void displayInterrupt() {
 
 		// We don't need to un-blank if an entire segment is blank
 		if (lastSentTubes[curTubeL] != tubeL || lastSentTubes[curTubeR] != tubeR || ctrL <= 1) {
-			if (ctrL) {
+			if (anodeControl) {
 				lastSentTubes[curTubeL] = tubeL;
 				lastSentTubes[curTubeR] = tubeR;
 			}
