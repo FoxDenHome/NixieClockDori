@@ -27,12 +27,15 @@ void displayInterrupt() {
 			}
 		}
 
-		PORT_DISPLAY_LATCH &= ~PORT_MASK_DISPLAY_LATCH;
-		SPI.transfer(dotMask);                            // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
-		SPI.transfer(tubeR >> 6 | anodeControl);          // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes
-		SPI.transfer(tubeR << 2 | tubeL >> 8);            // [RC5][RC4][RC3][RC2][RC1][RC0][LC9][LC8] - RC9 - RC0 - Right tubes cathodes
-		SPI.transfer(tubeL);                              // [LC7][LC6][LC5][LC4][LC3][LC2][LC1][LC0] - LC9 - LC0 - Left tubes cathodes
-		PORT_DISPLAY_LATCH |= PORT_MASK_DISPLAY_LATCH;
+		// We don't need to un-blank if an entire segment is blank
+		if (tubeL != NO_TUBES || tubeR != NO_TUBES || !ctrL) {
+			PORT_DISPLAY_LATCH &= ~PORT_MASK_DISPLAY_LATCH;
+			SPI.transfer(dotMask);                            // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
+			SPI.transfer(tubeR >> 6 | anodeControl);          // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes
+			SPI.transfer(tubeR << 2 | tubeL >> 8);            // [RC5][RC4][RC3][RC2][RC1][RC0][LC9][LC8] - RC9 - RC0 - Right tubes cathodes
+			SPI.transfer(tubeL);                              // [LC7][LC6][LC5][LC4][LC3][LC2][LC1][LC0] - LC9 - LC0 - Left tubes cathodes
+			PORT_DISPLAY_LATCH |= PORT_MASK_DISPLAY_LATCH;
+		}
 	}
 
 	if (++ctr > 33) {

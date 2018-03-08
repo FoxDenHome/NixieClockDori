@@ -184,35 +184,44 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 		dotMask = DisplayTask::current->dotMask;
 	}
 
-	
 	// Progress through effect
-	if (allowEffects && currentEffect != NONE) {
-		bool hasEffects = false;
-		for (byte i = 0; i < 6; i++) {
-			const uint16_t cur = displayDataBack[i];
-			if (dataToDisplayOld[i] != cur) {
-				dataToDisplayPrevious[i] = dataToDisplayOld[i];
-				dataToDisplayOld[i] = cur;
+	const  bool effectsOn = allowEffects && currentEffect != NONE;
+
+	bool hasEffects = false;
+	for (byte i = 0; i < 6; i++) {
+		const uint16_t cur = displayDataBack[i];
+		if (dataToDisplayOld[i] != cur) {
+			dataToDisplayPrevious[i] = dataToDisplayOld[i];
+			dataToDisplayOld[i] = cur;
+			if (effectsOn) {
 				dataIsTransitioning[i] = EFFECT_SPEED;
 			}
-
-			const unsigned long tubeTrans = dataIsTransitioning[i];
-
-			if (tubeTrans > microDelta) {
-				if (currentEffect == SLOT_MACHINE) {
-					displayDataBack[i] = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
-				}
-				dataIsTransitioning[i] -= microDelta;
-				hasEffects = true;
-			}
-			else if (tubeTrans > 0) {
-				displayDataBack[i] = dataToDisplayOld[i];
-				dataIsTransitioning[i] = 0;
-			}
 		}
+
+		if (!effectsOn) {
+			continue;
+		}
+
+		const unsigned long tubeTrans = dataIsTransitioning[i];
+
+		if (tubeTrans > microDelta) {
+			if (currentEffect == SLOT_MACHINE) {
+				displayDataBack[i] = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
+			}
+			dataIsTransitioning[i] -= microDelta;
+			hasEffects = true;
+		}
+		else if (tubeTrans > 0) {
+			displayDataBack[i] = dataToDisplayOld[i];
+			dataIsTransitioning[i] = 0;
+		}
+	}
+
+	if (effectsOn) {
 		if (currentEffect == TRANSITION) {
 			renderAlways = hasEffects;
 		}
+
 		doFlip = true;
 	}
 
