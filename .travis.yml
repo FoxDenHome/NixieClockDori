@@ -1,14 +1,22 @@
 language: c
 sudo: false
 before_install:
-  - source <(curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/install.sh)
+- source <(curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/install.sh)
 install:
-  - arduino --install-library "Time","DS1307RTC","TimerOne","MemoryUsage","OneButton"
-  - git clone https://github.com/FrankBoesing/FastCRC.git ~/arduino_ide/libraries/FastCRC
+- arduino --install-library "Time","DS1307RTC","TimerOne","MemoryUsage","OneButton"
+- git clone https://github.com/FrankBoesing/FastCRC.git ~/arduino_ide/libraries/FastCRC
 script:
-  - cd NixieClockDori
-  - build_platform uno
+- cd NixieClockDori
+- build_platform uno
+- find | grep hex
 notifications:
   email:
     on_success: change
     on_failure: change
+deploy:
+  provider: releases
+  api_key:
+    secure: RY32yZSzt8O/kgM7dY+tAXVcAPjG52TN77RESV6skD14y4KVo8wajftNszmjCWxcBdG092tSwCS0TSdZKojfmBDPyTtm0paKpt6E6p3FNT7Jy4vBZW0H4FTpBLoyXdnHio2/FJBakT83BXgmGzLoHJQ3TNR5jAExsAnwHV4h5bxIuFKjSWx1nt/rUPY2M7st8iQKxyvvpsLPbBFOZ9Bw4AEjPJVqF3NkBxIMNfUt5v9zUsi8chOFpNFt48SzxzCulLtOPT6PYphZ8Op5kURt7Dky6CpskQ21tk05XQU2+Pwgr1XX4e6SwQnGAwoDV59vaVyRq9X48ANM1hNPYdtvdQZxkKDRifwPUl6Ax8pB0CfTlFPJVWFb4qpPthS7ycvjHepAenZzQwvwO1FEuvYUuTeL2AsRJMGhcXkuvMhKBGTsgLnxAtQL3apiqj4+f6TIttNmHHrinwseTNhr52LxFeNIOa6vv3k1JSTotrHg0cV2CUu7ksNQbnBzcXPKjlFWzelbkCWi5Ph4Jt4/z+8DI1zjoShxlvpvQpI5SBaomnjYUTIUvN7ApmaDqo9W1ma1c5WiOJvIejLF0YBArRa81wsx7FZ7h5QVuiWZk9VZixK+qeG0lRekmV7SKiPCyzvqN7ylwpVg7+/jrVBYKxmVk5zZFwoIN9kkMZNYnT8GIBI=
+  file: NixieClockDori.ino.hex
+  on:
+    repo: Doridian/NixieClockDori
