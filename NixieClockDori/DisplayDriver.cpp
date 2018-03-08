@@ -13,7 +13,7 @@ void displayInterrupt() {
 	const byte ctrL = ctr % 11;
 	if (ctrL <= 1 || renderAlways) {
 		const byte anodeGroup = ctr / 11;
-		byte anodeControl = ctrL ? (1 << (anodeGroup + 4)) : 0;
+		const byte anodeControl = ctrL ? (1 << (anodeGroup + 4)) : 0;
 
 		const byte curTubeL = anodeGroup << 1;
 		const byte curTubeR = curTubeL + 1;
