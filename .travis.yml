@@ -10,9 +10,9 @@ script:
 - cd NixieClockDori
 - arduino --pref "build.path=$HOME/arduino_ide/releases" --save-prefs
 - build_platform uno
-- cp "$HOME/arduino_ide/releases/NixieClockDori.ino.hex" "$HOME/arduino_ide/NixieClockDori.UNO.hex
+- cp "$HOME/arduino_ide/releases/NixieClockDori.ino.hex" "$HOME/arduino_ide/NixieClockDori.UNO.hex"
 - build_platform mega
-- cp "$HOME/arduino_ide/releases/NixieClockDori.ino.hex" "$HOME/arduino_ide/NixieClockDori.MEGA.hex
+- cp "$HOME/arduino_ide/releases/NixieClockDori.ino.hex" "$HOME/arduino_ide/NixieClockDori.MEGA.hex"
 notifications:
   email:
     on_success: change
