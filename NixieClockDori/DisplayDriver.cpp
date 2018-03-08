@@ -13,14 +13,14 @@ void displayInterrupt() {
 	const byte ctrL = ctr % 11;
 	if (ctrL <= 1 || renderAlways) {
 		const byte anodeGroup = ctr / 11;
-		const byte anodeControl = ctrL ? (1 << (anodeGroup + 4)) : 0;
+		byte anodeControl = ctrL ? (1 << (anodeGroup + 4)) : 0;
 
 		const byte curTubeL = anodeGroup << 1;
 		const byte curTubeR = curTubeL + 1;
 
 		uint16_t tubeL = displayDataFront[curTubeL];
 		uint16_t tubeR = displayDataFront[curTubeR];
-		if (renderAlways && currentEffect == TRANSITION) {
+		if (ctrL && renderAlways && currentEffect == TRANSITION) {
 			if (ctrL <= (dataIsTransitioning[curTubeL] / (EFFECT_SPEED / 10UL))) {
 				tubeL = dataToDisplayPrevious[curTubeL];
 			}
@@ -29,8 +29,9 @@ void displayInterrupt() {
 			}
 		}
 
+
 		// We don't need to un-blank if an entire segment is blank
-		if ((tubeL != NO_TUBES || tubeR != NO_TUBES || !ctrL) && (lastSentTubes[curTubeL] != tubeL || lastSentTubes[curTubeR] != tubeR || ctrL <= 1)) {
+		if (lastSentTubes[curTubeL] != tubeL || lastSentTubes[curTubeR] != tubeR || ctrL <= 1) {
 			if (ctrL) {
 				lastSentTubes[curTubeL] = tubeL;
 				lastSentTubes[curTubeR] = tubeR;
