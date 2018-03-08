@@ -4,11 +4,10 @@
 #include "config.h"
 #include <SPI.h>
 #include <TimerOne.h>
-
-uint16_t lastSentTubes[6] = { 9999, 9999, 9999, 9999, 9999, 9999 };
-
 void displayInterrupt() {
 	static byte ctr = 0;
+
+	byte allowRender = 2;
 
 	const byte ctrL = ctr % 11;
 	if (ctrL <= 1 || renderAlways) {
@@ -21,21 +20,25 @@ void displayInterrupt() {
 		uint16_t tubeL = displayDataFront[curTubeL];
 		uint16_t tubeR = displayDataFront[curTubeR];
 		if (renderAlways && currentEffect == TRANSITION) {
-			if (ctrL <= (dataIsTransitioning[curTubeL] / (EFFECT_SPEED / 10UL))) {
+			byte ctrLT = (dataIsTransitioning[curTubeL] / (EFFECT_SPEED / 10UL));
+			if (ctrLT > 1 && ctrL <= 1) {
 				tubeL = dataToDisplayPrevious[curTubeL];
 			}
-			if (ctrL <= (dataIsTransitioning[curTubeR] / (EFFECT_SPEED / 10UL))) {
+			else if (ctrL > 1 && ctrLT != ctrL) {
+				allowRender--;
+			}
+
+			ctrLT = (dataIsTransitioning[curTubeR] / (EFFECT_SPEED / 10UL));
+			if (ctrLT > 1 && ctrL <= 1) {
 				tubeR = dataToDisplayPrevious[curTubeR];
+			}
+			else if (ctrL > 1 && ctrLT != ctrL) {
+				allowRender--;
 			}
 		}
 
 		// We don't need to un-blank if an entire segment is blank
-		if ((tubeL != NO_TUBES || tubeR != NO_TUBES || !ctrL) && (lastSentTubes[curTubeL] != tubeL || lastSentTubes[curTubeR] != tubeR || ctrL <= 1)) {
-			if (ctrL) {
-				lastSentTubes[curTubeL] = tubeL;
-				lastSentTubes[curTubeR] = tubeR;
-			}
-
+		if (allowRender && (tubeL != NO_TUBES || tubeR != NO_TUBES || !ctrL)) {
 			PORT_DISPLAY_LATCH &= ~PORT_MASK_DISPLAY_LATCH;
 			SPI.transfer(dotMask);                            // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
 			SPI.transfer(tubeR >> 6 | anodeControl);          // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes
