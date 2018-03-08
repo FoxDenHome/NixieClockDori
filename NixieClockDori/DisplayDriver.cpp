@@ -5,6 +5,8 @@
 #include <SPI.h>
 #include <TimerOne.h>
 
+uint16_t lastSentTubes[6] = { 9999, 9999, 9999, 9999, 9999, 9999 };
+
 void displayInterrupt() {
 	static byte ctr = 0;
 
@@ -28,7 +30,12 @@ void displayInterrupt() {
 		}
 
 		// We don't need to un-blank if an entire segment is blank
-		if (tubeL != NO_TUBES || tubeR != NO_TUBES || !ctrL) {
+		if ((tubeL != NO_TUBES || tubeR != NO_TUBES || !ctrL) && (lastSentTubes[curTubeL] != tubeL || lastSentTubes[curTubeR] != tubeR || ctrL <= 1)) {
+			if (ctrL) {
+				lastSentTubes[curTubeL] = tubeL;
+				lastSentTubes[curTubeR] = tubeR;
+			}
+
 			PORT_DISPLAY_LATCH &= ~PORT_MASK_DISPLAY_LATCH;
 			SPI.transfer(dotMask);                            // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
 			SPI.transfer(tubeR >> 6 | anodeControl);          // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes
