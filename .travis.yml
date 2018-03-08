@@ -11,7 +11,7 @@ script:
 - arduino --pref "build.path=$HOME/arduino_ide/releases" --save-prefs
 - build_platform uno
 - cp "$HOME/arduino_ide/releases/NixieClockDori.ino.hex" "$HOME/arduino_ide/NixieClockDori.UNO.hex"
-- build_platform mega2560
+- build_platform arduino:avr:mega:cpu=atmega2560
 - cp "$HOME/arduino_ide/releases/NixieClockDori.ino.hex" "$HOME/arduino_ide/NixieClockDori.MEGA.hex"
 notifications:
   email:
