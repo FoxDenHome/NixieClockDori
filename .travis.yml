@@ -8,7 +8,7 @@ install:
 script:
 - cd NixieClockDori
 - build_platform uno
-- find | grep hex
+- find /home/travis | grep hex
 notifications:
   email:
     on_success: change
