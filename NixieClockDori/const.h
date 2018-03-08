@@ -15,9 +15,12 @@
 #define PORT_MASK_DISPLAY_LATCH (1 << PIN_DISPLAY_LATCH)
 #endif
 
-const byte PIN_HIZ = 8;  // Z state in registers outputs (while LOW level) Always LOW? */
-const byte PIN_HIGH_VOLTAGE_ENABLE = 5;  // High Voltage (tube power) on while HIGH
-const byte PIN_BUZZER = 2;  // Piezo buzzer pin
+// Z state in registers outputs (while LOW level) Always LOW?
+#define PIN_HIZ 8
+// High Voltage (tube power) on while HIGH
+#define PIN_HIGH_VOLTAGE_ENABLE 5
+// Piezo buzzer pin
+#define PIN_BUZZER 2
 
 #define PIN_LED_RED 9
 #define PIN_LED_GREEN 6
@@ -40,7 +43,8 @@ const byte PIN_BUZZER = 2;  // Piezo buzzer pin
 #define EEPROM_STORAGE_DATE_AUTO (EEPROM_STORAGE_CLOCK_RGB + EEPROM_SIZEOF_RGB)
 #define EEPROM_STORAGE_DATE_RGB (EEPROM_STORAGE_DATE_AUTO + sizeof(bool))
 #define EEPROM_STORAGE_CURRENT_EFFECT (EEPROM_STORAGE_DATE_RGB + EEPROM_SIZEOF_RGB)
-#define EEPROM_END (EEPROM_STORAGE_CURRENT_EFFECT + sizeof(DisplayEffect))
+
+#define EEPROM_STORAGE_END (EEPROM_STORAGE_CURRENT_EFFECT + sizeof(DisplayEffect))
 
 /*******************/
 /* OTHER CONSTANTS */
