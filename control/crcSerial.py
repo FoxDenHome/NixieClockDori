@@ -19,6 +19,8 @@ def _readline(data, retryAfter = 5):
 
 		try:
 			line = nixieCOM.readline().decode("ascii").strip()
+		except KeyboardInterrupt:
+			raise
 		except:
 			continue
 
