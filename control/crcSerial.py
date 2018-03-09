@@ -1,11 +1,9 @@
 from binascii import crc_hqx
 from serial import Serial
-#from io import TextIOWrapper, BufferedRWPair
 
 nixieCOM = Serial()
 nixieCOM.baudrate = 115200
 nixieCOM.timeout = 1
-#nixieIO = TextIOWrapper(BufferedRWPair(nixieCOM, nixieCOM))
 
 def _crc(data):
 	return crc_hqx(bytes(data, "ascii"), 0xffff)
