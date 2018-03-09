@@ -8,7 +8,7 @@ install:
 - mkdir -p $HOME/arduino_ide/releases
 script:
 - cd NixieClockDori
-- sed -i "s~^#define FW_VERSION .*$~#define FW_VERSION \"$TRAVIS_BRANCH [$TRAVIS_COMMIT]\"~g" config.h
+- sed -i "s~^#define FW_VERSION .*$~#define FW_VERSION \"$TRAVIS_BRANCH $TRAVIS_COMMIT\"~g" config.h
 - cat config.h
 - arduino --pref "build.path=$HOME/arduino_ide/releases" --save-prefs
 - build_platform uno
