@@ -175,9 +175,9 @@ void serialPoll() {
 			break;
 			// H
 			// Pings the display ("Hello")
-			// ^H|
+			// ^H|10300
 		case 'H':
-			serialSendF("H OK");
+			serialSendF("H OK " FW_VERSION);
 			break;
 			// X
 			// Performs a display reset of all modes
