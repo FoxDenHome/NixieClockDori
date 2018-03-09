@@ -173,6 +173,12 @@ void serialPoll() {
 			rtcSetTime(tm);
 			serialSendF("T OK");
 			break;
+			// H
+			// Pings the display ("Hello")
+			// ^H|
+		case 'H':
+			serialSendF("H OK");
+			break;
 			// X
 			// Performs a display reset of all modes
 			// ^X|14861
