@@ -16,6 +16,7 @@ const uint16_t ALL_TUBES = (1 << 10) - 1; // Bitmask to enable all tubes
 const uint16_t NO_TUBES = 0;
 
 extern byte dotMask;
+extern bool doFlip;
 extern bool renderAlways;
 extern uint16_t *displayDataFront;
 extern uint16_t *displayDataBack;

@@ -8,6 +8,13 @@
 uint16_t lastSentTubes[6] = { 9999, 9999, 9999, 9999, 9999, 9999 };
 
 void displayInterrupt() {
+	if (doFlip) {
+		uint16_t *tmp = displayDataFront;
+		displayDataFront = displayDataBack;
+		displayDataBack = tmp;
+		doFlip = false;
+	}
+
 	static byte ctr = 0;
 
 	const byte ctrL = ctr % 11;
