@@ -36,7 +36,7 @@ const bool DisplayTask_Stopwatch::_canShow() {
 	return this->time > 0 || this->running;
 }
 
-bool DisplayTask_Stopwatch::refresh(uint16_t displayData[]) {
+bool DisplayTask_Stopwatch::refresh(byte displayData[]) {
 	DisplayTask::editMode = false;
 
 	if (this->running) {

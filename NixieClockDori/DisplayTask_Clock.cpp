@@ -30,7 +30,7 @@ void DisplayTask_Clock::handleEdit(const byte digit, const bool up) {
 	rtcSetTime(tm);
 }
 
-bool DisplayTask_Clock::refresh(uint16_t displayData[]) {
+bool DisplayTask_Clock::refresh(byte displayData[]) {
 	if (!DisplayTask::editMode) {
 		const time_t _n = now();
 		const byte h = hour(_n);

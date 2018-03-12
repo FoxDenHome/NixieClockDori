@@ -18,7 +18,7 @@ class DisplayTask {
 public:
 	bool canShow();
 
-	virtual bool refresh(uint16_t displayData[]);
+	virtual bool refresh(byte displayData[]);
 	virtual void handleButtonPress(const Button button, const PressType press);
 	static void buttonHandler(const Button button, const PressType press);
 

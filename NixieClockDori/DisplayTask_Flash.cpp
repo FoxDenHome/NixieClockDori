@@ -9,7 +9,7 @@ const bool DisplayTask_Flash::_canShow() {
 	return this->endTime > 0 && millis() < this->endTime;
 }
 
-bool DisplayTask_Flash::refresh(uint16_t displayData[]) {
+bool DisplayTask_Flash::refresh(byte displayData[]) {
 	DisplayTask::editMode = false;
 	if (!this->canShow()) {
 		cycleDisplayUpdater();
