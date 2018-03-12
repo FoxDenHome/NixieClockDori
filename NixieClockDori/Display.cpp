@@ -39,6 +39,7 @@ uint16_t* displayDataBack = displayDataA;
 uint16_t* displayDataFront = displayDataB;
 
 byte dotMask = 0;
+bool doFlip = true;
 
 DisplayEffect currentEffect = SLOT_MACHINE;
 
@@ -99,7 +100,7 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 	static byte oldAntiPoisonIdx = 255;
 	static uint16_t antiPoisonTable[6];
 
-	bool allowEffects = false, doFlip = true;
+	bool allowEffects = false;
 
 	static byte redOld, greenOld, blueOld;
 
@@ -128,6 +129,7 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 				displayDataBack[i] = randNbr;
 				dataIsTransitioning[i] = 0;
 			}
+			doFlip = true;
 			oldAntiPoisonIdx = idx;
 		}
 		else {
@@ -187,7 +189,7 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 	// Progress through effect
 	const  bool effectsOn = allowEffects && currentEffect != NONE;
 
-	bool hasEffects = false;
+	bool hasEffects = false, setFlip = false;
 	for (byte i = 0; i < 6; i++) {
 		const uint16_t cur = displayDataBack[i];
 		if (dataToDisplayOld[i] != cur) {
@@ -196,6 +198,7 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 			if (effectsOn) {
 				dataIsTransitioning[i] = EFFECT_SPEED;
 			}
+			setFlip = true;
 		}
 
 		if (!effectsOn) {
@@ -210,10 +213,12 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 			}
 			dataIsTransitioning[i] -= microDelta;
 			hasEffects = true;
+			setFlip = true;
 		}
 		else if (tubeTrans > 0) {
 			displayDataBack[i] = dataToDisplayOld[i];
 			dataIsTransitioning[i] = 0;
+			setFlip = true;
 		}
 	}
 
@@ -221,15 +226,9 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 		if (currentEffect == TRANSITION) {
 			renderAlways = hasEffects;
 		}
-
-		doFlip = true;
 	}
 
-	if (doFlip) {
-		uint16_t *tmp = displayDataFront;
-		displayDataFront = displayDataBack;
-		displayDataBack = tmp;
-	}
+	doFlip = setFlip;
 }
 
 void displayInit() {
