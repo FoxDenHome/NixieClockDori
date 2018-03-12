@@ -189,16 +189,18 @@ void serialPoll() {
 			serialSendF("X OK");
 			resetFunc();
 			break;
-			// P CC
+			// P [CC]
 			// C = Count (Dec)
 			// Performs an anti poisoning routine <C> times
 			// ^P01|-20043
+			// ^P|-17659
 		case 'P':
 			if (inputString.length() < 2) {
-				serialSendF("P BAD (Invalid length; expected 2)");
-				break;
+				displayAntiPoisonOff();
 			}
-			displayAntiPoison(inputString.substring(1, 3).toInt());
+			else {
+				displayAntiPoison(inputString.substring(1, 3).toInt());
+			}
 			serialSendF("P OK");
 			break;
 			// F [MMMMMMMM D NNNNNN [RR GG BB]]
