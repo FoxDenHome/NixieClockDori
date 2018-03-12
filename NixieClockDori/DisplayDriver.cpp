@@ -13,7 +13,6 @@ void displayInterrupt() {
 	const byte ctrL = ctr % 11;
 	if (ctrL <= 1 || renderAlways) {
 		const byte anodeGroup = ctr / 11;
-		const byte anodeControl = ctrL ? (1 << (anodeGroup + 4)) : 0;
 
 		const byte curTubeL = anodeGroup << 1;
 		const byte curTubeR = curTubeL + 1;
@@ -32,16 +31,18 @@ void displayInterrupt() {
 
 		// We don't need to un-blank if an entire segment is blank
 		if (lastSentTubes[curTubeL] != tubeL || lastSentTubes[curTubeR] != tubeR || ctrL <= 1) {
-			if (anodeControl) {
+			PORT_DISPLAY_LATCH &= ~PORT_MASK_DISPLAY_LATCH;
+			SPI.transfer(dotMask);                                  // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
+			if (ctrL) {
 				lastSentTubes[curTubeL] = tubeL;
 				lastSentTubes[curTubeR] = tubeR;
+				SPI.transfer(tubeR >> 6 | (1 << (anodeGroup + 4))); // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes (blanking)
 			}
-
-			PORT_DISPLAY_LATCH &= ~PORT_MASK_DISPLAY_LATCH;
-			SPI.transfer(dotMask);                            // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
-			SPI.transfer(tubeR >> 6 | anodeControl);          // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes
-			SPI.transfer(tubeR << 2 | tubeL >> 8);            // [RC5][RC4][RC3][RC2][RC1][RC0][LC9][LC8] - RC9 - RC0 - Right tubes cathodes
-			SPI.transfer(tubeL);                              // [LC7][LC6][LC5][LC4][LC3][LC2][LC1][LC0] - LC9 - LC0 - Left tubes cathodes
+			else {
+				SPI.transfer(tubeR >> 6);                           // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes (displaying)
+			}
+			SPI.transfer(tubeR << 2 | tubeL >> 8);                  // [RC5][RC4][RC3][RC2][RC1][RC0][LC9][LC8] - RC9 - RC0 - Right tubes cathodes
+			SPI.transfer(tubeL);                                    // [LC7][LC6][LC5][LC4][LC3][LC2][LC1][LC0] - LC9 - LC0 - Left tubes cathodes
 			PORT_DISPLAY_LATCH |= PORT_MASK_DISPLAY_LATCH;
 		}
 	}
