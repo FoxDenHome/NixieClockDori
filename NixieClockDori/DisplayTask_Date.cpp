@@ -50,7 +50,7 @@ void DisplayTask_Date::handleEdit(const byte digit, const bool up) {
 
 	tmElements_t tm;
 	breakTime(now(), tm);
-	tm.Year = y2kYearToTm(y); // Offset from 1970
+	tm.Year = y2kYearToTm(y);
 	tm.Month = m;
 	tm.Day = d;
 	rtcSetTime(tm);
