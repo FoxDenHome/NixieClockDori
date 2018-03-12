@@ -33,10 +33,11 @@ const byte MASK_BOTH_DOTS = MASK_UPPER_DOTS | MASK_LOWER_DOTS;
 unsigned long antiPoisonEnd = 0;
 unsigned long nextDisplayRender = 0;
 
-uint16_t displayDataA[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
-uint16_t displayDataB[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
-uint16_t* displayDataBack = displayDataA;
-uint16_t* displayDataFront = displayDataB;
+byte displayData[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
+
+byte dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
+byte dataToDisplayPrevious[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
+bool renderAlways = false;
 
 byte dotMask = 0;
 bool doFlip = true;
@@ -54,15 +55,15 @@ void displayAntiPoison(const unsigned long count) {
 	}
 }
 
-uint16_t getNumber(const byte idx) {
-	return 1 << (idx % 10);
+byte getNumber(const byte idx) {
+	return idx % 10;
 }
 
 byte makeDotMask(const bool upper, const bool lower) {
 	return (upper ? 0 : MASK_UPPER_DOTS) | (lower ? 0 : MASK_LOWER_DOTS);
 }
 
-bool showShortTime(const unsigned long timeMs, bool trimLZ, uint16_t dataToDisplay[], bool alwaysLong) {
+bool showShortTime(const unsigned long timeMs, bool trimLZ, byte dataToDisplay[], bool alwaysLong) {
 	if (timeMs >= ONE_HOUR_IN_MS || alwaysLong) { // Show H/M/S
 		trimLZ = insert2(0, (timeMs / ONE_HOUR_IN_MS) % 100, trimLZ, dataToDisplay);
 		trimLZ = insert2(2, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ, dataToDisplay);
@@ -77,7 +78,7 @@ bool showShortTime(const unsigned long timeMs, bool trimLZ, uint16_t dataToDispl
 	}
 }
 
-void insert1(const byte offset, const byte data, const bool trimLeadingZero, uint16_t dataToDisplay[]) {
+void insert1(const byte offset, const byte data, const bool trimLeadingZero, byte dataToDisplay[]) {
 	if (data == 0 && trimLeadingZero) {
 		dataToDisplay[offset] = 0;
 	}
@@ -86,27 +87,23 @@ void insert1(const byte offset, const byte data, const bool trimLeadingZero, uin
 	}
 }
 
-bool insert2(const byte offset, const byte data, const bool trimLeadingZero, uint16_t dataToDisplay[]) {
+bool insert2(const byte offset, const byte data, const bool trimLeadingZero, byte dataToDisplay[]) {
 	insert1(offset, data / 10, trimLeadingZero, dataToDisplay);
 	insert1(offset + 1, data, trimLeadingZero, dataToDisplay);
 	return data == 0 && trimLeadingZero;
 }
 
-unsigned long dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
-uint16_t dataToDisplayPrevious[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
-bool renderAlways = false;
-
 void renderNixies(const unsigned long curMicros, const unsigned long microDelta) {
 	static byte oldAntiPoisonIdx = 255;
-	static uint16_t antiPoisonTable[6];
+	static byte antiPoisonTable[6];
 
 	bool allowEffects = false;
 
 	static byte redOld, greenOld, blueOld;
 
-	static uint16_t dataToDisplayOld[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
+	static byte dataToDisplayOld[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
 	static byte redPrevious, greenPrevious, bluePrevious;
-	static long colorTransProg;
+	static byte colorTransProg;
 
 	const unsigned long curMillis = millis();
 
@@ -126,7 +123,7 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 					}
 				}
 				antiPoisonTable[i] |= randNbr;
-				displayDataBack[i] = randNbr;
+				displayData[i] = randNbr;
 				dataIsTransitioning[i] = 0;
 			}
 			doFlip = true;
@@ -137,13 +134,13 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 		}
 	}
 	else if (DisplayTask::current) {
-		allowEffects = DisplayTask::current->refresh(displayDataBack);
+		allowEffects = DisplayTask::current->refresh(displayData);
 
 		if (currentEffect != NONE) {
 			byte redNow = redOld, greenNow = greenOld, blueNow = blueOld;
 
-			if (colorTransProg > 0 && allowEffects && colorTransProg > (long)microDelta) {
-				colorTransProg -= microDelta;
+			if (colorTransProg > 1 && allowEffects) {
+				colorTransProg--;
 				redNow = redOld + (((redPrevious - redOld) * colorTransProg) / EFFECT_SPEED);
 				greenNow = greenOld + (((greenPrevious - greenOld) * colorTransProg) / EFFECT_SPEED);
 				blueNow = blueOld + (((bluePrevious - blueOld) * colorTransProg) / EFFECT_SPEED);
@@ -151,8 +148,8 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 				autoAnalogWrite(PIN_LED_GREEN, greenNow);
 				autoAnalogWrite(PIN_LED_BLUE, blueNow);
 			}
-			else if (colorTransProg >= 0) {
-				colorTransProg = -1;
+			else if (colorTransProg == 1) {
+				colorTransProg = 0;
 				autoAnalogWrite(PIN_LED_RED, redNow);
 				autoAnalogWrite(PIN_LED_GREEN, greenNow);
 				autoAnalogWrite(PIN_LED_BLUE, blueNow);
@@ -187,11 +184,11 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 	}
 
 	// Progress through effect
-	const  bool effectsOn = allowEffects && currentEffect != NONE;
+	const bool effectsOn = allowEffects && currentEffect != NONE;
 
 	bool hasEffects = false, setFlip = false;
 	for (byte i = 0; i < 6; i++) {
-		const uint16_t cur = displayDataBack[i];
+		const uint16_t cur = displayData[i];
 		if (dataToDisplayOld[i] != cur) {
 			dataToDisplayPrevious[i] = dataToDisplayOld[i];
 			dataToDisplayOld[i] = cur;
@@ -205,18 +202,19 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 			continue;
 		}
 
-		const unsigned long tubeTrans = dataIsTransitioning[i];
-
-		if (tubeTrans > microDelta) {
+		const byte tubeTrans = dataIsTransitioning[i];
+		if (tubeTrans > 1) {
 			if (currentEffect == SLOT_MACHINE) {
-				displayDataBack[i] = getNumber(tubeTrans / (EFFECT_SPEED / 10UL));
+				displayData[i] = getNumber(tubeTrans / (EFFECT_SPEED / 10));
 			}
-			dataIsTransitioning[i] -= microDelta;
+			dataIsTransitioning[i]--;
 			hasEffects = true;
 			setFlip = true;
 		}
-		else if (tubeTrans > 0) {
-			displayDataBack[i] = dataToDisplayOld[i];
+		else if (tubeTrans == 1) {
+			if (currentEffect == SLOT_MACHINE) {
+				displayData[i] = dataToDisplayOld[i];
+			}
 			dataIsTransitioning[i] = 0;
 			setFlip = true;
 		}

@@ -5,7 +5,7 @@
 class DisplayTask_Date : public DisplayTask {
 public:
 	DisplayTask_Date();
-	bool refresh(uint16_t displayData[]) override;
+	bool refresh(byte displayData[]) override;
 
 	void loadConfig(const int16_t base);
 

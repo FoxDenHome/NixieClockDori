@@ -56,7 +56,7 @@ void DisplayTask_Date::handleEdit(const byte digit, const bool up) {
 	rtcSetTime(tm);
 }
 
-bool DisplayTask_Date::refresh(uint16_t displayData[]) {
+bool DisplayTask_Date::refresh(byte displayData[]) {
 	if (!DisplayTask::editMode) {
 		const time_t _n = now();
 		const byte y = year(_n) % 100;
