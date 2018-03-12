@@ -168,7 +168,7 @@ void serialPoll() {
 			tm.Second = inputString.substring(5, 7).toInt();
 			tm.Day = inputString.substring(6, 9).toInt();
 			tm.Month = inputString.substring(9, 11).toInt();
-			tm.Year = inputString.substring(11, 13).toInt() + 30;
+			tm.Year = y2kYearToTm(inputString.substring(11, 13).toInt());
 			tm.Wday = inputString.substring(13, 14).toInt();
 			rtcSetTime(tm);
 			serialSendF("T OK");
