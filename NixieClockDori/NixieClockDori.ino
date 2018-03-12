@@ -195,7 +195,7 @@ void serialPoll() {
 			// ^P01|-20043
 			// ^P|-17659
 		case 'P':
-			if (inputString.length() < 2) {
+			if (inputString.length() < 3) {
 				displayAntiPoisonOff();
 			}
 			else {
