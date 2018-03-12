@@ -115,7 +115,7 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 				memset(antiPoisonTable, 0, sizeof(antiPoisonTable));
 			}
 			for (byte i = 0; i < 6; i++) {
-				uint16_t randNbr = getNumber(random(0, 10));
+				byte randNbr = getNumber(random(0, 10));
 				while ((antiPoisonTable[i] & (1 << randNbr))) {
 					randNbr++;
 					if (randNbr > 9) {
