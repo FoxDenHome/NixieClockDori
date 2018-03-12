@@ -95,7 +95,7 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero, byt
 
 void renderNixies(const unsigned long curMicros, const unsigned long microDelta) {
 	static byte oldAntiPoisonIdx = 255;
-	static byte antiPoisonTable[6];
+	static uint16_t antiPoisonTable[6];
 
 	bool allowEffects = false;
 
@@ -116,13 +116,13 @@ void renderNixies(const unsigned long curMicros, const unsigned long microDelta)
 			}
 			for (byte i = 0; i < 6; i++) {
 				uint16_t randNbr = getNumber(random(0, 10));
-				while ((antiPoisonTable[i] & randNbr) == randNbr) {
-					randNbr <<= 1;
-					if (randNbr > ALL_TUBES) {
-						randNbr = 1;
+				while ((antiPoisonTable[i] & (1 << randNbr))) {
+					randNbr++;
+					if (randNbr > 9) {
+						randNbr = 0;
 					}
 				}
-				antiPoisonTable[i] |= randNbr;
+				antiPoisonTable[i] |= (1 << randNbr);
 				displayData[i] = randNbr;
 				dataIsTransitioning[i] = 0;
 			}
