@@ -6,7 +6,7 @@ class DisplayTask_Stopwatch : public DisplayTask {
 public:
 	DisplayTask_Stopwatch();
 
-	bool refresh(byte displayData[]) override;
+	bool refresh() override;
 
 	void pause();
 	void resume();

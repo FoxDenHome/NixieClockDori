@@ -78,7 +78,7 @@ const bool DisplayTask_Countdown::_canShow() {
 	return this->running || this->time != this->timeReset;
 }
 
-bool DisplayTask_Countdown::refresh(byte displayData[]) {
+bool DisplayTask_Countdown::refresh() {
 	if (this->running) {
 		DisplayTask::editMode = false;
 		const unsigned long curMillis = millis();
@@ -100,7 +100,7 @@ bool DisplayTask_Countdown::refresh(byte displayData[]) {
 		}
 	}
 
-	return (showShortTime(DisplayTask::editMode ? this->timeReset : this->time, !DisplayTask::editMode, displayData, DisplayTask::editMode) || !this->running) && DisplayTask::refresh(displayData);
+	return (showShortTime(DisplayTask::editMode ? this->timeReset : this->time, !DisplayTask::editMode, DisplayTask::editMode) || !this->running) && DisplayTask::refresh();
 }
 
 void DisplayTask_Countdown::reset() {

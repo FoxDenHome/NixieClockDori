@@ -13,7 +13,7 @@ public:
 	void resume();
 	void start();
 
-	bool refresh(byte displayData[]) override;
+	bool refresh() override;
 	unsigned long timeReset;
 
 	void handleButtonPress(const Button button, const PressType press) override;

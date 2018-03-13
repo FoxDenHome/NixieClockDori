@@ -10,18 +10,17 @@ enum DisplayEffect {
 	SLOT_MACHINE,
 	FIRST_INVALID,
 };
-extern DisplayEffect currentEffect;
+extern volatile DisplayEffect currentEffect;
 
 const byte INVALID_TUBES = 11;
 const byte ALL_TUBES = 11;
 const byte NO_TUBES = 10;
 
-extern byte dotMask;
-extern bool doFlip;
-extern bool renderAlways;
-extern byte displayData[6];
-extern byte dataIsTransitioning[6];
-extern byte dataToDisplayPrevious[6];
+extern volatile byte dotMask;
+extern volatile bool renderAlways;
+extern volatile byte displayData[6];
+extern volatile byte dataIsTransitioning[6];
+extern volatile byte dataToDisplayPrevious[6];
 
 void displayInit();
 void displayLoop();
@@ -33,6 +32,6 @@ byte makeDotMask(const bool upper, const bool lower);
 
 byte getNumber(const byte idx);
 
-void insert1(const byte offset, const byte data, const bool trimLeadingZero, byte dataToDisplay[]);
-bool insert2(const byte offset, const byte data, const bool trimLeadingZero, byte dataToDisplay[]);
-bool showShortTime(const unsigned long timeMs, bool trimLZ, byte dataToDisplay[], bool alwaysLong);
+void insert1(const byte offset, const byte data, const bool trimLeadingZero);
+bool insert2(const byte offset, const byte data, const bool trimLeadingZero);
+bool showShortTime(const unsigned long timeMs, bool trimLZ, bool alwaysLong);

@@ -36,7 +36,7 @@ const bool DisplayTask_Stopwatch::_canShow() {
 	return this->time > 0 || this->running;
 }
 
-bool DisplayTask_Stopwatch::refresh(byte displayData[]) {
+bool DisplayTask_Stopwatch::refresh() {
 	DisplayTask::editMode = false;
 
 	if (this->running) {
@@ -45,7 +45,7 @@ bool DisplayTask_Stopwatch::refresh(byte displayData[]) {
 		this->lastCall = curMillis;
 	}
 
-	return showShortTime(this->time, false, displayData, false) || !this->running;
+	return showShortTime(this->time, false, false) || !this->running;
 }
 
 void DisplayTask_Stopwatch::reset() {

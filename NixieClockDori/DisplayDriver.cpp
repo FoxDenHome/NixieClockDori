@@ -42,7 +42,7 @@ void displayInterrupt() {
 			}
 		}
 
-		// We don't need to un-blank if an entire segment is blank
+		// We don't need to refresh if it is just the same as last time (unless we are in main phase render)
 		if (lastSentTubes[curTubeL] != tubeLi || lastSentTubes[curTubeR] != tubeRi || ctrL <= 1) {
 			const uint16_t tubeL = mkTube(tubeLi);
 			const uint16_t tubeR = mkTube(tubeRi);

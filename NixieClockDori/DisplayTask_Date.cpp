@@ -56,7 +56,7 @@ void DisplayTask_Date::handleEdit(const byte digit, const bool up) {
 	rtcSetTime(tm);
 }
 
-bool DisplayTask_Date::refresh(byte displayData[]) {
+bool DisplayTask_Date::refresh() {
 	if (!DisplayTask::editMode) {
 		const time_t _n = now();
 		const byte y = year(_n) % 100;
@@ -68,10 +68,10 @@ bool DisplayTask_Date::refresh(byte displayData[]) {
 		this->d = d;
 	}
 
-	insert2(0, this->d, false, displayData);
-	insert2(2, this->m, false, displayData);
-	insert2(4, this->y, false, displayData);
+	insert2(0, this->d, false);
+	insert2(2, this->m, false);
+	insert2(4, this->y, false);
 
-	return DisplayTask::refresh(displayData);
+	return DisplayTask::refresh();
 }
 

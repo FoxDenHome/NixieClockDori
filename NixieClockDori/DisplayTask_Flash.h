@@ -6,7 +6,7 @@ class DisplayTask_Flash : public DisplayTask {
 public:
 	DisplayTask_Flash();
 
-	bool refresh(byte displayData[]) override;
+	bool refresh() override;
 
 	uint16_t symbols[6];
 	unsigned long endTime = 0;

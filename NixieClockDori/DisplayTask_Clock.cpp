@@ -13,7 +13,8 @@ void DisplayTask_Clock::handleButtonPress(const Button button, const PressType p
 		if (currentEffect == FIRST_INVALID) {
 			currentEffect = NONE;
 		}
-		EEPROM.put(EEPROM_STORAGE_CURRENT_EFFECT, currentEffect);
+		const DisplayEffect saveEffect = currentEffect;
+		EEPROM.put(EEPROM_STORAGE_CURRENT_EFFECT, saveEffect);
 		return;
 	}
 	DisplayTask::handleButtonPress(button, pressType);
@@ -30,7 +31,7 @@ void DisplayTask_Clock::handleEdit(const byte digit, const bool up) {
 	rtcSetTime(tm);
 }
 
-bool DisplayTask_Clock::refresh(byte displayData[]) {
+bool DisplayTask_Clock::refresh() {
 	if (!DisplayTask::editMode) {
 		const time_t _n = now();
 		const byte h = hour(_n);
@@ -57,14 +58,14 @@ bool DisplayTask_Clock::refresh(byte displayData[]) {
 	}
 
 #ifdef CLOCK_TRIM_HOURS
-	insert1(0, this->h / 10, true, displayData);
-	insert1(1, this->h, false, displayData);
+	insert1(0, this->h / 10, true);
+	insert1(1, this->h, false);
 #else
-	insert2(0, this->h, false, displayData);
+	insert2(0, this->h, false);
 #endif
-	insert2(2, this->m, false, displayData);
-	insert2(4, this->s, false, displayData);
+	insert2(2, this->m, false);
+	insert2(4, this->s, false);
 
-	return DisplayTask::refresh(displayData);
+	return DisplayTask::refresh();
 }
 
