@@ -224,16 +224,21 @@ void serialPoll() {
 
 			tmpData = inputString[9] - '0';
 			displayFlash.dotMask = makeDotMask((tmpData & 2) == 2, (tmpData & 1) == 1);
+			for (byte j = 0; j < 3; j++) {
+				displayFlash.symbols[j] = 0;
+			}
 			for (byte i = 0; i < 6; i++) {
 				tmpData = inputString[i + 10];
+				const byte j = i >> 1;
+				const byte n = ((i & 1) == 1) ? 4 : 0;
 				if (tmpData == 'N') {
-					displayFlash.symbols[i] = NO_TUBES;
+					displayFlash.symbols[j] |= NO_TUBES << n;
 				}
 				else if (tmpData == 'A') {
-					displayFlash.symbols[i] = ALL_TUBES;
+					displayFlash.symbols[j] |= ALL_TUBES << n;
 				}
 				else {
-					displayFlash.symbols[i] = getNumber(tmpData - '0');
+					displayFlash.symbols[j] |= getNumber(tmpData - '0') << n;
 				}
 			}
 

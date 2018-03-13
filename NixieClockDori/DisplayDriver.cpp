@@ -28,30 +28,20 @@ void displayInterrupt() {
 	if (ctrL <= 1 || renderAlways) {
 		const byte anodeGroup = ctr / 11;
 
-		const byte curTubeL = anodeGroup << 1;
-		const byte curTubeR = curTubeL + 1;
-
-		byte tubeLi = displayData[curTubeL];
-		byte tubeRi = displayData[curTubeR];
-		if (ctrL && renderAlways && currentEffect == TRANSITION) {
-			if (ctrL <= (dataIsTransitioning[curTubeL] / (EFFECT_SPEED / 10))) {
-				tubeLi = dataToDisplayPrevious[curTubeL];
-			}
-			if (ctrL <= (dataIsTransitioning[curTubeR] / (EFFECT_SPEED / 10))) {
-				tubeRi = dataToDisplayPrevious[curTubeR];
-			}
+		byte tubei = displayData[anodeGroup];
+		if (ctrL && renderAlways && currentEffect == TRANSITION && ctrL <= (dataIsTransitioning[anodeGroup] / (EFFECT_SPEED / 10))) {
+			tubei = dataToDisplayPrevious[anodeGroup];
 		}
 
 		// We don't need to refresh if it is just the same as last time (unless we are in main phase render)
-		if (lastSentTubes[curTubeL] != tubeLi || lastSentTubes[curTubeR] != tubeRi || ctrL <= 1) {
-			const uint16_t tubeL = mkTube(tubeLi);
-			const uint16_t tubeR = mkTube(tubeRi);
+		if (lastSentTubes[anodeGroup] != tubei || ctrL <= 1) {
+			const uint16_t tubeL = mkTube(tubei & 0xF);
+			const uint16_t tubeR = mkTube(tubei >> 4);
 
 			PORT_DISPLAY_LATCH &= ~PORT_MASK_DISPLAY_LATCH;
 			SPI.transfer(dotMask);                                  // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
 			if (ctrL) {
-				lastSentTubes[curTubeL] = tubeLi;
-				lastSentTubes[curTubeR] = tubeRi;
+				lastSentTubes[anodeGroup] = tubei;
 				SPI.transfer(tubeR >> 6 | (1 << (anodeGroup + 4))); // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes (displaying)
 			}
 			else {

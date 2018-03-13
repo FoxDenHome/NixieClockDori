@@ -18,9 +18,9 @@ const byte NO_TUBES = 10;
 
 extern volatile byte dotMask;
 extern volatile bool renderAlways;
-extern volatile byte displayData[6];
-extern volatile byte dataIsTransitioning[6];
-extern volatile byte dataToDisplayPrevious[6];
+extern volatile byte displayData[3];
+extern volatile byte dataIsTransitioning[3];
+extern volatile byte dataToDisplayPrevious[3];
 
 void displayInit();
 void displayLoop();
