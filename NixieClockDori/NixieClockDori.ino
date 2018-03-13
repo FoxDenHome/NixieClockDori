@@ -134,10 +134,9 @@ void loop() {
 	DOWNButton.tick();
 	SETButton.tick();
 
-	const unsigned long curMicros = micros();
-	displayLoop(curMicros);
-	displayDriverLoop(curMicros);
-	if (DisplayTask::nextDisplayCycleMicros <= curMicros) {
+	displayLoop();
+	displayDriverLoop();
+	if (DisplayTask::nextDisplayCycleMicros <= micros()) {
 		DisplayTask::cycleDisplayUpdater();
 	}
 

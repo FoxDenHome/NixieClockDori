@@ -24,7 +24,7 @@ extern byte dataIsTransitioning[6];
 extern byte dataToDisplayPrevious[6];
 
 void displayInit();
-void displayLoop(const unsigned long curMicros);
+void displayLoop();
 
 void displayAntiPoisonOff();
 void displayAntiPoison(const unsigned long count);

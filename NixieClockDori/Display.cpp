@@ -93,7 +93,7 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero, byt
 	return data == 0 && trimLeadingZero;
 }
 
-void renderNixies(const unsigned long curMicros, const unsigned long microDelta) {
+void renderNixies() {
 	static byte oldAntiPoisonIdx = 255;
 	static uint16_t antiPoisonTable[6];
 
@@ -233,12 +233,10 @@ void displayInit() {
 
 }
 
-void displayLoop(const unsigned long curMicros) {
-	static unsigned long lastRenderTime = 0;
-
+void displayLoop() {
+	const unsigned long curMicros = micros();
 	if (nextDisplayRender <= curMicros) {
-		renderNixies(curMicros, curMicros - lastRenderTime);
-		lastRenderTime = curMicros;
+		renderNixies();
 		nextDisplayRender = curMicros + (DISPLAY_RENDER_STEP * 33UL);
 	}
 }
