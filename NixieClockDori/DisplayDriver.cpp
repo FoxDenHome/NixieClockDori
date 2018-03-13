@@ -78,6 +78,6 @@ void displayDriverInit() {
 	Timer1.attachInterrupt(&displayInterrupt);
 }
 
-void displayDriverLoop(const unsigned long curMicros) {
+void displayDriverLoop() {
 
 }
