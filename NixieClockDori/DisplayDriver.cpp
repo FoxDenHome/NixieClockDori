@@ -17,6 +17,9 @@ uint16_t inline mkTube(const byte idx) {
 	case NO_TUBES:
 		return NO_TUBES_MASK;
 	default:
+		if (idx > 9) {
+			return 0;
+		}
 		return 1 << idx;
 	}
 }
