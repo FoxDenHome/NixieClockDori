@@ -8,7 +8,7 @@ public:
 
 	bool refresh() override;
 
-	uint16_t symbols[6];
+	byte symbols[3];
 	unsigned long endTime = 0;
 
 protected:

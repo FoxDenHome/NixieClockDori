@@ -33,10 +33,10 @@ const byte MASK_BOTH_DOTS = MASK_UPPER_DOTS | MASK_LOWER_DOTS;
 unsigned long antiPoisonEnd = 0;
 unsigned long nextDisplayRender = 0;
 
-volatile byte displayData[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
+volatile byte displayData[3] = { NO_TUBES, NO_TUBES, NO_TUBES };
 
-volatile byte dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
-volatile byte dataToDisplayPrevious[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
+volatile byte dataIsTransitioning[3] = { 0, 0, 0 };
+volatile byte dataToDisplayPrevious[3] = { NO_TUBES, NO_TUBES, NO_TUBES };
 volatile bool renderAlways = false;
 
 volatile byte dotMask = 0;
@@ -79,11 +79,15 @@ bool showShortTime(const unsigned long timeMs, bool trimLZ, bool alwaysLong) {
 }
 
 void insert1(const byte offset, const byte data, const bool trimLeadingZero) {
+	const byte rOffset = offset >> 1;
+	const byte rNibble = ((offset & 1) == 1) ? 4 : 0;
+
+	const byte dData = displayData[rOffset] & ~(0xF << rNibble);
 	if (data == 0 && trimLeadingZero) {
-		displayData[offset] = 0;
+		displayData[rOffset] = dData | (NO_TUBES << rNibble);
 	}
 	else {
-		displayData[offset] = getNumber(data);
+		displayData[rOffset] = dData | (getNumber(data) << rNibble);
 	}
 }
 
@@ -101,7 +105,7 @@ void renderNixies() {
 
 	static byte redOld, greenOld, blueOld;
 
-	static byte dataToDisplayOld[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
+	static byte dataToDisplayOld[3] = { NO_TUBES, NO_TUBES, NO_TUBES };
 	static byte redPrevious, greenPrevious, bluePrevious;
 	static byte colorTransProg;
 
@@ -114,6 +118,7 @@ void renderNixies() {
 				// Regenerate table
 				memset(antiPoisonTable, 0, sizeof(antiPoisonTable));
 			}
+			byte curAP[6] = { 0, 0, 0, 0, 0, 0 };
 			for (byte i = 0; i < 6; i++) {
 				byte randNbr = getNumber(random(0, 10));
 				while ((antiPoisonTable[i] & (1 << randNbr))) {
@@ -123,7 +128,11 @@ void renderNixies() {
 					}
 				}
 				antiPoisonTable[i] |= (1 << randNbr);
-				displayData[i] = randNbr;
+				curAP[i] = randNbr;
+			}
+			for (byte i = 0; i < 3; i++) {
+				const byte j = i << 1;
+				displayData[i] = curAP[j] | (curAP[j + 1] << 4);
 				dataIsTransitioning[i] = 0;
 			}
 			doFlip = true;
@@ -187,7 +196,7 @@ void renderNixies() {
 	const bool effectsOn = allowEffects && currentEffect != NONE;
 
 	bool hasEffects = false, setFlip = false;
-	for (byte i = 0; i < 6; i++) {
+	for (byte i = 0; i < 3; i++) {
 		const uint16_t cur = displayData[i];
 		if (dataToDisplayOld[i] != cur) {
 			dataToDisplayPrevious[i] = dataToDisplayOld[i];
