@@ -5,7 +5,7 @@
 #include <SPI.h>
 #include <TimerOne.h>
 
-byte lastSentTubes[6] = { INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES };
+byte lastSentTubes[3] = { INVALID_TUBES, INVALID_TUBES, INVALID_TUBES };
 
 #define ALL_TUBES_MASK ((1 << 10) - 1)
 #define NO_TUBES_MASK 0

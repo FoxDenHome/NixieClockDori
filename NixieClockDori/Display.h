@@ -12,7 +12,7 @@ enum DisplayEffect {
 };
 extern volatile DisplayEffect currentEffect;
 
-const byte INVALID_TUBES = 11;
+const byte INVALID_TUBES = 0xFF;
 const byte ALL_TUBES = 11;
 const byte NO_TUBES = 10;
 
