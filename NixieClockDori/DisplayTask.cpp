@@ -53,7 +53,7 @@ void DisplayTask::buttonHandler(const Button button, const PressType pressType) 
 	DisplayTask::current->handleButtonPress(button, pressType);
 }
 
-bool DisplayTask::refresh(byte displayData[]) {
+bool DisplayTask::refresh() {
 	if (this->editMode) {
 		if ((millis() - DisplayTask::lastButtonPress) % 1000 >= 500) {
 			displayData[this->editModePos] = NO_TUBES;

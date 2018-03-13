@@ -101,7 +101,9 @@ void setup() {
 
 	randomSeed(analogRead(A4) + now());
 
-	EEPROM.get(EEPROM_STORAGE_CURRENT_EFFECT, currentEffect);
+	DisplayEffect loadEffect;
+	EEPROM.get(EEPROM_STORAGE_CURRENT_EFFECT, loadEffect);
+	currentEffect = loadEffect;
 
 	displayClock.loPri = true;
 	displayClock.add();

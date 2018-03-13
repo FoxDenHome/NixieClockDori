@@ -33,16 +33,16 @@ const byte MASK_BOTH_DOTS = MASK_UPPER_DOTS | MASK_LOWER_DOTS;
 unsigned long antiPoisonEnd = 0;
 unsigned long nextDisplayRender = 0;
 
-byte displayData[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
+volatile byte displayData[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
 
-byte dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
-byte dataToDisplayPrevious[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
-bool renderAlways = false;
+volatile byte dataIsTransitioning[6] = { 0, 0, 0, 0, 0, 0 };
+volatile byte dataToDisplayPrevious[6] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
+volatile bool renderAlways = false;
 
-byte dotMask = 0;
-bool doFlip = true;
+volatile byte dotMask = 0;
+volatile bool doFlip = true;
 
-DisplayEffect currentEffect = SLOT_MACHINE;
+volatile DisplayEffect currentEffect = SLOT_MACHINE;
 
 void displayAntiPoisonOff() {
 	antiPoisonEnd = 0;
@@ -63,33 +63,33 @@ byte makeDotMask(const bool upper, const bool lower) {
 	return (upper ? 0 : MASK_UPPER_DOTS) | (lower ? 0 : MASK_LOWER_DOTS);
 }
 
-bool showShortTime(const unsigned long timeMs, bool trimLZ, byte dataToDisplay[], bool alwaysLong) {
+bool showShortTime(const unsigned long timeMs, bool trimLZ, bool alwaysLong) {
 	if (timeMs >= ONE_HOUR_IN_MS || alwaysLong) { // Show H/M/S
-		trimLZ = insert2(0, (timeMs / ONE_HOUR_IN_MS) % 100, trimLZ, dataToDisplay);
-		trimLZ = insert2(2, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ, dataToDisplay);
-		insert2(4, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ, dataToDisplay);
+		trimLZ = insert2(0, (timeMs / ONE_HOUR_IN_MS) % 100, trimLZ);
+		trimLZ = insert2(2, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ);
+		insert2(4, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ);
 		return true;
 	}
 	else { // Show M/S/MS
-		trimLZ = insert2(0, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ, dataToDisplay);
-		trimLZ = insert2(2, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ, dataToDisplay);
-		insert2(4, (timeMs / 10UL) % 100, trimLZ, dataToDisplay);
+		trimLZ = insert2(0, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ);
+		trimLZ = insert2(2, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ);
+		insert2(4, (timeMs / 10UL) % 100, trimLZ);
 		return false; // Don't allow transition effects on rapid timer
 	}
 }
 
-void insert1(const byte offset, const byte data, const bool trimLeadingZero, byte dataToDisplay[]) {
+void insert1(const byte offset, const byte data, const bool trimLeadingZero) {
 	if (data == 0 && trimLeadingZero) {
-		dataToDisplay[offset] = 0;
+		displayData[offset] = 0;
 	}
 	else {
-		dataToDisplay[offset] = getNumber(data);
+		displayData[offset] = getNumber(data);
 	}
 }
 
-bool insert2(const byte offset, const byte data, const bool trimLeadingZero, byte dataToDisplay[]) {
-	insert1(offset, data / 10, trimLeadingZero, dataToDisplay);
-	insert1(offset + 1, data, trimLeadingZero, dataToDisplay);
+bool insert2(const byte offset, const byte data, const bool trimLeadingZero) {
+	insert1(offset, data / 10, trimLeadingZero);
+	insert1(offset + 1, data, trimLeadingZero);
 	return data == 0 && trimLeadingZero;
 }
 
@@ -134,7 +134,7 @@ void renderNixies() {
 		}
 	}
 	else if (DisplayTask::current) {
-		allowEffects = DisplayTask::current->refresh(displayData);
+		allowEffects = DisplayTask::current->refresh();
 
 		if (currentEffect != NONE) {
 			byte redNow = redOld, greenNow = greenOld, blueNow = blueOld;
