@@ -5,8 +5,6 @@
 #include <SPI.h>
 #include <TimerOne.h>
 
-byte lastSentTubes[3] = { INVALID_TUBES, INVALID_TUBES, INVALID_TUBES };
-
 #define ALL_TUBES_MASK ((1 << 10) - 1)
 #define NO_TUBES_MASK 0
 
@@ -25,6 +23,7 @@ uint16_t inline mkTube(const byte idx) {
 }
 
 void displayInterrupt() {
+	static byte lastSentTubes[3] = { INVALID_TUBES, INVALID_TUBES, INVALID_TUBES };
 	static byte ctr = 0;
 
 	const byte ctrL = ctr % 11;
