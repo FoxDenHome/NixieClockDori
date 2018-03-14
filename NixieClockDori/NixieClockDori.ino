@@ -1,13 +1,13 @@
 #include <SPI.h>
 #include <EEPROM.h>
 #include <Wire.h>
-
 #include <TimeLib.h>
 #include <DS1307RTC.h>
-
 #include <MemoryUsage.h>
 #include <OneButton.h>
 #include <FastCRC.h>
+
+#include <avr/wdt.h>
 
 #include "rtc.h"
 #include "config.h"
@@ -129,9 +129,13 @@ void setup() {
 	digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);
 
 	serialSendF("< Ready");
+
+	wdt_enable(WDTO_250MS);
 }
 
 void loop() {
+	wdt_reset();
+
 	UPButton.tick();
 	DOWNButton.tick();
 	SETButton.tick();
@@ -184,11 +188,17 @@ void serialPoll() {
 			// Performs a display reset of all modes
 			// ^X|14861
 		case 'X':
+			wdt_disable();
+
 			for (uint16_t i = 0; i < EEPROM.length(); i++) {
 				EEPROM.write(i, 0);
 			}
 			serialSendF("X OK");
-			resetFunc();
+
+			// Get the watchdog stuck to force a reset!
+			wdt_enable(WDTO_15MS);
+			while (1) { }
+
 			break;
 			// P [CC]
 			// C = Count (Dec)

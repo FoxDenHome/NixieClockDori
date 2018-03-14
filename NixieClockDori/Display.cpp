@@ -107,7 +107,7 @@ void renderNixies() {
 			}
 			byte curAP[6] = { 0, 0, 0, 0, 0, 0 };
 			for (byte i = 0; i < 6; i++) {
-				byte randNbr = getNumber(random(0, 10));
+				byte randNbr = random(0, 10);
 				while ((antiPoisonTable[i] & (1 << randNbr))) {
 					randNbr++;
 					if (randNbr > 9) {
@@ -196,7 +196,18 @@ void renderNixies() {
 		const byte tubeTrans = dataIsTransitioning[i];
 		if (tubeTrans > 1) {
 			if (currentEffect == SLOT_MACHINE) {
-				displayData[i] = getNumber(tubeTrans / (EFFECT_SPEED / 10));
+				byte effectData = getNumberBoth(tubeTrans / (EFFECT_SPEED / 10));
+				const byte oldData = dataToDisplayPrevious[i];
+				const byte nowData = dataToDisplayOld[i];
+				if ((oldData & 0xF) == (nowData & 0xF)) {
+					effectData &= ~0xF;
+					effectData |= nowData & 0xF;
+				}
+				if ((oldData & 0xF0) == (nowData & 0xF0)) {
+					effectData &= ~0xF0;
+					effectData |= nowData & 0xF0;
+				}
+				displayData[i] = effectData;
 			}
 			dataIsTransitioning[i]--;
 			hasEffects = true;
