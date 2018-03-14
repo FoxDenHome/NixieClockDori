@@ -130,11 +130,11 @@ void setup() {
 	SETUP_BUTTON(DOWN);
 	SETUP_BUTTON(SET);
 
-	digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);
-
 	serialSend2(F("< Ready "), String(mcusr_mirror));
 
 	wdt_enable(WDTO_250MS);
+
+	digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);
 }
 
 void loop() {
@@ -144,11 +144,11 @@ void loop() {
 	DOWNButton.tick();
 	SETButton.tick();
 
-	displayLoop();
-	displayDriverLoop();
 	if (DisplayTask::nextDisplayCycleMicros <= micros()) {
 		DisplayTask::cycleDisplayUpdater();
 	}
+	displayLoop();
+	displayDriverLoop();
 
 	serialPoll();
 }
