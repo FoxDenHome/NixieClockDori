@@ -92,8 +92,7 @@ bool DisplayTask_Countdown::refresh() {
 		this->lastCall = curMillis;
 
 		if (this->time <= 0) {
-			byte osym = (second() % 2) ? NO_TUBES : getNumber(0);
-			osym |= osym << 4;
+			const byte osym = (second() % 2) ? NO_TUBES_BOTH : getNumberBoth(0);
 			for (byte i = 0; i < 3; i++) {
 				displayData[i] = osym;
 			}
