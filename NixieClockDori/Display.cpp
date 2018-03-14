@@ -36,7 +36,6 @@ volatile byte dataToDisplayPrevious[3] = { NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBE
 volatile bool renderAlways = false;
 
 volatile byte dotMask = 0;
-volatile bool doFlip = true;
 
 volatile DisplayEffect currentEffect = SLOT_MACHINE;
 
@@ -123,11 +122,7 @@ void renderNixies() {
 				displayData[i] = curAP[j] | (curAP[j + 1] << 4);
 				dataIsTransitioning[i] = 0;
 			}
-			doFlip = true;
 			oldAntiPoisonIdx = idx;
-		}
-		else {
-			doFlip = false;
 		}
 	}
 	else if (DisplayTask::current) {
@@ -183,7 +178,7 @@ void renderNixies() {
 	// Progress through effect
 	const bool effectsOn = allowEffects && currentEffect != NONE;
 
-	bool hasEffects = false, setFlip = false;
+	bool hasEffects = false;
 	for (byte i = 0; i < 3; i++) {
 		const uint16_t cur = displayData[i];
 		if (dataToDisplayOld[i] != cur) {
@@ -192,7 +187,6 @@ void renderNixies() {
 			if (effectsOn) {
 				dataIsTransitioning[i] = EFFECT_SPEED;
 			}
-			setFlip = true;
 		}
 
 		if (!effectsOn) {
@@ -206,14 +200,12 @@ void renderNixies() {
 			}
 			dataIsTransitioning[i]--;
 			hasEffects = true;
-			setFlip = true;
 		}
 		else if (tubeTrans == 1) {
 			if (currentEffect == SLOT_MACHINE) {
 				displayData[i] = dataToDisplayOld[i];
 			}
 			dataIsTransitioning[i] = 0;
-			setFlip = true;
 		}
 	}
 
@@ -222,8 +214,6 @@ void renderNixies() {
 			renderAlways = hasEffects;
 		}
 	}
-
-	doFlip = setFlip;
 }
 
 void displayInit() {
