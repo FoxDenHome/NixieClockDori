@@ -4,7 +4,11 @@ from sys import argv
 from time import sleep
 
 def syncTime():
+	startNow = datetime.now()
 	now = datetime.now()
+	while now.second == startNow.second:
+		sleep(0.01)
+		now = datetime.now()
 
 	h = now.hour
 	m = now.minute
