@@ -66,6 +66,9 @@
     <ClInclude Include="DisplayDriver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DisplayTask_Temperature.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DisplayTask.cpp">
@@ -87,6 +90,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DisplayDriver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DisplayTask_Temperature.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
