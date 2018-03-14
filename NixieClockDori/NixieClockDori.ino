@@ -151,6 +151,8 @@ void loop() {
 	displayDriverLoop();
 
 	serialPoll();
+
+	delay(6);
 }
 
 void serialPoll() {
