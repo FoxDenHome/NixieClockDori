@@ -3,7 +3,7 @@ sudo: false
 before_install:
 - source <(curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/install.sh)
 install:
-- arduino --install-library "Time","DS1307RTC","TimerOne","MemoryUsage","OneButton"
+- arduino --install-library "Time","DS3232RTC","TimerOne","MemoryUsage","OneButton"
 - git clone https://github.com/FrankBoesing/FastCRC.git $HOME/arduino_ide/libraries/FastCRC
 - mkdir -p $HOME/arduino_ide/releases
 script:
