@@ -132,7 +132,7 @@ void setup() {
 
 	digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);
 
-	serialSendF("< Ready");
+	serialSend2(F("< Ready "), String(mcusr_mirror));
 
 	wdt_enable(WDTO_250MS);
 }
