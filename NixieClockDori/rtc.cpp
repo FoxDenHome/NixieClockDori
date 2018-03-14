@@ -3,8 +3,9 @@
 #include "rtc.h"
 
 void rtcSetTime(tmElements_t& tm) {
-	setTime(makeTime(tm));
-	RTC.write(tm);
+	const time_t t = makeTime(tm);
+	setTime(t);
+	RTC.set(t);
 }
 
 void rtcInit() {

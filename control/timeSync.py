@@ -17,12 +17,7 @@ def syncTime():
 	mon = now.month
 	y = now.year % 100
 
-	# isoweekday returns 1 for Monday until 7 for Sunday
-	# We need 1 for Sunday and 2 for Monday (and 7 for Saturday)
-	w = now.isoweekday() + 1
-	if w == 8:
-		w = 1
-	return sendCommand("T%02d%02d%02d%02d%02d%02d%01d" % (h, m, s, d, mon, y, w))
+	return sendCommand("T%02d%02d%02d%02d%02d%02d" % (h, m, s, d, mon, y))
 
 if __name__ == "__main__":
 	print("Connecting...")
