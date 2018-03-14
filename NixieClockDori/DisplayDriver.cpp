@@ -23,7 +23,7 @@ uint16_t inline mkTube(const byte idx) {
 }
 
 void displayInterrupt() {
-	static byte lastSentTubes[3] = { INVALID_TUBES | (INVALID_TUBES << 4), INVALID_TUBES | (INVALID_TUBES << 4), INVALID_TUBES | (INVALID_TUBES << 4) };
+	static byte lastSentTubes[3] = { INVALID_TUBES_BOTH, INVALID_TUBES_BOTH, INVALID_TUBES_BOTH };
 	static byte ctr = 0;
 
 	const byte ctrL = ctr % 11;

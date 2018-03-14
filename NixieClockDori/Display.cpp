@@ -26,17 +26,13 @@
 	}
 #endif
 
-const byte MASK_UPPER_DOTS = 1;
-const byte MASK_LOWER_DOTS = 2;
-const byte MASK_BOTH_DOTS = MASK_UPPER_DOTS | MASK_LOWER_DOTS;
-
 unsigned long antiPoisonEnd = 0;
 unsigned long nextDisplayRender = 0;
 
-volatile byte displayData[3] = { NO_TUBES | (NO_TUBES << 4), NO_TUBES | (NO_TUBES << 4), NO_TUBES | (NO_TUBES << 4) };
+volatile byte displayData[3] = { NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH };
 
 volatile byte dataIsTransitioning[3] = { 0, 0, 0 };
-volatile byte dataToDisplayPrevious[3] = { NO_TUBES | (NO_TUBES << 4), NO_TUBES | (NO_TUBES << 4), NO_TUBES | (NO_TUBES << 4) };
+volatile byte dataToDisplayPrevious[3] = { NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH };
 volatile bool renderAlways = false;
 
 volatile byte dotMask = 0;
@@ -53,14 +49,6 @@ void displayAntiPoison(const unsigned long count) {
 	if (newEnd > antiPoisonEnd) {
 		antiPoisonEnd = newEnd;
 	}
-}
-
-byte getNumber(const byte idx) {
-	return idx % 10;
-}
-
-byte makeDotMask(const bool upper, const bool lower) {
-	return (upper ? 0 : MASK_UPPER_DOTS) | (lower ? 0 : MASK_LOWER_DOTS);
 }
 
 bool showShortTime(const unsigned long timeMs, bool trimLZ, bool alwaysLong) {
@@ -105,7 +93,7 @@ void renderNixies() {
 
 	static byte redOld, greenOld, blueOld;
 
-	static byte dataToDisplayOld[3] = { NO_TUBES, NO_TUBES, NO_TUBES };
+	static byte dataToDisplayOld[3] = { NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH };
 	static byte redPrevious, greenPrevious, bluePrevious;
 	static byte colorTransProg;
 
