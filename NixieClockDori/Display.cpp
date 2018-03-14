@@ -107,14 +107,17 @@ void renderNixies() {
 			}
 			byte curAP[6] = { 0, 0, 0, 0, 0, 0 };
 			for (byte i = 0; i < 6; i++) {
-				byte randNbr = getNumber(random(0, 10));
-				while ((antiPoisonTable[i] & (1 << randNbr))) {
+				byte randNbr = random(0, 10);
+				uint16_t randNbrB = (uint16_t)1 << (uint16_t)randNbr;
+				while ((antiPoisonTable[i] & randNbrB)) {
 					randNbr++;
+					randNbrB <<= 1;
 					if (randNbr > 9) {
 						randNbr = 0;
+						randNbrB = 1;
 					}
 				}
-				antiPoisonTable[i] |= (1 << randNbr);
+				antiPoisonTable[i] |= randNbrB;
 				curAP[i] = randNbr;
 			}
 			for (byte i = 0; i < 3; i++) {
