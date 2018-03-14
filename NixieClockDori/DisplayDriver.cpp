@@ -8,6 +8,8 @@
 #define ALL_TUBES_MASK ((1 << 10) - 1)
 #define NO_TUBES_MASK 0
 
+#pragma GCC push_options
+#pragma GCC optimize ("O3")
 uint16_t inline mkTube(const byte idx) {
 	switch (idx) {
 	case ALL_TUBES:
@@ -59,6 +61,7 @@ void displayInterrupt() {
 		ctr = 0;
 	}
 }
+#pragma GCC pop_options
 
 void displayDriverInit() {
 	SPI.begin();
