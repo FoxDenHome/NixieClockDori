@@ -168,13 +168,13 @@ void serialPoll() {
 		byte tmpData;
 
 		switch (inputString[0]) {
-			// T HH II SS DD MM YY W
-			// H = Hours, I = Minutes, S = Seconds, D = Day of month, M = month, Y = year, W = Day of week (ALL Dec)
+			// T HH II SS DD MM YY
+			// H = Hours, I = Minutes, S = Seconds, D = Day of month, M = month, Y = year (ALL Dec)
 			// Sets the time on the clock
-			// T1756300103180
+			// ^T175630010318|17199
 		case 'T':
-			if (inputString.length() < 14) {
-				serialSendF("T BAD (Invalid length; expected 16)");
+			if (inputString.length() < 13) {
+				serialSendF("T BAD (Invalid length; expected 13)");
 				break;
 			}
 			tmElements_t tm;
@@ -184,7 +184,6 @@ void serialPoll() {
 			tm.Day = inputString.substring(6, 9).toInt();
 			tm.Month = inputString.substring(9, 11).toInt();
 			tm.Year = y2kYearToTm(inputString.substring(11, 13).toInt());
-			tm.Wday = inputString.substring(13, 14).toInt();
 			rtcSetTime(tm);
 			serialSendF("T OK");
 			break;
