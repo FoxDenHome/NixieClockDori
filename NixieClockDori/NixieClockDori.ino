@@ -2,7 +2,7 @@
 #include <EEPROM.h>
 #include <Wire.h>
 #include <TimeLib.h>
-#include <DS1307RTC.h>
+#include <DS3232RTC.h>
 #include <MemoryUsage.h>
 #include <OneButton.h>
 #include <FastCRC.h>
@@ -22,6 +22,7 @@
 #include "DisplayTask_Stopwatch.h"
 #include "DisplayTask_Countdown.h"
 #include "DisplayTask_Flash.h"
+#include "DisplayTask_Temperature.h"
 
 #ifdef DISPLAY_NEEDS_TIMER1
 #include <TimerOne.h>
@@ -40,6 +41,7 @@ DisplayTask_Date displayDate;
 DisplayTask_Stopwatch displayStopwatch;
 DisplayTask_Countdown displayCountdown;
 DisplayTask_Flash displayFlash;
+DisplayTask_Temperature displayTemp;
 
 /**************************/
 /* ARDUINO EVENT HANDLERS */
@@ -117,12 +119,16 @@ void setup() {
 	displayStopwatch.add();
 	displayCountdown.add();
 
+	displayTemp.loPri = true;
+	displayTemp.add();
+
 	displayClock.loadColor(EEPROM_STORAGE_CLOCK_RGB);
 	displayDate.loadColor(EEPROM_STORAGE_DATE_RGB);
 	displayDate.loadConfig(EEPROM_STORAGE_DATE_AUTO);
 	displayStopwatch.loadColor(EEPROM_STORAGE_STOPWATCH_RGB);
 	displayCountdown.loadColor(EEPROM_STORAGE_COUNTDOWN_RGB);
 	displayCountdown.loadConfig(EEPROM_STORAGE_COUNTDOWN);
+	displayTemp.loadColor(EEPROM_STORAGE_TEMPERATURE_RGB);
 
 	DisplayTask::cycleDisplayUpdater();
 
@@ -151,8 +157,6 @@ void loop() {
 	displayDriverLoop();
 
 	serialPoll();
-
-	delay(6);
 }
 
 void serialPoll() {

@@ -1,21 +1,16 @@
-#include <DS1307RTC.h>
+#include <DS3232RTC.h>
 #include "crcserial.h"
 #include "rtc.h"
 
 void rtcSetTime(tmElements_t& tm) {
 	setTime(makeTime(tm));
-	if (!RTC.chipPresent()) {
-		return;
-	}
 	RTC.write(tm);
 }
 
 void rtcInit() {
+	RTC.begin();
+
 	const time_t prevT = RTC.get();
-	if (!RTC.chipPresent()) {
-		serialSendF("< Warning! RTC NOT ON BOARD!");
-		return;
-	}
 
 	if (prevT == 0) {
 		RTC.set(5); // Set dummy time
@@ -31,5 +26,8 @@ void rtcInit() {
 	}
 
 	setSyncProvider(RTC.get);
+	if (timeStatus() != timeSet) {
+		serialSendF("< Warning! Unable to sync with RTC!");
+	}
 }
 
