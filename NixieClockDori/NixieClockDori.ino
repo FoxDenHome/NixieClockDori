@@ -71,6 +71,10 @@ DECL_BUTTON(UP)
 DECL_BUTTON(SET)
 
 void setup() {
+	const uint8_t mcusr_mirror = MCUSR;
+	MCUSR = 0;
+	wdt_disable();
+
 	// Pin setup
 	pinMode(PIN_HIGH_VOLTAGE_ENABLE, OUTPUT);
 	digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, LOW); // Turn off HV ASAP during setup
@@ -188,6 +192,7 @@ void serialPoll() {
 			// Performs a display reset of all modes
 			// ^X|14861
 		case 'X':
+			MCUSR = 0;
 			wdt_disable();
 
 			for (uint16_t i = 0; i < EEPROM.length(); i++) {
@@ -197,7 +202,9 @@ void serialPoll() {
 
 			// Get the watchdog stuck to force a reset!
 			wdt_enable(WDTO_15MS);
-			while (1) { }
+			while (1) {
+				delay(10);
+			}
 
 			break;
 			// P [CC]
