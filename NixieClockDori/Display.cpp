@@ -33,10 +33,10 @@ const byte MASK_BOTH_DOTS = MASK_UPPER_DOTS | MASK_LOWER_DOTS;
 unsigned long antiPoisonEnd = 0;
 unsigned long nextDisplayRender = 0;
 
-volatile byte displayData[3] = { NO_TUBES, NO_TUBES, NO_TUBES };
+volatile byte displayData[3] = { NO_TUBES | (NO_TUBES << 4), NO_TUBES | (NO_TUBES << 4), NO_TUBES | (NO_TUBES << 4) };
 
 volatile byte dataIsTransitioning[3] = { 0, 0, 0 };
-volatile byte dataToDisplayPrevious[3] = { NO_TUBES, NO_TUBES, NO_TUBES };
+volatile byte dataToDisplayPrevious[3] = { NO_TUBES | (NO_TUBES << 4), NO_TUBES | (NO_TUBES << 4), NO_TUBES | (NO_TUBES << 4) };
 volatile bool renderAlways = false;
 
 volatile byte dotMask = 0;

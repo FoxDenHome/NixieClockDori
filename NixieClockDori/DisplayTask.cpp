@@ -3,8 +3,8 @@
 
 #include <EEPROM.h>
 
-DisplayTask *dt_first_hi;
-DisplayTask *dt_last_hi;
+DisplayTask *dt_first;
+DisplayTask *dt_last;
 
 DisplayTask* DisplayTask::current;
 
@@ -184,8 +184,8 @@ DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopO
 
 DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current, const bool mustCanShow) {
 	if (!dt_current) {
-		if (dt_first_hi) {
-			return DisplayTask::findNextValid(dt_first_hi, mustCanShow);
+		if (dt_first) {
+			return DisplayTask::findNextValid(dt_first, mustCanShow);
 		}
 		return NULL;
 	}
@@ -197,7 +197,7 @@ DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current, const bool must
 		return curPtr;
 	}
 
-	curPtr = DisplayTask::_findNextValid(dt_first_hi, dt_current, mustCanShow);
+	curPtr = DisplayTask::_findNextValid(dt_first, dt_current, mustCanShow);
 	if (curPtr) {
 		return curPtr;
 	}
@@ -232,14 +232,14 @@ void DisplayTask::add() {
 
 	this->next = NULL;
 
-	if (dt_last_hi) {
-		dt_last_hi->next = this;
-		this->prev = dt_last_hi;
-		dt_last_hi = this;
+	if (dt_last) {
+		dt_last->next = this;
+		this->prev = dt_last;
+		dt_last = this;
 		return;
 	}
-	dt_first_hi = this;
-	dt_last_hi = this;
+	dt_first = this;
+	dt_last = this;
 }
 
 void DisplayTask::remove() {
@@ -256,20 +256,20 @@ void DisplayTask::remove() {
 		this->prev->next = this->next;
 	}
 
-	if (this == dt_first_hi) {
+	if (this == dt_first) {
 		if (this->next) {
-			dt_first_hi = this->next;
+			dt_first = this->next;
 		}
 		else {
-			dt_first_hi = this->prev;
+			dt_first = this->prev;
 		}
 	}
-	if (this == dt_last_hi) {
+	if (this == dt_last) {
 		if (this->prev) {
-			dt_last_hi = this->prev;
+			dt_last = this->prev;
 		}
 		else {
-			dt_last_hi = this->next;
+			dt_last = this->next;
 		}
 	}
 
