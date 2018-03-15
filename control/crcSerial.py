@@ -2,8 +2,6 @@ from binascii import crc_hqx
 from serial import Serial
 
 nixieCOM = Serial()
-nixieCOM.baudrate = 115200
-nixieCOM.timeout = 1
 
 def _crc(data):
 	return crc_hqx(bytes(data, "ascii"), 0xffff)
@@ -57,5 +55,11 @@ def connect(port):
 	if nixieCOM.is_open:
 		nixieCOM.close()
 	nixieCOM.port = port
+	nixieCOM.dsrdtr = False
+	nixieCOM.rtscts = False
+	nixieCOM.rts = False
+	nixieCOM.dtr = False
+	nixieCOM.baudrate = 115200
+	nixieCOM.timeout = 1
 	nixieCOM.open()
 	return sendCommand("H")
