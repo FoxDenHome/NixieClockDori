@@ -1,4 +1,8 @@
 language: c
+addons:
+  apt:
+    packages:
+      - libfl-dev
 sudo: false
 before_install:
 - source <(curl -SLs https://doridian.net/arduino_travis.sh)
