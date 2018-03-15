@@ -1,6 +1,8 @@
 language: c
 sudo: false
 before_install:
+- wget https://doridian.net/avr-gcc-7.3.0-x64-linux.tar.bz2 -O /tmp/avr-gcc.tar.bz2
+- tar -xjf /tmp/avr-gcc.tar.bz2 -C "$HOME"
 - source <(curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/install.sh)
 install:
 - arduino --install-library "Time","DS3232RTC","TimerOne","MemoryUsage","OneButton"
@@ -10,6 +12,7 @@ script:
 - cd NixieClockDori
 - sed -i "s~^#define FW_VERSION .*$~#define FW_VERSION \"$TRAVIS_BRANCH $TRAVIS_COMMIT\"~g" config.h
 - arduino --pref "build.path=$HOME/arduino_ide/releases" --save-prefs
+- arduino --pref "compiler.path=$HOME/avr-gcc-7.3.0-x64-linux" --save-prefs
 - build_platform uno
 - cp "$HOME/arduino_ide/releases/NixieClockDori.ino.hex" "$HOME/arduino_ide/NixieClockDori.UNO.hex"
 - cp "$HOME/arduino_ide/releases/NixieClockDori.ino.with_bootloader.hex" "$HOME/arduino_ide/NixieClockDori.UNO.with_bootloader.hex"
