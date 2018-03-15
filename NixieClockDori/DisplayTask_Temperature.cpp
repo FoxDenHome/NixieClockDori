@@ -3,7 +3,7 @@
 
 #include <DS3232RTC.h>
 
-const bool DisplayTask_Temperature::_canShow() {
+bool DisplayTask_Temperature::_canShow() const {
 	return false;
 }
 

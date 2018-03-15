@@ -5,7 +5,7 @@ DisplayTask_Flash::DisplayTask_Flash() {
 	this->removeOnCantShow = true;
 }
 
-const bool DisplayTask_Flash::_canShow() {
+bool DisplayTask_Flash::_canShow() const {
 	return this->endTime > 0 && millis() < this->endTime;
 }
 

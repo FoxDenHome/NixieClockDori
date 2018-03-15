@@ -22,7 +22,7 @@ public:
 	virtual void handleButtonPress(const Button button, const PressType press);
 	static void buttonHandler(const Button button, const PressType press);
 
-	virtual void handleEdit(const byte digit, const bool up) { };
+	virtual void handleEdit(const byte /*digit*/, const bool /*up*/) { };
 
 	void add();
 	void remove();
@@ -46,7 +46,7 @@ public:
 protected:
 	static unsigned long lastButtonPress;
 
-	virtual const bool _canShow();
+	virtual bool _canShow() const;
 	bool removeOnCantShow = false;
 
 	static byte editModePos;

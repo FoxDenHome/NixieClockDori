@@ -220,7 +220,7 @@ bool DisplayTask::canShow() {
 }
 
 
-const bool DisplayTask::_canShow() {
+bool DisplayTask::_canShow() const {
 	return true;
 }
 

@@ -20,7 +20,7 @@ void DisplayTask_Date::loadConfig(const int16_t base) {
 	EEPROM.get(base, this->cycleAuto);
 }
 
-const bool DisplayTask_Date::_canShow() {
+bool DisplayTask_Date::_canShow() const {
 	return this->cycleAuto;
 }
 

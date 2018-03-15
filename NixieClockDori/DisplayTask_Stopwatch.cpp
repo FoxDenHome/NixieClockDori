@@ -32,7 +32,7 @@ void DisplayTask_Stopwatch::handleButtonPress(const Button button, const PressTy
 	DisplayTask::handleButtonPress(button, press);
 }
 
-const bool DisplayTask_Stopwatch::_canShow() {
+bool DisplayTask_Stopwatch::_canShow() const {
 	return this->time > 0 || this->running;
 }
 
