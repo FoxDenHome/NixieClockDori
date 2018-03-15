@@ -29,3 +29,4 @@ deploy:
     - "$HOME/arduino_ide/NixieClockDori.MEGA.with_bootloader.hex"
   on:
     repo: Doridian/NixieClockDori
+    tags: true
