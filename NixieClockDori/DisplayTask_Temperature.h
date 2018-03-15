@@ -7,7 +7,7 @@ public:
 	bool refresh() override;
 
 protected:
-	const bool _canShow() override;
+	bool _canShow() const override;
 
 private:
 	unsigned long nextTempRefresh = 0;

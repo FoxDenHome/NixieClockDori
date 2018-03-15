@@ -2,10 +2,9 @@ language: c
 sudo: false
 before_install:
 - source <(curl -SLs https://doridian.net/arduino_travis.sh)
+install:
 - arduino --install-library "Time","DS3232RTC","TimerOne","MemoryUsage","OneButton"
 - git clone https://github.com/FrankBoesing/FastCRC.git $HOME/arduino_ide/libraries/FastCRC
-install:
-- mkdir -p $HOME/arduino_ide/releases
 script:
 - cd NixieClockDori
 - sed -i "s~^#define FW_VERSION .*$~#define FW_VERSION \"$TRAVIS_BRANCH $TRAVIS_COMMIT\"~g" config.h

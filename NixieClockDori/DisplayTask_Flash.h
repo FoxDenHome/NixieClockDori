@@ -12,5 +12,5 @@ public:
 	unsigned long endTime = 0;
 
 protected:
-	const bool _canShow() override;
+	bool _canShow() const override;
 };
