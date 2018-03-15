@@ -5,3 +5,6 @@ __pycache__/
 __vm/
 Debug/
 Release/
+board.txt
+*.user
+
