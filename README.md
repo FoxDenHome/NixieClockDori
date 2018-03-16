@@ -10,7 +10,7 @@ This is a Visual Micro project, but you can open it as an Arduino Sketch by just
 
 From the Arduino library manager:
 - Time
-- DS1307RTC
+- DS3232RTC
 - TimerOne
 - MemoryUsage
 - OneButton
