@@ -6,4 +6,6 @@
 #define DISPLAY_RENDER_STEP 200
 #define DISPLAY_CYCLE_PERIOD 30000000
 
+#ifndef FW_VERSION
 #define FW_VERSION "unknown"
+#endif
