@@ -7,4 +7,5 @@ Debug/
 Release/
 board.txt
 *.user
+buildinfo.h
 
