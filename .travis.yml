@@ -7,7 +7,8 @@ install:
 - git clone https://github.com/FrankBoesing/FastCRC.git $HOME/arduino_ide/libraries/FastCRC
 script:
 - cd NixieClockDori
-- echo "#define FW_VERSION \"$TRAVIS_BRANCH $TRAVIS_COMMIT\"" > buildinfo.h
+- echo "#define GIT_COMMIT \"$TRAVIS_COMMIT\"" > buildinfo.h
+- echo "#define GIT_BRANCH \"$TRAVIS_BRANCH\"" >> buildinfo.h
 - build_platform arduino:avr:uno
 - cp "$HOME/arduino_ide/releases/NixieClockDori.ino.hex" "$HOME/arduino_ide/NixieClockDori.UNO.hex"
 - cp "$HOME/arduino_ide/releases/NixieClockDori.ino.with_bootloader.hex" "$HOME/arduino_ide/NixieClockDori.UNO.with_bootloader.hex"

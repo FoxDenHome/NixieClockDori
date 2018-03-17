@@ -1,0 +1,5 @@
+# NixieClockDori build property overrides
+#
+compiler.path=C:/avr-gcc-latest/bin/
+compiler.warning_level=all
+recipe.hooks.sketch.prebuild.1.pattern=cmd.exe /c "{build.project_path}/prebuild.bat"

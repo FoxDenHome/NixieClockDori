@@ -9,5 +9,10 @@
 #define DISPLAY_CYCLE_PERIOD 30000000
 
 #ifndef FW_VERSION
+#ifdef GIT_COMMIT
+#define FW_ADD_QUOTES(s) #s
+#define FW_VERSION FW_ADD_QUOTES(GIT_BRANCH) " " FW_ADD_QUOTES(GIT_COMMIT)
+#else
 #define FW_VERSION "unknown"
+#endif
 #endif
