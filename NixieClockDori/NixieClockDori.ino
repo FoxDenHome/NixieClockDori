@@ -166,6 +166,7 @@ void serialPoll() {
 		}
 
 		byte tmpData;
+		const unsigned long curMillis = millis();
 
 		switch (inputString[0]) {
 			// T HH II SS DD MM YY
@@ -242,7 +243,9 @@ void serialPoll() {
 				break;
 			}
 
-			displayFlash.endTime = millis() + (unsigned long)inputString.substring(1, 9).toInt();
+			displayFlash.allowEffects = (curMillis - displayFlash.lastUpdate) >= 900;
+			displayFlash.lastUpdate = curMillis;
+			displayFlash.endTime = curMillis + (unsigned long)inputString.substring(1, 9).toInt();
 
 			tmpData = inputString[9] - '0';
 			displayFlash.dotMask = makeDotMask((tmpData & 2) == 2, (tmpData & 1) == 1);
