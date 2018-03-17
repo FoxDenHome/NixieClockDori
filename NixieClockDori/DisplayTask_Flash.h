@@ -10,6 +10,8 @@ public:
 
 	byte symbols[3];
 	unsigned long endTime = 0;
+	unsigned long lastUpdate = 0;
+	bool allowEffects = true;
 
 protected:
 	bool _canShow() const override;

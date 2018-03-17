@@ -18,6 +18,6 @@ bool DisplayTask_Flash::refresh() {
 	for (byte i = 0; i < 3; i++) {
 		displayData[i] = this->symbols[i];
 	}
-	return true;
+	return this->allowEffects;
 }
 
