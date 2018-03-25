@@ -155,11 +155,11 @@ void loop() {
 	DOWNButton.tick();
 	SETButton.tick();
 	
-	static bool lastDCF77 = true;
-	const bool curDCF77 = analogRead(PIN_DCF77) > LIMIT_DCF77;
+	static uint8_t lastDCF77 = HIGH;
+	const uint8_t curDCF77 = (analogRead(PIN_DCF77) > LIMIT_DCF77) ? HIGH : LOW;
 	if (curDCF77 != lastDCF77) {
 		lastDCF77 = curDCF77;
-		DCF.changeDetected(curDCF77 ? HIGH : LOW);
+		DCF.changeDetected(curDCF77);
 
 		time_t curTime = DCF.getTime();
 		if (curTime > 0) {
@@ -354,7 +354,14 @@ void serialPoll() {
 			serialSendF("E OK");
 			break;
 			// ^D|-5712
+			// ^D111|-15634
 		case 'D':
+			if (inputString.length() > 2) {
+				Utils::setVerbose(true);
+			}
+			else {
+				Utils::setVerbose(false);
+			}
 			serialSend6(F("D OK "), String(mu_freeRam()), F(" "), String(digitalRead(PIN_DCF77)), F(" "), String(analogRead(PIN_DCF77)));
 			break;
 		}
