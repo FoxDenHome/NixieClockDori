@@ -6,6 +6,7 @@
 #include <MemoryUsage.h>
 #include <OneButton.h>
 #include <FastCRC.h>
+#include <DCF77.h>
 
 #include <avr/wdt.h>
 
@@ -72,6 +73,8 @@ DECL_BUTTON(DOWN)
 DECL_BUTTON(UP)
 DECL_BUTTON(SET)
 
+DCF77 DCF = DCF77(false);
+
 void setup() {
 	const uint8_t mcusr_mirror = MCUSR;
 	MCUSR = 0;
@@ -94,6 +97,8 @@ void setup() {
 	digitalWrite(PIN_DISPLAY_LATCH, LOW);
 	pinMode(PIN_HIZ, OUTPUT);
 	digitalWrite(PIN_HIZ, LOW);
+
+	pinMode(PIN_DCF77, INPUT);
 
 	pinMode(PIN_BUTTON_SET, INPUT_PULLUP);
 	pinMode(PIN_BUTTON_UP, INPUT_PULLUP);
@@ -149,6 +154,19 @@ void loop() {
 	UPButton.tick();
 	DOWNButton.tick();
 	SETButton.tick();
+
+	static bool lastDCF77 = true;
+	bool curDCF77 = analogRead(PIN_DCF77) > 200;
+	if (curDCF77 != lastDCF77) {
+		lastDCF77 = curDCF77;
+		DCF.changeDetected(curDCF77 ? HIGH : LOW);
+
+		time_t curTime = DCF.getTime();
+		if (curTime > 0) {
+			rtcSetTimeRaw(curTime);
+			serialSend2(F("< TM "), String(curTime));
+		}
+	}
 
 	if (DisplayTask::nextDisplayCycleMicros <= micros()) {
 		DisplayTask::cycleDisplayUpdater();
@@ -337,7 +355,7 @@ void serialPoll() {
 			break;
 			// ^D|-5712
 		case 'D':
-			serialSend2(F("D OK "), String(mu_freeRam()));
+			serialSend6(F("D OK "), String(mu_freeRam()), F(" "), String(digitalRead(PIN_DCF77)), F(" "), String(analogRead(PIN_DCF77)));
 			break;
 		}
 	}

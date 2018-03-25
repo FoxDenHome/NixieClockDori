@@ -5,6 +5,7 @@ before_install:
 install:
 - arduino --install-library "Time","DS3232RTC","TimerOne","MemoryUsage","OneButton"
 - git clone https://github.com/FrankBoesing/FastCRC.git $HOME/arduino_ide/libraries/FastCRC
+- git clone https://github.com/Doridian/Arduino-DCF77.git $HOME/arduino_ide/libraries/DCF77
 script:
 - cd NixieClockDori
 - echo "#define GIT_COMMIT \"$TRAVIS_COMMIT\"" > buildinfo.h

@@ -2,10 +2,13 @@
 #include "crcserial.h"
 #include "rtc.h"
 
-void rtcSetTime(tmElements_t& tm) {
-	const time_t t = makeTime(tm);
+void rtcSetTimeRaw(time_t t) {
 	setTime(t);
 	RTC.set(t);
+}
+
+void rtcSetTime(tmElements_t& tm) {
+	rtcSetTimeRaw(makeTime(tm));
 }
 
 void rtcInit() {
