@@ -2,7 +2,7 @@
 #include "crcserial.h"
 #include "rtc.h"
 
-void rtcSetTimeRaw(time_t t) {
+void rtcSetTimeRaw(const time_t t) {
 	setTime(t);
 	RTC.set(t);
 }
