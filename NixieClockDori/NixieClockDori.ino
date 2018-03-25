@@ -156,7 +156,7 @@ void loop() {
 	SETButton.tick();
 	
 	static bool lastDCF77 = true;
-	const bool curDCF77 = analogRead(PIN_DCF77) > 200;
+	const bool curDCF77 = analogRead(PIN_DCF77) > LIMIT_DCF77;
 	if (curDCF77 != lastDCF77) {
 		lastDCF77 = curDCF77;
 		DCF.changeDetected(curDCF77 ? HIGH : LOW);
