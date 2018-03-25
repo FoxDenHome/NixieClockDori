@@ -31,6 +31,7 @@
 #define PIN_BUTTON_DOWN A1
 
 #define PIN_DCF77 PCINT11
+#define LIMIT_DCF77 400
 
 /*******************/
 /* EEPROM LOCATORS */
