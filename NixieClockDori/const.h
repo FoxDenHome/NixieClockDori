@@ -30,6 +30,8 @@
 #define PIN_BUTTON_UP A2
 #define PIN_BUTTON_DOWN A1
 
+#define PIN_DCF77 PCINT11
+
 /*******************/
 /* EEPROM LOCATORS */
 /*******************/
