@@ -154,9 +154,9 @@ void loop() {
 	UPButton.tick();
 	DOWNButton.tick();
 	SETButton.tick();
-
+	
 	static bool lastDCF77 = true;
-	bool curDCF77 = analogRead(PIN_DCF77) > 200;
+	const bool curDCF77 = analogRead(PIN_DCF77) > 200;
 	if (curDCF77 != lastDCF77) {
 		lastDCF77 = curDCF77;
 		DCF.changeDetected(curDCF77 ? HIGH : LOW);
