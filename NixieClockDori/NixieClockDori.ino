@@ -357,10 +357,10 @@ void serialPoll() {
 			// ^D111|-15634
 		case 'D':
 			if (inputString.length() > 2) {
-				Utils::setVerbose(true);
+				DCF77_Utils::setVerbose(true);
 			}
 			else {
-				Utils::setVerbose(false);
+				DCF77_Utils::setVerbose(false);
 			}
 			serialSend6(F("D OK "), String(mu_freeRam()), F(" "), String(digitalRead(PIN_DCF77)), F(" "), String(analogRead(PIN_DCF77)));
 			break;
