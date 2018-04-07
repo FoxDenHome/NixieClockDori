@@ -30,8 +30,8 @@
 #define PIN_BUTTON_UP A2
 #define PIN_BUTTON_DOWN A1
 
-#define PIN_DCF77 PCINT11
-const int LIMIT_DCF77 = 300;
+//#define PIN_DCF77 PCINT20
+//const int LIMIT_DCF77 = 300;
 
 /*******************/
 /* EEPROM LOCATORS */

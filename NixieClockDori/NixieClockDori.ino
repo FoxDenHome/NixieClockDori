@@ -6,7 +6,7 @@
 #include <MemoryUsage.h>
 #include <OneButton.h>
 #include <FastCRC.h>
-#include <DCF77.h>
+//#include <DCF77.h>
 
 #include <avr/wdt.h>
 
@@ -73,7 +73,7 @@ DECL_BUTTON(DOWN)
 DECL_BUTTON(UP)
 DECL_BUTTON(SET)
 
-DCF77 DCF = DCF77(false);
+//DCF77 DCF = DCF77(true);
 
 void setup() {
 	const uint8_t mcusr_mirror = MCUSR;
@@ -98,7 +98,7 @@ void setup() {
 	pinMode(PIN_HIZ, OUTPUT);
 	digitalWrite(PIN_HIZ, LOW);
 
-	pinMode(PIN_DCF77, INPUT);
+	//pinMode(PIN_DCF77, INPUT);
 
 	pinMode(PIN_BUTTON_SET, INPUT_PULLUP);
 	pinMode(PIN_BUTTON_UP, INPUT_PULLUP);
@@ -155,7 +155,7 @@ void loop() {
 	DOWNButton.tick();
 	SETButton.tick();
 	
-	static uint8_t lastDCF77 = HIGH;
+	/*static uint8_t lastDCF77 = HIGH;
 	const uint8_t curDCF77 = (analogRead(PIN_DCF77) > LIMIT_DCF77) ? HIGH : LOW;
 	if (curDCF77 != lastDCF77) {
 		lastDCF77 = curDCF77;
@@ -167,6 +167,7 @@ void loop() {
 			serialSend2(F("< TM "), String(curTime));
 		}
 	}
+	*/
 
 	if (DisplayTask::nextDisplayCycleMicros <= micros()) {
 		DisplayTask::cycleDisplayUpdater();
@@ -356,13 +357,14 @@ void serialPoll() {
 			// ^D|-5712
 			// ^D111|-15634
 		case 'D':
-			if (inputString.length() > 2) {
+			/*if (inputString.length() > 2) {
 				DCF77_Utils::setVerbose(true);
 			}
 			else {
 				DCF77_Utils::setVerbose(false);
 			}
-			serialSend6(F("D OK "), String(mu_freeRam()), F(" "), String(digitalRead(PIN_DCF77)), F(" "), String(analogRead(PIN_DCF77)));
+			serialSend6(F("D OK "), String(mu_freeRam()), F(" "), String(digitalRead(PIN_DCF77)), F(" "), String(analogRead(PIN_DCF77)));*/
+			serialSend2(F("D OK "), String(mu_freeRam()));
 			break;
 		}
 	}
