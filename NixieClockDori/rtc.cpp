@@ -1,3 +1,5 @@
+#include <Arduino.h>
+#include <TimeLib.h>
 #include <DS3232RTC.h>
 #include "crcserial.h"
 #include "rtc.h"
