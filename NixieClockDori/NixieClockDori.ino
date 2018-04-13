@@ -11,6 +11,7 @@
 #include <avr/wdt.h>
 
 #include "rtc.h"
+#include "reset.h"
 #include "config.h"
 #include "const.h"
 #include "crcserial.h"
@@ -225,12 +226,7 @@ void serialPoll() {
 			}
 			serialSendF("X OK");
 
-			// Get the watchdog stuck to force a reset!
-			wdt_enable(WDTO_15MS);
-			while (1) {
-				delay(10);
-			}
-
+			forceReset();
 			break;
 			// P [CC]
 			// C = Count (Dec)

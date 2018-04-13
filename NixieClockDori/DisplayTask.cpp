@@ -1,5 +1,6 @@
 #include "DisplayTask.h"
 #include "Display.h"
+#include "reset.h"
 
 #include <EEPROM.h>
 
@@ -39,6 +40,7 @@ void DisplayTask::cycleDisplayUpdater() {
 	if (DisplayTask::editMode || (DisplayTask::current && !DisplayTask::current->loPri && DisplayTask::current->canShow())) {
 		return;
 	}
+
 	DisplayTask::current = DisplayTask::findNextValid(DisplayTask::current, true);
 }
 
@@ -187,6 +189,8 @@ DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current, const bool must
 		if (dt_first) {
 			return DisplayTask::findNextValid(dt_first, mustCanShow);
 		}
+
+		forceReset();
 		return NULL;
 	}
 
@@ -206,6 +210,7 @@ DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current, const bool must
 		return dt_current;
 	}
 
+	forceReset();
 	return NULL;
 }
 
