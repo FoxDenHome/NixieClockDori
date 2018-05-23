@@ -136,7 +136,7 @@ void setup() {
 	displayCountdown.loadConfig(EEPROM_STORAGE_COUNTDOWN);
 	displayTemp.loadColor(EEPROM_STORAGE_TEMPERATURE_RGB);
 
-	DisplayTask::cycleDisplayUpdater();
+	DisplayTask::current = &displayClock;
 
 	SETUP_BUTTON(UP);
 	SETUP_BUTTON(DOWN);
@@ -170,7 +170,7 @@ void loop() {
 	}
 	*/
 
-	if (DisplayTask::nextDisplayCycleMicros <= micros()) {
+	if ((micros() - DisplayTask::lastDisplayCycleMicros) >= DISPLAY_CYCLE_PERIOD) {
 		DisplayTask::cycleDisplayUpdater();
 	}
 	displayLoop();
@@ -386,7 +386,7 @@ void showIfPossibleOtherwiseRotateIfCurrent(DisplayTask *displayTask) {
 		displayTask->add();
 		DisplayTask::editMode = false;
 		DisplayTask::current = displayTask;
-		DisplayTask::nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
+		DisplayTask::lastDisplayCycleMicros = micros();
 	}
 	else if (displayTask == DisplayTask::current) {
 		DisplayTask::cycleDisplayUpdater();

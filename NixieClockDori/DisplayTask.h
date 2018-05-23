@@ -38,7 +38,7 @@ public:
 
 	static DisplayTask *current;
 
-	static unsigned long nextDisplayCycleMicros;
+	static unsigned long lastDisplayCycleMicros;
 
 	void saveColor(int16_t addr);
 	void loadColor(int16_t addr);

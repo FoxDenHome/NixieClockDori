@@ -9,7 +9,7 @@ DisplayTask *dt_last;
 
 DisplayTask* DisplayTask::current;
 
-unsigned long DisplayTask::nextDisplayCycleMicros = 0;
+unsigned long DisplayTask::lastDisplayCycleMicros = 0;
 bool DisplayTask::editMode = false;
 byte DisplayTask::editModePos = 0;
 unsigned long DisplayTask::lastButtonPress = 0;
@@ -35,9 +35,9 @@ void DisplayTask::loadColor(const int16_t addr) {
 }
 
 void DisplayTask::cycleDisplayUpdater() {
-	DisplayTask::nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
+	DisplayTask::lastDisplayCycleMicros = micros();
 
-	if (DisplayTask::editMode || (DisplayTask::current && !DisplayTask::current->loPri && DisplayTask::current->canShow())) {
+	if (DisplayTask::editMode || (!DisplayTask::current->loPri && DisplayTask::current->canShow())) {
 		return;
 	}
 
@@ -45,13 +45,10 @@ void DisplayTask::cycleDisplayUpdater() {
 }
 
 void DisplayTask::buttonHandler(const Button button, const PressType pressType) {
-	DisplayTask::nextDisplayCycleMicros = micros() + DISPLAY_CYCLE_PERIOD;
+	DisplayTask::lastDisplayCycleMicros = micros();
 	displayAntiPoisonOff();
 	DisplayTask::lastButtonPress = millis();
 
-	if (!DisplayTask::current) {
-		return;
-	}
 	DisplayTask::current->handleButtonPress(button, pressType);
 }
 

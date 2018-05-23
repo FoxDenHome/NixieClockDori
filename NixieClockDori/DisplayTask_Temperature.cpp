@@ -10,9 +10,10 @@ bool DisplayTask_Temperature::_canShow() const {
 bool DisplayTask_Temperature::refresh() {
 	DisplayTask::editMode = false;
 	
-	if (this->nextTempRefresh <= millis()) {
+	const unsigned long curMillis = millis();
+	if ((curMillis - this->lastTempRefresh) >= 1000UL) {
 		this->temp = RTC.temperature();
-		this->nextTempRefresh = millis() + 1000;
+		this->lastTempRefresh = curMillis;
 	}
 
 	const int tempWhole = this->temp >> 2; // Divide by 4
