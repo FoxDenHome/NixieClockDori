@@ -10,6 +10,6 @@ protected:
 	bool _canShow() const override;
 
 private:
-	unsigned long nextTempRefresh = 0;
+	unsigned long lastTempRefresh = 0;
 	int temp = 0;
 };

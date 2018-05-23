@@ -26,8 +26,8 @@
 	}
 #endif
 
-unsigned long antiPoisonEnd = 0;
-unsigned long nextDisplayRender = 0;
+unsigned long antiPoisonLeft = 0;
+unsigned long lastDisplayRender = 0;
 
 volatile byte displayData[3] = { NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH };
 
@@ -40,13 +40,13 @@ volatile byte dotMask = 0;
 volatile DisplayEffect currentEffect = SLOT_MACHINE;
 
 void displayAntiPoisonOff() {
-	antiPoisonEnd = 0;
+	antiPoisonLeft = 0;
 }
 
 void displayAntiPoison(const unsigned long count) {
-	const unsigned long newEnd = millis() + (ANTI_POISON_DELAY * 10UL * count);
-	if (newEnd > antiPoisonEnd) {
-		antiPoisonEnd = newEnd;
+	const unsigned long newLeft = ANTI_POISON_DELAY * 10UL * count;
+	if (newLeft > antiPoisonLeft) {
+		antiPoisonLeft = newLeft;
 	}
 }
 
@@ -97,9 +97,11 @@ void renderNixies() {
 	static byte colorTransProg;
 
 	const unsigned long curMillis = millis();
+	static unsigned long lastCallMillis = 0;
+	const unsigned long lastCallDelta = curMillis - lastCallMillis;
 
-	if (antiPoisonEnd > curMillis) {
-		const byte idx = ((antiPoisonEnd - curMillis) / ANTI_POISON_DELAY) % 10;
+	if (antiPoisonLeft) {
+		const byte idx = 9 - ((antiPoisonLeft / ANTI_POISON_DELAY) % 10);
 		if (idx != oldAntiPoisonIdx) {
 			if (idx == 9) {
 				// Regenerate table
@@ -124,8 +126,14 @@ void renderNixies() {
 			}
 			oldAntiPoisonIdx = idx;
 		}
+		if (lastCallDelta >= antiPoisonLeft) {
+			antiPoisonLeft = 0;
+		}
+		else {
+			antiPoisonLeft -= lastCallDelta;
+		}
 	}
-	else if (DisplayTask::current) {
+	else {
 		allowEffects = DisplayTask::current->refresh();
 
 		if (currentEffect != NONE) {
@@ -220,11 +228,11 @@ void renderNixies() {
 		}
 	}
 
-	if (effectsOn) {
-		if (currentEffect == TRANSITION) {
-			renderAlways = hasEffects;
-		}
+	if (effectsOn && currentEffect == TRANSITION) {
+		renderAlways = hasEffects;
 	}
+
+	lastCallMillis = curMillis;
 }
 
 void displayInit() {
@@ -233,8 +241,8 @@ void displayInit() {
 
 void displayLoop() {
 	const unsigned long curMicros = micros();
-	if (nextDisplayRender <= curMicros) {
+	if ((curMicros - lastDisplayRender) >= (DISPLAY_RENDER_STEP * 33UL)) {
 		renderNixies();
-		nextDisplayRender = curMicros + (DISPLAY_RENDER_STEP * 33UL);
+		lastDisplayRender = curMicros;
 	}
 }
