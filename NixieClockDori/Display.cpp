@@ -34,6 +34,7 @@ volatile byte displayData[3] = { NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH };
 volatile byte dataIsTransitioning[3] = { 0, 0, 0 };
 volatile byte dataToDisplayPrevious[3] = { NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH };
 volatile bool renderAlways = false;
+volatile bool renderNoMultiplex = false;
 
 volatile byte dotMask = 0;
 
@@ -101,6 +102,7 @@ void renderNixies() {
 	const unsigned long lastCallDelta = curMillis - lastCallMillis;
 
 	if (antiPoisonLeft) {
+		renderNoMultiplex = true;
 		const byte idx = 9 - ((antiPoisonLeft / ANTI_POISON_DELAY) % 10);
 		if (idx != oldAntiPoisonIdx) {
 			if (idx == 9) {
@@ -134,6 +136,7 @@ void renderNixies() {
 		}
 	}
 	else {
+		renderNoMultiplex = false;
 		allowEffects = DisplayTask::current->refresh();
 
 		if (currentEffect != NONE) {

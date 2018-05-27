@@ -29,6 +29,7 @@ extern volatile bool renderAlways;
 extern volatile byte displayData[3];
 extern volatile byte dataIsTransitioning[3];
 extern volatile byte dataToDisplayPrevious[3];
+extern volatile bool renderNoMultiplex;
 
 void displayInit();
 void displayLoop();
