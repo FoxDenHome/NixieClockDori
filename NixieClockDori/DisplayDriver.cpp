@@ -8,6 +8,9 @@
 #define ALL_TUBES_MASK ((1 << 10) - 1)
 #define NO_TUBES_MASK 0
 
+#define GET_ANODE_MASK(a) (1 << (a + 4))
+#define ALL_ANODES_MASK (GET_ANODE_MASK(0) | GET_ANODE_MASK(1) | GET_ANODE_MASK(2))
+
 #pragma GCC push_options
 #pragma GCC optimize ("O3")
 uint16_t inline mkTube(const byte idx) {
@@ -30,7 +33,8 @@ void displayInterrupt() {
 
 	const byte ctrL = ctr % 11;
 	if (ctrL <= 1 || renderAlways) {
-		const byte anodeGroup = ctr / 11;
+		const byte anodeGroup = renderNoMultiplex ? 0 : (ctr / 11);
+		const byte anodeMask = renderNoMultiplex ? ALL_ANODES_MASK : GET_ANODE_MASK(anodeGroup);
 
 		byte tubei = displayData[anodeGroup];
 		if (ctrL && renderAlways && currentEffect == TRANSITION && ctrL <= (dataIsTransitioning[anodeGroup] / (EFFECT_SPEED / 10))) {
@@ -38,15 +42,15 @@ void displayInterrupt() {
 		}
 
 		// We don't need to refresh if it is just the same as last time (unless we are in main phase render)
-		if (lastSentTubes[anodeGroup] != tubei || ctrL <= 1) {
+		if (lastSentTubes[anodeGroup] != tubei || (ctrL <= 1 && !renderNoMultiplex)) {
 			const uint16_t tubeL = mkTube(tubei & 0xF);
 			const uint16_t tubeR = mkTube(tubei >> 4);
 
 			PORT_DISPLAY_LATCH &= ~PORT_MASK_DISPLAY_LATCH;
 			SPI.transfer(dotMask);                                  // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
-			if (ctrL) {
+			if (ctrL || renderNoMultiplex) {
 				lastSentTubes[anodeGroup] = tubei;
-				SPI.transfer(tubeR >> 6 | (1 << (anodeGroup + 4))); // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes (displaying)
+				SPI.transfer(tubeR >> 6 | anodeMask);               // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes (displaying)
 			}
 			else {
 				SPI.transfer(tubeR >> 6);                           // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes (blanking)
