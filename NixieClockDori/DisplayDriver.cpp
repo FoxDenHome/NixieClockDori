@@ -50,6 +50,10 @@ void displayInterrupt() {
 			SPI.transfer(dotMask);                                  // [   ][   ][   ][   ][   ][   ][L1 ][L0 ] - L0     L1 - dots
 			if (ctrL || renderNoMultiplex) {
 				lastSentTubes[anodeGroup] = tubei;
+				if (renderNoMultiplex) {
+					lastSentTubes[1] = tubei;
+					lastSentTubes[2] = tubei;
+				}
 				SPI.transfer(tubeR >> 6 | anodeMask);               // [   ][A2 ][A1 ][A0 ][RC9][RC8][RC7][RC6] - A0  -  A2 - anodes (displaying)
 			}
 			else {
