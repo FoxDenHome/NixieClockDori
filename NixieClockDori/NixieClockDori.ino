@@ -231,6 +231,7 @@ void serialPoll() {
 			// P [CC]
 			// C = Count (Dec)
 			// Performs an anti poisoning routine <C> times
+			// ^P04|-7920
 			// ^P01|-20043
 			// ^P|-17659
 		case 'P':

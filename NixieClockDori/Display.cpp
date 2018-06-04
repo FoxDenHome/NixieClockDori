@@ -92,7 +92,7 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero) {
 void renderNixies() {
 	static byte oldAntiPoisonIdx = 255;
 	const uint16_t ALL_TUBES_ANTI_POISON = (1 << 10) - 1;
-	static uint16_t antiPoisonTable[6] = { ALL_TUBES_ANTI_POISON, ALL_TUBES_ANTI_POISON, ALL_TUBES_ANTI_POISON, ALL_TUBES_ANTI_POISON, ALL_TUBES_ANTI_POISON, ALL_TUBES_ANTI_POISON };
+	static uint16_t antiPoisonTable[6] = { 0, 0, 0, 0, 0, 0 };
 
 	bool allowEffects = false;
 
@@ -110,12 +110,11 @@ void renderNixies() {
 		renderNoMultiplex = true;
 		const byte idx = 9 - ((antiPoisonLeft / ANTI_POISON_DELAY) % 10);
 		if (idx != oldAntiPoisonIdx) {
-			if (antiPoisonTable[0] == ALL_TUBES_ANTI_POISON) {
-				// Regenerate table
-				memset(antiPoisonTable, 0, sizeof(antiPoisonTable));
-			}
 			byte curAP[6] = { 0, 0, 0, 0, 0, 0 };
 			for (byte i = 0; i < 6; i++) {
+				if (antiPoisonTable[i] == ALL_TUBES_ANTI_POISON) {
+					antiPoisonTable[i] = 0;
+				}
 				byte randNbr = random(0, 10);
 				while ((antiPoisonTable[i] & (1 << randNbr))) {
 					randNbr++;
