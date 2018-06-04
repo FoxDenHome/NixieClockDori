@@ -45,7 +45,11 @@ void displayAntiPoisonOff() {
 }
 
 void displayAntiPoison(const unsigned long count) {
-	const unsigned long newLeft = ANTI_POISON_DELAY * 10UL * count;
+	if (count < 1) {
+		return;
+	}
+
+	const unsigned long newLeft = (ANTI_POISON_DELAY * 10UL * count) - 1UL;
 	if (newLeft > antiPoisonLeft) {
 		antiPoisonLeft = newLeft;
 	}
@@ -87,7 +91,8 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero) {
 
 void renderNixies() {
 	static byte oldAntiPoisonIdx = 255;
-	static uint16_t antiPoisonTable[6];
+	const uint16_t ALL_TUBES_ANTI_POISON = (1 << 10) - 1;
+	static uint16_t antiPoisonTable[6] = { ALL_TUBES_ANTI_POISON, ALL_TUBES_ANTI_POISON, ALL_TUBES_ANTI_POISON, ALL_TUBES_ANTI_POISON, ALL_TUBES_ANTI_POISON, ALL_TUBES_ANTI_POISON };
 
 	bool allowEffects = false;
 
@@ -105,7 +110,7 @@ void renderNixies() {
 		renderNoMultiplex = true;
 		const byte idx = 9 - ((antiPoisonLeft / ANTI_POISON_DELAY) % 10);
 		if (idx != oldAntiPoisonIdx) {
-			if (idx == 9) {
+			if (antiPoisonTable[0] == ALL_TUBES_ANTI_POISON) {
 				// Regenerate table
 				memset(antiPoisonTable, 0, sizeof(antiPoisonTable));
 			}
