@@ -116,9 +116,8 @@ void renderNixies() {
 					antiPoisonTable[i] = 0;
 				}
 				byte randNbr = random(0, 10);
-				while ((antiPoisonTable[i] & (1 << randNbr))) {
-					randNbr++;
-					if (randNbr > 9) {
+				while (antiPoisonTable[i] & (1 << randNbr)) {
+					if (++randNbr > 9) {
 						randNbr = 0;
 					}
 				}

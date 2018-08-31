@@ -38,11 +38,15 @@ bool DisplayTask_Clock::refresh() {
 		const byte m = minute(_n);
 		const byte s = second(_n);
 
-		if (h < 4 && s != this->s && s % 5 == 2) {
-			displayAntiPoison(1);
-		}
-		else if (m != this->m && m % 10 == 2) {
-			displayAntiPoison(2);
+		if (this->s != s) {
+			if (h < 4) {
+				if (s % 5 == 2) {
+					displayAntiPoison(1);
+				}
+			}
+			else if (s == 2 && m % 10 == 2) {
+				displayAntiPoison(2);
+			}
 		}
 
 		this->h = h;

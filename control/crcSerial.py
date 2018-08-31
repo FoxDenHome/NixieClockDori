@@ -38,8 +38,8 @@ def _readline(data, retryAfter = 5):
 		if readCrc == calcCrc:
 			if ord(line[0]) == data[1]:
 				return line
-			else:
-				print("Got async data: %s" % line)
+			#else:
+			#	print("Got async data: %s" % line)
 		else:
 			print("CRC mismatch: %s" % line)
 

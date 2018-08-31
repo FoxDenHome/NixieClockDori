@@ -259,7 +259,7 @@ void serialPoll() {
 				break;
 			}
 
-			displayFlash.allowEffects = (curMillis - displayFlash.lastUpdate) >= 900;
+			displayFlash.allowEffects = (curMillis - displayFlash.lastUpdate) >= 400;
 			displayFlash.lastUpdate = curMillis;
 			displayFlash.endTime = curMillis + (unsigned long)inputString.substring(1, 9).toInt();
 
