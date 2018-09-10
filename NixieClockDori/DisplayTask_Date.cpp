@@ -68,7 +68,7 @@ void DisplayTask_Date::handleEdit(const byte digit, const bool up) {
 }
 
 bool DisplayTask_Date::refresh() {
-	displayData[4] = NO_TUBES_BOTH;
+	displayData[8] = NO_TUBES;
 
 	if (!DisplayTask::editMode) {
 		const time_t _n = now();

@@ -29,10 +29,10 @@
 unsigned long antiPoisonLeft = 0;
 unsigned long lastDisplayRender = 0;
 
-volatile byte displayData[5] = { NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH };
+volatile uint16_t displayData[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-volatile byte dataIsTransitioning[5] = { 0, 0, 0, 0, 0 };
-volatile byte dataToDisplayPrevious[5] = { NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH };
+volatile byte dataIsTransitioning[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+volatile uint16_t dataToDisplayPrevious[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 volatile bool renderAlways = false;
 volatile bool renderNoMultiplex = false;
 
@@ -64,15 +64,11 @@ bool showShortTime(const unsigned long timeMs, bool trimLZ, bool alwaysLong) {
 }
 
 void insert1(const byte offset, const byte data, const bool trimLeadingZero) {
-	const byte rOffset = offset >> 1;
-	const byte rNibble = ((offset & 1) == 1) ? 4 : 0;
-
-	const byte dData = displayData[rOffset] & ~(0xF << rNibble);
 	if (data == 0 && trimLeadingZero) {
-		displayData[rOffset] = dData | (NO_TUBES << rNibble);
+		displayData[offset] = NO_TUBES;
 	}
 	else {
-		displayData[rOffset] = dData | (getNumber(data) << rNibble);
+		displayData[offset] = getNumber(data);
 	}
 }
 
@@ -85,13 +81,13 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero) {
 void renderNixies() {
 	static byte oldAntiPoisonIdx = 255;
 	const uint16_t ALL_TUBES_ANTI_POISON = (1 << 10) - 1;
-	static uint16_t antiPoisonTable[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	static uint16_t antiPoisonTable[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	bool allowEffects = false;
 
 	static byte redOld, greenOld, blueOld;
 
-	static byte dataToDisplayOld[5] = { NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH };
+	static uint16_t dataToDisplayOld[9] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
 	static byte redPrevious, greenPrevious, bluePrevious;
 	static byte colorTransProg;
 
@@ -102,8 +98,7 @@ void renderNixies() {
 	if (antiPoisonLeft) {
 		const byte idx = 9 - ((antiPoisonLeft / ANTI_POISON_DELAY) % 10);
 		if (idx != oldAntiPoisonIdx) {
-			byte curAP[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-			for (byte i = 0; i < 10; i++) {
+			for (byte i = 0; i < 9; i++) {
 				if (antiPoisonTable[i] == ALL_TUBES_ANTI_POISON) {
 					antiPoisonTable[i] = 0;
 				}
@@ -113,12 +108,9 @@ void renderNixies() {
 						randNbr = 0;
 					}
 				}
-				antiPoisonTable[i] |= (1 << randNbr);
-				curAP[i] = randNbr;
-			}
-			for (byte i = 0; i < 5; i++) {
-				const byte j = i << 1;
-				displayData[i] = curAP[j] | (curAP[j + 1] << 4);
+				const byte nbrTube = (1 << randNbr);
+				antiPoisonTable[i] |= nbrTube;
+				displayData[i] = nbrTube;
 				dataIsTransitioning[i] = 0;
 			}
 			oldAntiPoisonIdx = idx;
@@ -186,7 +178,7 @@ void renderNixies() {
 	const bool effectsOn = allowEffects && currentEffect != NONE;
 
 	//bool hasEffects = false;
-	for (byte i = 0; i < 5; i++) {
+	for (byte i = 0; i < 9; i++) {
 		const uint16_t cur = displayData[i];
 		if (dataToDisplayOld[i] != cur) {
 			dataToDisplayPrevious[i] = dataToDisplayOld[i];
@@ -203,18 +195,7 @@ void renderNixies() {
 		const byte tubeTrans = dataIsTransitioning[i];
 		if (tubeTrans > 1) {
 			if (currentEffect == SLOT_MACHINE) {
-				byte effectData = getNumberBoth(tubeTrans / (EFFECT_SPEED / 10));
-				const byte oldData = dataToDisplayPrevious[i];
-				const byte nowData = dataToDisplayOld[i];
-				if ((oldData & 0xF) == (nowData & 0xF)) {
-					effectData &= ~0xF;
-					effectData |= nowData & 0xF;
-				}
-				if ((oldData & 0xF0) == (nowData & 0xF0)) {
-					effectData &= ~0xF0;
-					effectData |= nowData & 0xF0;
-				}
-				displayData[i] = effectData;
+				displayData[i] = getNumber(tubeTrans / (EFFECT_SPEED / 10));
 			}
 			dataIsTransitioning[i]--;
 			//hasEffects = true;

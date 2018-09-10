@@ -12,23 +12,15 @@ enum DisplayEffect {
 };
 extern volatile DisplayEffect currentEffect;
 
-const byte INVALID_TUBES = 0xF;
-const byte ALL_TUBES = 11;
-const byte NO_TUBES = 10;
-#define makeBothTubes(MASK) (MASK | (MASK << 4))
-const byte ALL_TUBES_BOTH = makeBothTubes(ALL_TUBES);
-const byte NO_TUBES_BOTH = makeBothTubes(NO_TUBES);
-const byte INVALID_TUBES_BOTH = makeBothTubes(INVALID_TUBES);
-
-const byte MASK_UPPER_DOTS = 1;
-const byte MASK_LOWER_DOTS = 2;
-const byte MASK_BOTH_DOTS = MASK_UPPER_DOTS | MASK_LOWER_DOTS;
+const uint16_t INVALID_TUBES = 0xFFFF;
+const uint16_t ALL_TUBES = ((1 << 10) - 1);
+const uint16_t NO_TUBES = 0;
 
 extern volatile byte dotMask;
 extern volatile bool renderAlways;
-extern volatile byte displayData[5];
-extern volatile byte dataIsTransitioning[5];
-extern volatile byte dataToDisplayPrevious[5];
+extern volatile uint16_t displayData[9];
+extern volatile byte dataIsTransitioning[9];
+extern volatile uint16_t dataToDisplayPrevious[9];
 
 void displayInit();
 void displayLoop();
@@ -36,12 +28,8 @@ void displayLoop();
 void displayAntiPoisonOff();
 void displayAntiPoison(const unsigned long count);
 
-inline byte getNumber(const byte idx) {
-	return idx % 10;
-}
-
-inline byte getNumberBoth(const byte idx) {
-	return getNumber(idx) | (getNumber(idx) << 4);
+inline uint16_t getNumber(const byte idx) {
+	return 1 << (idx % 10);
 }
 
 #define _MKDOT(x) (1 << x)
@@ -53,11 +41,11 @@ inline byte getNumberBoth(const byte idx) {
 #define DOT_3_UP _MKDOT(5)
 #define DOT_3_DOWN _MKDOT(4)
 
-#define _MKSYM(x) x
+#define _MKSYM(x) (1 << x)
 
 #define SYMBOL_PERCENT _MKSYM(0)
 #define SYMBOL_M _MKSYM(1)
-#define SYMBOL_MICRO2 _MKSYM(2)
+#define SYMBOL_P _MKSYM(2)
 #define SYMBOL_m _MKSYM(3)
 #define SYMBOL_K _MKSYM(4)
 #define SYMBOL_n _MKSYM(5)
