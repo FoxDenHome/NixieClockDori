@@ -4,10 +4,11 @@
 #include "config.h"
 #include <SPI.h>
 
-// [456789__]
-// [67890123]
-// [89012345]
-// [01234567]
+//   Number      Tube
+// [456789DU] [333333DD]
+// [67890123] [22223333]
+// [89012345] [11222222]
+// [01234567] [11111111]
 #define SPI_3TUBE_XFER(A, B, C, DOTOFF) { \
 	t1 = lastSentTubes[A]; \
 	t2 = lastSentTubes[B]; \
