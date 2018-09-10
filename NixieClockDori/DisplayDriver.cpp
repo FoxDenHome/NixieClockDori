@@ -51,7 +51,7 @@ void displayDriverRefresh() {
 void displayDriverInit() {
 	SPI.begin();
 	SPI.setDataMode(SPI_MODE2);
-	SPI.setClockDivider(SPI_CLOCK_DIV8);
+	SPI.setClockDivider(SPI_CLOCK_DIV4);
 	SPI.setBitOrder(MSBFIRST);
 }
 
