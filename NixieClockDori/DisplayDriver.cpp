@@ -15,7 +15,7 @@
 	t1 = displayData[A]; \
 	t2 = displayData[B]; \
 	t3 = displayData[C]; \
-	SPI.transfer(t3 >> 4 | ((dotMask >> DOTOFF) & 0x3) << 6); \
+	SPI.transfer(t3 >> 4 | ((lastSentDots >> DOTOFF) & 0x3) << 6); \
 	SPI.transfer(t2 >> 6 | t3 << 4); \
 	SPI.transfer(t1 >> 8 | t2 << 2); \
 	SPI.transfer(t1); \
