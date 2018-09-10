@@ -4,9 +4,6 @@
 #include "config.h"
 #include <SPI.h>
 
-#define ALL_TUBES_MASK ((1 << 10) - 1)
-#define NO_TUBES_MASK 0
-
 // [456789__]
 // [67890123]
 // [89012345]
