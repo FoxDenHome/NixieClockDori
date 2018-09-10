@@ -80,7 +80,6 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero) {
 
 void renderNixies() {
 	static byte oldAntiPoisonIdx = 255;
-	const uint16_t ALL_TUBES_ANTI_POISON = (1 << 10) - 1;
 	static uint16_t antiPoisonTable[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	bool allowEffects = false;
@@ -99,7 +98,7 @@ void renderNixies() {
 		const byte idx = 9 - ((antiPoisonLeft / ANTI_POISON_DELAY) % 10);
 		if (idx != oldAntiPoisonIdx) {
 			for (byte i = 0; i < 9; i++) {
-				if (antiPoisonTable[i] == ALL_TUBES_ANTI_POISON) {
+				if (antiPoisonTable[i] == ALL_TUBES) {
 					antiPoisonTable[i] = 0;
 				}
 				byte randNbr = random(0, 10);
@@ -108,7 +107,7 @@ void renderNixies() {
 						randNbr = 0;
 					}
 				}
-				const byte nbrTube = (1 << randNbr);
+				const uint16_t nbrTube = (1 << randNbr);
 				antiPoisonTable[i] |= nbrTube;
 				displayData[i] = nbrTube;
 				dataIsTransitioning[i] = 0;
