@@ -2,7 +2,7 @@
 #include "Display.h"
 
 DisplayTask_Stopwatch::DisplayTask_Stopwatch() {
-	this->dotMask = makeDotMask(true, false);
+	this->dotMask = DOT_1_UP | DOT_1_DOWN | DOT_2_UP | DOT_2_DOWN | DOT_3_DOWN;
 	this->reset();
 }
 
@@ -37,6 +37,8 @@ bool DisplayTask_Stopwatch::_canShow() const {
 }
 
 bool DisplayTask_Stopwatch::refresh() {
+	displayData[4] = NO_TUBES_BOTH;
+
 	DisplayTask::editMode = false;
 
 	if (this->running) {

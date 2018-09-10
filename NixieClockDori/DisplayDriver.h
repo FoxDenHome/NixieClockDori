@@ -1,6 +1,5 @@
 #pragma once
 
-#define DISPLAY_NEEDS_TIMER1
-
+void displayDriverRefresh();
 void displayDriverInit();
 void displayDriverLoop();

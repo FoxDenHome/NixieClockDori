@@ -4,6 +4,8 @@
 
 class DisplayTask_Temperature : public DisplayTask {
 public:
+	DisplayTask_Temperature();
+
 	bool refresh() override;
 
 protected:

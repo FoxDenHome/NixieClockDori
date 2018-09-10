@@ -6,7 +6,7 @@
 
 enum DisplayEffect {
 	NONE = 0,
-	TRANSITION,
+	//TRANSITION,
 	SLOT_MACHINE,
 	FIRST_INVALID,
 };
@@ -26,10 +26,9 @@ const byte MASK_BOTH_DOTS = MASK_UPPER_DOTS | MASK_LOWER_DOTS;
 
 extern volatile byte dotMask;
 extern volatile bool renderAlways;
-extern volatile byte displayData[3];
-extern volatile byte dataIsTransitioning[3];
-extern volatile byte dataToDisplayPrevious[3];
-extern volatile bool renderNoMultiplex;
+extern volatile byte displayData[5];
+extern volatile byte dataIsTransitioning[5];
+extern volatile byte dataToDisplayPrevious[5];
 
 void displayInit();
 void displayLoop();
@@ -45,8 +44,34 @@ inline byte getNumberBoth(const byte idx) {
 	return getNumber(idx) | (getNumber(idx) << 4);
 }
 
+inline byte makeDotMaskAll(const bool upper, const bool lower) {
+	const byte t = (upper ? 0 : MASK_UPPER_DOTS) | (lower ? 0 : MASK_LOWER_DOTS);
+	return t | t << 2 | t << 4;
+}
+
+#define _MKDOT(x) (1 << x)
+
+#define DOT_1_UP _MKDOT(1)
+#define DOT_1_DOWN _MKDOT(0)
+#define DOT_2_UP _MKDOT(3)
+#define DOT_2_DOWN _MKDOT(2)
+#define DOT_3_UP _MKDOT(5)
+#define DOT_3_DOWN _MKDOT(4)
+
+#define _MKSYM(x) x
+
+#define SYMBOL_PERCENT _MKSYM(0)
+#define SYMBOL_M _MKSYM(1)
+#define SYMBOL_MICRO2 _MKSYM(2)
+#define SYMBOL_m _MKSYM(3)
+#define SYMBOL_K _MKSYM(4)
+#define SYMBOL_n _MKSYM(5)
+#define SYMBOL_MICRO _MKSYM(6)
+#define SYMBOL_DEGREES_C _MKSYM(7)
+
 inline byte makeDotMask(const bool upper, const bool lower) {
-	return (upper ? 0 : MASK_UPPER_DOTS) | (lower ? 0 : MASK_LOWER_DOTS);
+	const byte t = (upper ? 0 : MASK_UPPER_DOTS) | (lower ? 0 : MASK_LOWER_DOTS);
+	return t | t << 2 | t << 4;
 }
 
 void insert1(const byte offset, const byte data, const bool trimLeadingZero);

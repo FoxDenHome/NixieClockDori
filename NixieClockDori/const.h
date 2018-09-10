@@ -7,18 +7,11 @@
 /********************/
 // Passes data from SPI chip to display while HIGH (pulled LOW during SPI write)
 #define PIN_DISPLAY_LATCH 10
-#if PIN_DISPLAY_LATCH > 7
-#define PORT_DISPLAY_LATCH PORTB
-#define PORT_MASK_DISPLAY_LATCH (1 << (PIN_DISPLAY_LATCH - 8))
-#else
-#define PORT_DISPLAY_LATCH PORTD
-#define PORT_MASK_DISPLAY_LATCH (1 << PIN_DISPLAY_LATCH)
-#endif
 
 // Z state in registers outputs (while LOW level) Always LOW?
-#define PIN_HIZ 8
+// #define PIN_HIZ 8
 // High Voltage (tube power) on while HIGH
-#define PIN_HIGH_VOLTAGE_ENABLE 5
+// #define PIN_HIGH_VOLTAGE_ENABLE 5
 // Piezo buzzer pin
 #define PIN_BUZZER 2
 
@@ -29,6 +22,8 @@
 #define PIN_BUTTON_SET A0
 #define PIN_BUTTON_UP A2
 #define PIN_BUTTON_DOWN A1
+
+#define PIN_TEMPERATURE 7
 
 //#define PIN_DCF77 PCINT20
 //const int LIMIT_DCF77 = 300;

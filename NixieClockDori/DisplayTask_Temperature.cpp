@@ -1,7 +1,10 @@
 #include "DisplayTask_Temperature.h"
 #include "Display.h"
+#include "temperature.h"
 
-#include <DS3232RTC.h>
+DisplayTask_Temperature::DisplayTask_Temperature() {
+	this->dotMask = DOT_2_DOWN;
+}
 
 bool DisplayTask_Temperature::_canShow() const {
 	return false;
@@ -9,31 +12,15 @@ bool DisplayTask_Temperature::_canShow() const {
 
 bool DisplayTask_Temperature::refresh() {
 	DisplayTask::editMode = false;
-	
-	const unsigned long curMillis = millis();
-	if ((curMillis - this->lastTempRefresh) >= 1000UL) {
-		this->temp = RTC.temperature();
-		this->lastTempRefresh = curMillis;
-	}
 
-	const int tempWhole = this->temp >> 2; // Divide by 4
+	const float temp = temperatureGet();
 
-	insert2(0, tempWhole / 100, true);
-	insert2(2, tempWhole, true);
-	switch (this->temp % 4) {
-	case 0:
-		insert2(4,  0, false);
-		break;
-	case 1:
-		insert2(4, 25, false);
-		break;
-	case 2:
-		insert2(4, 50, false);
-		break;
-	case 3:
-		insert2(4, 75, false);
-		break;
-	}
+	const bool hideNext = insert2(0, temp / 100.0, true);
+	insert2(2, temp, hideNext);
+	insert2(4, temp * 100.0, false);
+	insert2(6, temp * 10000.0, false);
+
+	displayData[4] = SYMBOL_DEGREES_C;
 
 	return true;
 }

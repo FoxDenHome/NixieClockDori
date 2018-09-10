@@ -8,7 +8,7 @@
 #define COUNTDOWN_MAX_TIME (100UL * 60UL * 60UL * 1000UL)
 
 DisplayTask_Countdown::DisplayTask_Countdown() {
-	this->dotMask = makeDotMask(false, true);
+	this->dotMask = DOT_1_UP | DOT_2_UP | DOT_3_DOWN;
 }
 
 void DisplayTask_Countdown::loadConfig(const int16_t base) {
@@ -79,6 +79,8 @@ bool DisplayTask_Countdown::_canShow() const {
 }
 
 bool DisplayTask_Countdown::refresh() {
+	displayData[4] = NO_TUBES_BOTH;
+
 	if (this->running) {
 		DisplayTask::editMode = false;
 		const unsigned long curMillis = millis();
