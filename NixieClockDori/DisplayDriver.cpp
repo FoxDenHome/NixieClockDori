@@ -7,32 +7,14 @@
 #define ALL_TUBES_MASK ((1 << 10) - 1)
 #define NO_TUBES_MASK 0
 
-uint16_t inline mkTube(const byte idx) {
-	switch (idx) {
-	case ALL_TUBES:
-		return ALL_TUBES_MASK;
-	case NO_TUBES:
-		return NO_TUBES_MASK;
-	default:
-		if (idx > 9) {
-			return 0;
-		}
-		return 1 << idx;
-	}
-}
-
-#define GET_TUBE_L(x) (displayData[x] & 0xF)
-#define GET_TUBE_R(x) (displayData[x] >> 4)
-
-
 // [456789__]
 // [67890123]
 // [89012345]
 // [01234567]
 #define SPI_3TUBE_XFER(A, B, C, DOTOFF) { \
-	t1 = mkTube(A); \
-	t2 = mkTube(B); \
-	t3 = mkTube(C); \
+	t1 = displayData[A]; \
+	t2 = displayData[B]; \
+	t3 = displayData[C]; \
 	SPI.transfer(t3 >> 4 | ((dotMask >> DOTOFF) & 0x3) << 6); \
 	SPI.transfer(t2 >> 6 | t3 << 4); \
 	SPI.transfer(t1 >> 8 | t2 << 2); \
@@ -40,11 +22,11 @@ uint16_t inline mkTube(const byte idx) {
 }
 
 void displayDriverRefresh() {
-	static byte lastSentTubes[5] = { INVALID_TUBES_BOTH, INVALID_TUBES_BOTH, INVALID_TUBES_BOTH, INVALID_TUBES_BOTH, INVALID_TUBES_BOTH };
+	static uint16_t lastSentTubes[9] = { INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES };
 	static byte lastSentDots = 0xFF;
 
 	bool displayDiffers = lastSentDots != dotMask;
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 9; i++) {
 		if (lastSentTubes[i] != displayData[i]) {
 			lastSentTubes[i] = displayData[i];
 			displayDiffers = true;
@@ -59,9 +41,9 @@ void displayDriverRefresh() {
 
 	uint16_t t1, t2, t3;
 	digitalWrite(PIN_DISPLAY_LATCH, LOW);
-	SPI_3TUBE_XFER(GET_TUBE_L(3), GET_TUBE_R(3), GET_TUBE_L(4), 4);
-	SPI_3TUBE_XFER(GET_TUBE_R(1), GET_TUBE_L(2), GET_TUBE_R(2), 2);
-	SPI_3TUBE_XFER(GET_TUBE_L(0), GET_TUBE_R(0), GET_TUBE_L(1), 0);
+	SPI_3TUBE_XFER(6, 7, 8, 4);
+	SPI_3TUBE_XFER(3, 4, 5, 2);
+	SPI_3TUBE_XFER(0, 1, 2, 0);
 	digitalWrite(PIN_DISPLAY_LATCH, HIGH);
 
 }

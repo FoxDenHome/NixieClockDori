@@ -66,7 +66,7 @@ bool DisplayTask::refresh() {
 
 void DisplayTask::insertTemp(const unsigned long curMillis) {
 	const float temp = temperatureGet();
-	displayData[4] = SYMBOL_DEGREES_C;
+	displayData[8] = SYMBOL_DEGREES_C;
 	insert2(6, temp, false);
 }
 

@@ -20,7 +20,7 @@ bool DisplayTask_Temperature::refresh() {
 	insert2(4, temp * 100.0, false);
 	insert2(6, temp * 10000.0, false);
 
-	displayData[4] = SYMBOL_DEGREES_C;
+	displayData[8] = SYMBOL_DEGREES_C;
 
 	return true;
 }

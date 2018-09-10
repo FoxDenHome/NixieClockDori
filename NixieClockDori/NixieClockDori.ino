@@ -21,6 +21,8 @@
 #include "DisplayDriver.h"
 #include "DisplayTask.h"
 
+#include <Arduino.h>
+
 #include "DisplayTask_Clock.h"
 #include "DisplayTask_Date.h"
 #include "DisplayTask_Stopwatch.h"
@@ -277,16 +279,14 @@ void serialPoll() {
 			}
 			for (byte i = 0; i < 9; i++) {
 				tmpData = inputString[i + 12];
-				const byte j = i >> 1;
-				const byte n = ((i & 1) == 1) ? 4 : 0;
 				if (tmpData == 'N') {
-					displayFlash.symbols[j] |= NO_TUBES << n;
+					displayFlash.symbols[i] |= NO_TUBES;
 				}
 				else if (tmpData == 'A') {
-					displayFlash.symbols[j] |= ALL_TUBES << n;
+					displayFlash.symbols[i] |= ALL_TUBES;
 				}
 				else {
-					displayFlash.symbols[j] |= getNumber(tmpData - '0') << n;
+					displayFlash.symbols[i] |= getNumber(tmpData - '0');
 				}
 			}
 

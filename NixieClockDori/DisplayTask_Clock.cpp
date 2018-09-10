@@ -61,8 +61,9 @@ bool DisplayTask_Clock::refresh() {
 		DisplayTask::insertTemp(curMillis);
 	}
 	else {
-		displayData[3] = NO_TUBES_BOTH;
-		displayData[4] = NO_TUBES_BOTH;
+		displayData[6] = NO_TUBES;
+		displayData[7] = NO_TUBES;
+		displayData[8] = NO_TUBES;
 	}
 
 	if (DisplayTask::editMode ||
