@@ -34,12 +34,12 @@ inline uint16_t getNumber(const byte idx) {
 
 #define _MKDOT(x) (1 << x)
 
-#define DOT_1_UP _MKDOT(1)
 #define DOT_1_DOWN _MKDOT(0)
-#define DOT_2_UP _MKDOT(3)
+#define DOT_1_UP _MKDOT(1)
 #define DOT_2_DOWN _MKDOT(2)
-#define DOT_3_UP _MKDOT(5)
+#define DOT_2_UP _MKDOT(3)
 #define DOT_3_DOWN _MKDOT(4)
+#define DOT_3_UP _MKDOT(5)
 
 #define _MKSYM(x) (1 << x)
 
