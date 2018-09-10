@@ -12,9 +12,9 @@
 // [89012345]
 // [01234567]
 #define SPI_3TUBE_XFER(A, B, C, DOTOFF) { \
-	t1 = displayData[A]; \
-	t2 = displayData[B]; \
-	t3 = displayData[C]; \
+	t1 = lastSentTubes[A]; \
+	t2 = lastSentTubes[B]; \
+	t3 = lastSentTubes[C]; \
 	SPI.transfer(t3 >> 4 | ((lastSentDots >> DOTOFF) & 0x3) << 6); \
 	SPI.transfer(t2 >> 6 | t3 << 4); \
 	SPI.transfer(t1 >> 8 | t2 << 2); \
