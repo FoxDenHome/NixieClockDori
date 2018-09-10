@@ -24,6 +24,21 @@ uint16_t inline mkTube(const byte idx) {
 #define GET_TUBE_L(x) (displayData[x] & 0xF)
 #define GET_TUBE_R(x) (displayData[x] >> 4)
 
+
+// [456789__]
+// [67890123]
+// [89012345]
+// [01234567]
+#define SPI_3TUBE_XFER(A, B, C, DOTOFF) { \
+	t1 = mkTube(A); \
+	t2 = mkTube(B); \
+	t3 = mkTube(C); \
+	SPI.transfer(t3 >> 4 | ((dotMask >> DOTOFF) & 0x3) << 6); \
+	SPI.transfer(t2 >> 6 | t3 << 4); \
+	SPI.transfer(t1 >> 8 | t2 << 2); \
+	SPI.transfer(t1); \
+}
+
 void displayDriverRefresh() {
 	static byte lastSentTubes[5] = { INVALID_TUBES_BOTH, INVALID_TUBES_BOTH, INVALID_TUBES_BOTH, INVALID_TUBES_BOTH, INVALID_TUBES_BOTH };
 	static byte lastSentDots = 0xFF;
@@ -44,30 +59,10 @@ void displayDriverRefresh() {
 
 	uint16_t t1, t2, t3;
 	digitalWrite(PIN_DISPLAY_LATCH, LOW);
-	//PORT_DISPLAY_LATCH &= ~PORT_MASK_DISPLAY_LATCH;
-	t1 = mkTube(GET_TUBE_L(3));
-	t2 = mkTube(GET_TUBE_R(3));
-	t3 = mkTube(GET_TUBE_L(4));
-	SPI.transfer(t3 >> 4 | ((dotMask >> 4) & 0x3) << 6); // [456789__]
-	SPI.transfer(t2 >> 6 | t3 << 4); // [67890123]
-	SPI.transfer(t1 >> 8 | t2 << 2); // [89012345]
-	SPI.transfer(t1); // [01234567]
-	t1 = mkTube(GET_TUBE_R(1));
-	t2 = mkTube(GET_TUBE_L(2));
-	t3 = mkTube(GET_TUBE_R(2));
-	SPI.transfer(t3 >> 4 | ((dotMask >> 2) & 0x3) << 6); // [456789__]
-	SPI.transfer(t2 >> 6 | t3 << 4); // [67890123]
-	SPI.transfer(t1 >> 8 | t2 << 2); // [89012345]
-	SPI.transfer(t1); // [01234567]
-	t1 = mkTube(GET_TUBE_L(0));
-	t2 = mkTube(GET_TUBE_R(0));
-	t3 = mkTube(GET_TUBE_L(1));
-	SPI.transfer(t3 >> 4 | (dotMask & 0x3) << 6); // [456789__]
-	SPI.transfer(t2 >> 6 | t3 << 4); // [67890123]
-	SPI.transfer(t1 >> 8 | t2 << 2); // [89012345]
-	SPI.transfer(t1); // [01234567]
+	SPI_3TUBE_XFER(GET_TUBE_L(3), GET_TUBE_R(3), GET_TUBE_L(4), 4);
+	SPI_3TUBE_XFER(GET_TUBE_R(1), GET_TUBE_L(2), GET_TUBE_R(2), 2);
+	SPI_3TUBE_XFER(GET_TUBE_L(0), GET_TUBE_R(0), GET_TUBE_L(1), 0);
 	digitalWrite(PIN_DISPLAY_LATCH, HIGH);
-	//PORT_DISPLAY_LATCH |= PORT_MASK_DISPLAY_LATCH;
 
 }
 
