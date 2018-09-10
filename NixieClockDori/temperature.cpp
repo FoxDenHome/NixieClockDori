@@ -1,6 +1,5 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include <avr/wdt.h>
 
 #include "const.h"
 #include "config.h"
