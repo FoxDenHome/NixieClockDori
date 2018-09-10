@@ -44,11 +44,6 @@ inline byte getNumberBoth(const byte idx) {
 	return getNumber(idx) | (getNumber(idx) << 4);
 }
 
-inline byte makeDotMaskAll(const bool upper, const bool lower) {
-	const byte t = (upper ? 0 : MASK_UPPER_DOTS) | (lower ? 0 : MASK_LOWER_DOTS);
-	return t | t << 2 | t << 4;
-}
-
 #define _MKDOT(x) (1 << x)
 
 #define DOT_1_UP _MKDOT(1)
@@ -68,11 +63,6 @@ inline byte makeDotMaskAll(const bool upper, const bool lower) {
 #define SYMBOL_n _MKSYM(5)
 #define SYMBOL_MICRO _MKSYM(6)
 #define SYMBOL_DEGREES_C _MKSYM(7)
-
-inline byte makeDotMask(const bool upper, const bool lower) {
-	const byte t = (upper ? 0 : MASK_UPPER_DOTS) | (lower ? 0 : MASK_LOWER_DOTS);
-	return t | t << 2 | t << 4;
-}
 
 void insert1(const byte offset, const byte data, const bool trimLeadingZero);
 bool insert2(const byte offset, const byte data, const bool trimLeadingZero);

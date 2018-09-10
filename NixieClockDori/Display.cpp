@@ -130,7 +130,7 @@ void renderNixies() {
 			antiPoisonLeft -= lastCallDelta;
 		}
 
-		dotMask = makeDotMaskAll(true, true);
+		dotMask = DOT_1_DOWN | DOT_1_UP | DOT_2_DOWN | DOT_2_UP | DOT_3_DOWN | DOT_3_UP;
 	}
 	else {
 		allowEffects = DisplayTask::current->refresh();
