@@ -32,6 +32,8 @@ void DisplayTask_Clock::handleEdit(const byte digit, const bool up) {
 }
 
 bool DisplayTask_Clock::refresh() {
+	const unsigned long curMillis = millis();
+
 	if (!DisplayTask::editMode) {
 		const time_t _n = now();
 		const byte h = hour(_n);
@@ -39,6 +41,9 @@ bool DisplayTask_Clock::refresh() {
 		const byte s = second(_n);
 
 		if (this->s != s) {
+#ifdef CLOCK_TICK_HALFSECOND
+			lastSChange = curMillis;
+#endif
 			if (h < 4) {
 				if (s % 5 == 2) {
 					displayAntiPoison(1);
@@ -53,14 +58,20 @@ bool DisplayTask_Clock::refresh() {
 		this->m = m;
 		this->s = s;
 
-		DisplayTask::insertTemp(millis());
+		DisplayTask::insertTemp(curMillis);
 	}
 	else {
 		displayData[3] = NO_TUBES_BOTH;
 		displayData[4] = NO_TUBES_BOTH;
 	}
 
-	if (this->s % 2 || DisplayTask::editMode) {
+	if (DisplayTask::editMode ||
+#ifdef CLOCK_TICK_HALFSECOND
+		((curMillis - lastSChange) < 500UL)
+#else
+		((this->s % 2) == 0)
+#endif
+	) {
 		this->dotMask = DOT_1_UP | DOT_1_DOWN | DOT_2_UP | DOT_2_DOWN;
 	}
 	else {
