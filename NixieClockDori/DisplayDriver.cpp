@@ -40,19 +40,18 @@ void displayDriverRefresh() {
 	lastSentDots = dotMask;
 
 	uint16_t t1, t2, t3;
+
+	SPI.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE2));
 	digitalWrite(PIN_DISPLAY_LATCH, LOW);
 	SPI_3TUBE_XFER(6, 7, 8, 4);
 	SPI_3TUBE_XFER(3, 4, 5, 2);
 	SPI_3TUBE_XFER(0, 1, 2, 0);
 	digitalWrite(PIN_DISPLAY_LATCH, HIGH);
-
+	SPI.endTransaction();
 }
 
 void displayDriverInit() {
 	SPI.begin();
-	SPI.setDataMode(SPI_MODE2);
-	SPI.setClockDivider(SPI_CLOCK_DIV4);
-	SPI.setBitOrder(MSBFIRST);
 }
 
 void displayDriverLoop() {
