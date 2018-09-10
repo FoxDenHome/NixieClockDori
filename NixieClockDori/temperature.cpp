@@ -10,23 +10,26 @@ DallasTemperature temperatureSensor(&temperatureOneWire);
 
 float curTemp = 0;
 bool isInGet = false;
+unsigned long lastRun = 0;
 
 void temperatureInit() {
 	temperatureSensor.begin();
 	temperatureSensor.setWaitForConversion(false);
+
+	temperatureSensor.requestTemperatures();
+	lastRun = millis();
+	isInGet = true;
 }
 
 void temperatureLoop() {
-	static unsigned long lastRun = 0;
 	const unsigned long curMillis = millis();
-
 	const unsigned long timeSinceLast = curMillis - lastRun;
 
 	if (isInGet && timeSinceLast >= 1000UL) {
 		curTemp = temperatureSensor.getTempCByIndex(0);
 		lastRun = curMillis;
 		isInGet = false;
-	} else if (!isInGet && timeSinceLast >= 5000UL) {
+	} else if (!isInGet && timeSinceLast >= 30000UL) {
 		temperatureSensor.requestTemperatures();
 		lastRun = curMillis;
 		isInGet = true;
