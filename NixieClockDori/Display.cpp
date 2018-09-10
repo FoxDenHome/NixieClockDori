@@ -129,6 +129,8 @@ void renderNixies() {
 		else {
 			antiPoisonLeft -= lastCallDelta;
 		}
+
+		dotMask = makeDotMaskAll(true, true);
 	}
 	else {
 		allowEffects = DisplayTask::current->refresh();
