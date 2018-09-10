@@ -28,6 +28,13 @@
 #include "DisplayTask_Flash.h"
 #include "DisplayTask_Temperature.h"
 
+#ifdef __AVR_ATmega1280__
+#define ENABLE_SERIAL1_GPS 1
+#endif
+#ifdef __AVR_ATmega2560__
+#define ENABLE_SERIAL1_GPS 1
+#endif
+
 /****************/
 /* PROGRAM CODE */
 /****************/
@@ -73,8 +80,6 @@ DECL_BUTTON(DOWN)
 DECL_BUTTON(UP)
 DECL_BUTTON(SET)
 
-//DCF77 DCF = DCF77(true);
-
 void setup() {
 	const uint8_t mcusr_mirror = MCUSR;
 	MCUSR = 0;
@@ -93,7 +98,6 @@ void setup() {
 
 	pinMode(PIN_BUZZER, OUTPUT);
 
-	//pinMode(PIN_DCF77, INPUT);
 	pinMode(PIN_BUTTON_SET, INPUT_PULLUP);
 	pinMode(PIN_BUTTON_UP, INPUT_PULLUP);
 	pinMode(PIN_BUTTON_DOWN, INPUT_PULLUP);
@@ -107,7 +111,9 @@ void setup() {
 	displayInit();
 	displayDriverInit();
 
+#ifdef ENABLE_SERIAL1_GPS
 	Serial1.begin(9600);
+#endif
 
 	randomSeed(analogRead(A4) + now());
 
@@ -143,8 +149,6 @@ void setup() {
 	serialSend2(F("< Ready "), String(mcusr_mirror));
 
 	wdt_enable(WDTO_250MS);
-
-	//digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);
 }
 
 void loop() {
@@ -153,22 +157,6 @@ void loop() {
 	UPButton.tick();
 	DOWNButton.tick();
 	SETButton.tick();
-
-
-	
-	/*static uint8_t lastDCF77 = HIGH;
-	const uint8_t curDCF77 = (analogRead(PIN_DCF77) > LIMIT_DCF77) ? HIGH : LOW;
-	if (curDCF77 != lastDCF77) {
-		lastDCF77 = curDCF77;
-		DCF.changeDetected(curDCF77);
-
-		time_t curTime = DCF.getTime();
-		if (curTime > 0) {
-			rtcSetTimeRaw(curTime);
-			serialSend2(F("< TM "), String(curTime));
-		}
-	}
-	*/
 
 	if ((micros() - DisplayTask::lastDisplayCycleMicros) >= DISPLAY_CYCLE_PERIOD) {
 		DisplayTask::cycleDisplayUpdater();
@@ -181,6 +169,7 @@ void loop() {
 }
 
 void serialPoll() {
+#ifdef ENABLE_SERIAL1_GPS
 	static String gpsSerial;
 	gpsSerial.reserve(256);
 
@@ -196,6 +185,7 @@ void serialPoll() {
 
 		gpsSerial += c;
 	}
+#endif
 
 	while (Serial.available()) {
 		if (!serialReadNext()) {
