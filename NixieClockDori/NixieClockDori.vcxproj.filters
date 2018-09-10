@@ -72,6 +72,9 @@
     <ClInclude Include="reset.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="temperature.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DisplayTask.cpp">
@@ -100,6 +103,9 @@
     </ClCompile>
     <ClCompile Include="reset.cpp">
       <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="temperature.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
