@@ -260,13 +260,13 @@ void serialPoll() {
 			}
 			serialSendF("P OK");
 			break;
-			// F [MMMMMMMM D NNNNNN [RR GG BB]]
+			// F [MMMMMMMM DDD NNNNNN [RR GG BB]]
 			// M = milliseconds (Dec), D = dots (Bitmask Dec) to show the message, N = Nixie message (Dec), R = Red (Hex), G = Green (Hex), B = Blue (Hex)
 			// Shows a "flash"/"alert" message on the clock (will show this message instead of the time for <M> milliseconds. Does not use/reset hold when 0). Dots are bit 1 for lower and bit 2 for upper. Turned off when HIGH
 			// If sent without any parameters, resets current flash message and goes back to clock mode
-			// ^F0000100021337NA012|7975
+			// ^F000010002131337NA012|-2470
 		case 'F':
-			if (inputString.length() < 19) {
+			if (inputString.length() < 21) {
 				if (inputString.length() < 3) { // Allow for \r\n
 					DisplayTask::cycleDisplayUpdater();
 					serialSendF("F OK");
@@ -280,13 +280,13 @@ void serialPoll() {
 			displayFlash.lastUpdate = curMillis;
 			displayFlash.endTime = curMillis + (unsigned long)inputString.substring(1, 9).toInt();
 
-			tmpData = inputString[9] - '0';
-			displayFlash.dotMask = makeDotMaskAll((tmpData & 2) == 2, (tmpData & 1) == 1);
+			displayFlash.dotMask = (inputString[9] - '0') | ((inputString[10] - '0') << 2) | ((inputString[11] - '0') << 4);
+
 			for (byte j = 0; j < 5; j++) {
 				displayFlash.symbols[j] = 0;
 			}
 			for (byte i = 0; i < 9; i++) {
-				tmpData = inputString[i + 10];
+				tmpData = inputString[i + 12];
 				const byte j = i >> 1;
 				const byte n = ((i & 1) == 1) ? 4 : 0;
 				if (tmpData == 'N') {
