@@ -53,6 +53,8 @@ protected:
 
 	void _handleEditHelper(const byte digit, const bool up, byte& a, byte& b, byte& c, const byte amax, const byte bmax, const byte cmax);
 
+	static void insertTemp(const unsigned long curMillis);
+
 private:
 
 	static DisplayTask* _findNextValid(DisplayTask *curPtr, DisplayTask *stopOn, const bool mustCanShow);

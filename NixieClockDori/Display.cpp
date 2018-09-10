@@ -29,10 +29,10 @@
 unsigned long antiPoisonLeft = 0;
 unsigned long lastDisplayRender = 0;
 
-volatile byte displayData[3] = { NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH };
+volatile byte displayData[5] = { NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH };
 
-volatile byte dataIsTransitioning[3] = { 0, 0, 0 };
-volatile byte dataToDisplayPrevious[3] = { NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH };
+volatile byte dataIsTransitioning[5] = { 0, 0, 0, 0, 0 };
+volatile byte dataToDisplayPrevious[5] = { NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH };
 volatile bool renderAlways = false;
 volatile bool renderNoMultiplex = false;
 
@@ -56,18 +56,11 @@ void displayAntiPoison(const unsigned long count) {
 }
 
 bool showShortTime(const unsigned long timeMs, bool trimLZ, bool alwaysLong) {
-	if (timeMs >= ONE_HOUR_IN_MS || alwaysLong) { // Show H/M/S
-		trimLZ = insert2(0, (timeMs / ONE_HOUR_IN_MS) % 100, trimLZ);
-		trimLZ = insert2(2, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ);
-		insert2(4, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ);
-		return true;
-	}
-	else { // Show M/S/MS
-		trimLZ = insert2(0, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ);
-		trimLZ = insert2(2, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ);
-		insert2(4, (timeMs / 10UL) % 100, trimLZ);
-		return false; // Don't allow transition effects on rapid timer
-	}
+	trimLZ = insert2(0, (timeMs / ONE_HOUR_IN_MS) % 100, trimLZ);
+	trimLZ = insert2(2, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ);
+	trimLZ = insert2(4, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ);
+	insert2(6, (timeMs / 10UL) % 100, trimLZ);
+	return false;
 }
 
 void insert1(const byte offset, const byte data, const bool trimLeadingZero) {
@@ -92,13 +85,13 @@ bool insert2(const byte offset, const byte data, const bool trimLeadingZero) {
 void renderNixies() {
 	static byte oldAntiPoisonIdx = 255;
 	const uint16_t ALL_TUBES_ANTI_POISON = (1 << 10) - 1;
-	static uint16_t antiPoisonTable[6] = { 0, 0, 0, 0, 0, 0 };
+	static uint16_t antiPoisonTable[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	bool allowEffects = false;
 
 	static byte redOld, greenOld, blueOld;
 
-	static byte dataToDisplayOld[3] = { NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH };
+	static byte dataToDisplayOld[5] = { NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH, NO_TUBES_BOTH };
 	static byte redPrevious, greenPrevious, bluePrevious;
 	static byte colorTransProg;
 
@@ -107,11 +100,10 @@ void renderNixies() {
 	const unsigned long lastCallDelta = curMillis - lastCallMillis;
 
 	if (antiPoisonLeft) {
-		renderNoMultiplex = true;
 		const byte idx = 9 - ((antiPoisonLeft / ANTI_POISON_DELAY) % 10);
 		if (idx != oldAntiPoisonIdx) {
-			byte curAP[6] = { 0, 0, 0, 0, 0, 0 };
-			for (byte i = 0; i < 6; i++) {
+			byte curAP[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+			for (byte i = 0; i < 10; i++) {
 				if (antiPoisonTable[i] == ALL_TUBES_ANTI_POISON) {
 					antiPoisonTable[i] = 0;
 				}
@@ -124,7 +116,7 @@ void renderNixies() {
 				antiPoisonTable[i] |= (1 << randNbr);
 				curAP[i] = randNbr;
 			}
-			for (byte i = 0; i < 3; i++) {
+			for (byte i = 0; i < 5; i++) {
 				const byte j = i << 1;
 				displayData[i] = curAP[j] | (curAP[j + 1] << 4);
 				dataIsTransitioning[i] = 0;
@@ -139,7 +131,6 @@ void renderNixies() {
 		}
 	}
 	else {
-		renderNoMultiplex = false;
 		allowEffects = DisplayTask::current->refresh();
 
 		if (currentEffect != NONE) {
@@ -192,8 +183,8 @@ void renderNixies() {
 	// Progress through effect
 	const bool effectsOn = allowEffects && currentEffect != NONE;
 
-	bool hasEffects = false;
-	for (byte i = 0; i < 3; i++) {
+	//bool hasEffects = false;
+	for (byte i = 0; i < 5; i++) {
 		const uint16_t cur = displayData[i];
 		if (dataToDisplayOld[i] != cur) {
 			dataToDisplayPrevious[i] = dataToDisplayOld[i];
@@ -224,7 +215,7 @@ void renderNixies() {
 				displayData[i] = effectData;
 			}
 			dataIsTransitioning[i]--;
-			hasEffects = true;
+			//hasEffects = true;
 		}
 		else if (tubeTrans == 1) {
 			if (currentEffect == SLOT_MACHINE) {
@@ -234,9 +225,11 @@ void renderNixies() {
 		}
 	}
 
-	if (effectsOn && currentEffect == TRANSITION) {
-		renderAlways = hasEffects;
-	}
+	//if (effectsOn && currentEffect == TRANSITION) {
+	//	renderAlways = hasEffects;
+	//}
+
+	displayDriverRefresh();
 
 	lastCallMillis = curMillis;
 }

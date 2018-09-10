@@ -1,16 +1,18 @@
 #include <SPI.h>
 #include <EEPROM.h>
 #include <Wire.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 #include <TimeLib.h>
 #include <DS3232RTC.h>
 #include <MemoryUsage.h>
 #include <OneButton.h>
 #include <FastCRC.h>
-//#include <DCF77.h>
 
 #include <avr/wdt.h>
 
 #include "rtc.h"
+#include "temperature.h"
 #include "reset.h"
 #include "config.h"
 #include "const.h"
@@ -26,10 +28,6 @@
 #include "DisplayTask_Flash.h"
 #include "DisplayTask_Temperature.h"
 
-#ifdef DISPLAY_NEEDS_TIMER1
-#include <TimerOne.h>
-#endif
-
 /****************/
 /* PROGRAM CODE */
 /****************/
@@ -44,6 +42,7 @@ DisplayTask_Stopwatch displayStopwatch;
 DisplayTask_Countdown displayCountdown;
 DisplayTask_Flash displayFlash;
 DisplayTask_Temperature displayTemp;
+bool gpsToSerial = false;
 
 /**************************/
 /* ARDUINO EVENT HANDLERS */
@@ -82,8 +81,8 @@ void setup() {
 	wdt_disable();
 
 	// Pin setup
-	pinMode(PIN_HIGH_VOLTAGE_ENABLE, OUTPUT);
-	digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, LOW); // Turn off HV ASAP during setup
+	pinMode(PIN_DISPLAY_LATCH, OUTPUT);
+	digitalWrite(PIN_DISPLAY_LATCH, LOW);
 
 	pinMode(PIN_LED_RED, OUTPUT);
 	pinMode(PIN_LED_GREEN, OUTPUT);
@@ -94,22 +93,21 @@ void setup() {
 
 	pinMode(PIN_BUZZER, OUTPUT);
 
-	pinMode(PIN_DISPLAY_LATCH, OUTPUT);
-	digitalWrite(PIN_DISPLAY_LATCH, LOW);
-	pinMode(PIN_HIZ, OUTPUT);
-	digitalWrite(PIN_HIZ, LOW);
-
 	//pinMode(PIN_DCF77, INPUT);
-
 	pinMode(PIN_BUTTON_SET, INPUT_PULLUP);
 	pinMode(PIN_BUTTON_UP, INPUT_PULLUP);
 	pinMode(PIN_BUTTON_DOWN, INPUT_PULLUP);
 
+	delay(2000);
+
 	// Begin initialization routines
 	serialInit();
 	rtcInit();
+	temperatureInit();
 	displayInit();
 	displayDriverInit();
+
+	Serial1.begin(9600);
 
 	randomSeed(analogRead(A4) + now());
 
@@ -146,7 +144,7 @@ void setup() {
 
 	wdt_enable(WDTO_250MS);
 
-	digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);
+	//digitalWrite(PIN_HIGH_VOLTAGE_ENABLE, HIGH);
 }
 
 void loop() {
@@ -155,6 +153,8 @@ void loop() {
 	UPButton.tick();
 	DOWNButton.tick();
 	SETButton.tick();
+
+
 	
 	/*static uint8_t lastDCF77 = HIGH;
 	const uint8_t curDCF77 = (analogRead(PIN_DCF77) > LIMIT_DCF77) ? HIGH : LOW;
@@ -175,11 +175,28 @@ void loop() {
 	}
 	displayLoop();
 	displayDriverLoop();
+	temperatureLoop();
 
 	serialPoll();
 }
 
 void serialPoll() {
+	static String gpsSerial;
+	gpsSerial.reserve(256);
+
+	while (Serial1.available()) {
+		char c = Serial1.read();
+		if (c == '\r' || c == '\n') {
+			if (gpsToSerial && gpsSerial.length() > 0 && gpsSerial[0] == '$') {
+				serialSend1(gpsSerial);
+			}
+			gpsSerial = "";
+			continue;
+		}
+
+		gpsSerial += c;
+	}
+
 	while (Serial.available()) {
 		if (!serialReadNext()) {
 			continue;
@@ -247,15 +264,15 @@ void serialPoll() {
 			// M = milliseconds (Dec), D = dots (Bitmask Dec) to show the message, N = Nixie message (Dec), R = Red (Hex), G = Green (Hex), B = Blue (Hex)
 			// Shows a "flash"/"alert" message on the clock (will show this message instead of the time for <M> milliseconds. Does not use/reset hold when 0). Dots are bit 1 for lower and bit 2 for upper. Turned off when HIGH
 			// If sent without any parameters, resets current flash message and goes back to clock mode
-			// ^F0000100021337NA|-15360
+			// ^F0000100021337NA012|7975
 		case 'F':
-			if (inputString.length() < 16) {
+			if (inputString.length() < 19) {
 				if (inputString.length() < 3) { // Allow for \r\n
 					DisplayTask::cycleDisplayUpdater();
 					serialSendF("F OK");
 					break;
 				}
-				serialSendF("F BAD (Invalid length; expected 16 or 1)");
+				serialSendF("F BAD (Invalid length; expected 19 or 1)");
 				break;
 			}
 
@@ -264,11 +281,11 @@ void serialPoll() {
 			displayFlash.endTime = curMillis + (unsigned long)inputString.substring(1, 9).toInt();
 
 			tmpData = inputString[9] - '0';
-			displayFlash.dotMask = makeDotMask((tmpData & 2) == 2, (tmpData & 1) == 1);
-			for (byte j = 0; j < 3; j++) {
+			displayFlash.dotMask = makeDotMaskAll((tmpData & 2) == 2, (tmpData & 1) == 1);
+			for (byte j = 0; j < 5; j++) {
 				displayFlash.symbols[j] = 0;
 			}
-			for (byte i = 0; i < 6; i++) {
+			for (byte i = 0; i < 9; i++) {
 				tmpData = inputString[i + 10];
 				const byte j = i >> 1;
 				const byte n = ((i & 1) == 1) ? 4 : 0;
@@ -354,14 +371,12 @@ void serialPoll() {
 			// ^D|-5712
 			// ^D111|-15634
 		case 'D':
-			/*if (inputString.length() > 2) {
-				DCF77_Utils::setVerbose(true);
-			}
-			else {
-				DCF77_Utils::setVerbose(false);
-			}
-			serialSend6(F("D OK "), String(mu_freeRam()), F(" "), String(digitalRead(PIN_DCF77)), F(" "), String(analogRead(PIN_DCF77)));*/
 			serialSend2(F("D OK "), String(mu_freeRam()));
+			break;
+			// ^G0|-16633
+			// ^G1|-20698
+		case 'G':
+			gpsToSerial = inputString[1] == '1';
 			break;
 		}
 	}

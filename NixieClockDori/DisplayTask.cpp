@@ -1,8 +1,10 @@
+#include <EEPROM.h>
+#include <DS3232RTC.h>
+
 #include "DisplayTask.h"
 #include "Display.h"
 #include "reset.h"
-
-#include <EEPROM.h>
+#include "temperature.h"
 
 DisplayTask *dt_first;
 DisplayTask *dt_last;
@@ -55,11 +57,17 @@ void DisplayTask::buttonHandler(const Button button, const PressType pressType) 
 bool DisplayTask::refresh() {
 	if (this->editMode) {
 		if ((millis() - DisplayTask::lastButtonPress) % 1000 >= 500) {
-			displayData[this->editModePos] = NO_TUBES;
+			insert1(this->editModePos, 0, true);
 		}
 		return false;
 	}
 	return true;
+}
+
+void DisplayTask::insertTemp(const unsigned long curMillis) {
+	const float temp = temperatureGet();
+	displayData[4] = SYMBOL_DEGREES_C;
+	insert2(6, temp, false);
 }
 
 void __handleEditHelperSingle(const byte digit, const bool up, byte& a, const byte amax) {

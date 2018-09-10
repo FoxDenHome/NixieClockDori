@@ -52,13 +52,19 @@ bool DisplayTask_Clock::refresh() {
 		this->h = h;
 		this->m = m;
 		this->s = s;
+
+		DisplayTask::insertTemp(millis());
+	}
+	else {
+		displayData[3] = NO_TUBES_BOTH;
+		displayData[4] = NO_TUBES_BOTH;
 	}
 
 	if (this->s % 2 || DisplayTask::editMode) {
-		this->dotMask = makeDotMask(true, true);
+		this->dotMask = DOT_1_UP | DOT_1_DOWN | DOT_2_UP | DOT_2_DOWN;
 	}
 	else {
-		this->dotMask = makeDotMask(false, false);
+		this->dotMask = 0;
 	}
 
 #ifdef CLOCK_TRIM_HOURS

@@ -8,7 +8,7 @@ public:
 
 	bool refresh() override;
 
-	byte symbols[3];
+	byte symbols[5];
 	unsigned long endTime = 0;
 	unsigned long lastUpdate = 0;
 	bool allowEffects = true;
