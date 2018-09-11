@@ -8,10 +8,6 @@
 // Passes data from SPI chip to display while HIGH (pulled LOW during SPI write)
 #define PIN_DISPLAY_LATCH 10
 
-// Z state in registers outputs (while LOW level) Always LOW?
-// #define PIN_HIZ 8
-// High Voltage (tube power) on while HIGH
-// #define PIN_HIGH_VOLTAGE_ENABLE 5
 // Piezo buzzer pin
 #define PIN_BUZZER 2
 
@@ -24,6 +20,15 @@
 #define PIN_BUTTON_DOWN A1
 
 #define PIN_TEMPERATURE 7
+
+// Unused pins
+
+// Connected to SHDN_C via logic level shifter, both not connected to any component otherwise
+#define PIN_SHDN 5
+// Connected to socket LS1 pin 2, which also has 4.7k pulldown to GND
+#define PIN_LS A3
+// Connected to IR receiver LED
+#define PIN_IR 4
 
 //#define PIN_DCF77 PCINT20
 //const int LIMIT_DCF77 = 300;

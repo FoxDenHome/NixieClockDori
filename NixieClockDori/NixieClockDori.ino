@@ -94,9 +94,9 @@ void setup() {
 	pinMode(PIN_LED_RED, OUTPUT);
 	pinMode(PIN_LED_GREEN, OUTPUT);
 	pinMode(PIN_LED_BLUE, OUTPUT);
-	analogWrite(PIN_LED_RED, 0);
-	analogWrite(PIN_LED_GREEN, 0);
-	analogWrite(PIN_LED_BLUE, 0);
+	analogWrite(PIN_LED_RED, 1);
+	analogWrite(PIN_LED_GREEN, 1);
+	analogWrite(PIN_LED_BLUE, 1);
 
 	pinMode(PIN_BUZZER, OUTPUT);
 
