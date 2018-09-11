@@ -170,6 +170,48 @@ void loop() {
 	serialPoll();
 }
 
+static uint16_t charToTube(const byte chr) {
+	switch (chr) {
+		// Special tube layouts
+	case 'N':
+		return NO_TUBES;
+		break;
+	case 'A':
+		return ALL_TUBES;
+		break;
+
+		// Symbols for IN-19
+	case '%':
+		return SYMBOL_PERCENT;
+		break;
+	case 'M':
+		return SYMBOL_M;
+		break;
+	case 'P':
+		return SYMBOL_P;
+		break;
+	case 'm':
+		return SYMBOL_m;
+		break;
+	case 'K':
+		return SYMBOL_K;
+		break;
+	case 'n':
+		return SYMBOL_n;
+		break;
+	case 'u':
+		return SYMBOL_MICRO;
+		break;
+	case 'C':
+		return SYMBOL_DEGREES_C;
+		break;
+
+	default:
+		return getNumber(chr - '0');
+		break;
+	}
+}
+
 void serialPoll() {
 #ifdef ENABLE_SERIAL1_GPS
 	static String gpsSerial;
@@ -274,20 +316,8 @@ void serialPoll() {
 
 			displayFlash.dotMask = (inputString[9] - '0') | ((inputString[10] - '0') << 2) | ((inputString[11] - '0') << 4);
 
-			for (byte j = 0; j < 5; j++) {
-				displayFlash.symbols[j] = 0;
-			}
 			for (byte i = 0; i < 9; i++) {
-				tmpData = inputString[i + 12];
-				if (tmpData == 'N') {
-					displayFlash.symbols[i] |= NO_TUBES;
-				}
-				else if (tmpData == 'A') {
-					displayFlash.symbols[i] |= ALL_TUBES;
-				}
-				else {
-					displayFlash.symbols[i] |= getNumber(tmpData - '0');
-				}
+				displayFlash.symbols[i] = charToTube(inputString[i + 12]);
 			}
 
 			setColorFromInput(&displayFlash, 16, -1);
