@@ -4,28 +4,6 @@
 #include "const.h"
 #include "config.h"
 
-#if !defined(DISPLAY_NEEDS_TIMER1)
-#define autoAnalogWrite analogWrite
-#elif defined(TIMER1_C_PIN)
-#include <TimerOne.h>
-#define autoAnalogWrite(PIN, VALUE) \
-	if ((PIN) == TIMER1_A_PIN || (PIN) == TIMER1_B_PIN || (PIN) == TIMER1_C_PIN) { \
-		Timer1.pwm(PIN, (VALUE) << 2); \
-	} \
-	else { \
-		analogWrite(PIN, VALUE); \
-	}
-#else
-#include <TimerOne.h>
-#define autoAnalogWrite(PIN, VALUE) \
-	if ((PIN) == TIMER1_A_PIN || (PIN) == TIMER1_B_PIN) { \
-		Timer1.pwm(PIN, (VALUE) << 2); \
-	} \
-	else { \
-		analogWrite(PIN, VALUE); \
-	}
-#endif
-
 unsigned long antiPoisonLeft = 0;
 unsigned long lastDisplayRender = 0;
 
@@ -84,7 +62,7 @@ void renderNixies() {
 
 	bool allowEffects = false;
 
-	static byte redOld, greenOld, blueOld;
+	static byte redOld = 1, greenOld = 1, blueOld = 1;
 
 	static uint16_t dataToDisplayOld[9] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
 	static byte redPrevious, greenPrevious, bluePrevious;
@@ -134,15 +112,15 @@ void renderNixies() {
 				redNow = redOld + (((redPrevious - redOld) * colorTransProg) / EFFECT_SPEED);
 				greenNow = greenOld + (((greenPrevious - greenOld) * colorTransProg) / EFFECT_SPEED);
 				blueNow = blueOld + (((bluePrevious - blueOld) * colorTransProg) / EFFECT_SPEED);
-				autoAnalogWrite(PIN_LED_RED, redNow);
-				autoAnalogWrite(PIN_LED_GREEN, greenNow);
-				autoAnalogWrite(PIN_LED_BLUE, blueNow);
+				analogWrite(PIN_LED_RED, redNow);
+				analogWrite(PIN_LED_GREEN, greenNow);
+				analogWrite(PIN_LED_BLUE, blueNow);
 			}
 			else if (colorTransProg == 1) {
 				colorTransProg = 0;
-				autoAnalogWrite(PIN_LED_RED, redNow);
-				autoAnalogWrite(PIN_LED_GREEN, greenNow);
-				autoAnalogWrite(PIN_LED_BLUE, blueNow);
+				analogWrite(PIN_LED_RED, redNow);
+				analogWrite(PIN_LED_GREEN, greenNow);
+				analogWrite(PIN_LED_BLUE, blueNow);
 			}
 
 			if (DisplayTask::current->red != redOld || DisplayTask::current->green != greenOld || DisplayTask::current->blue != blueOld) {
@@ -158,15 +136,15 @@ void renderNixies() {
 		else {
 			if (DisplayTask::current->red != redOld) {
 				redOld = DisplayTask::current->red;
-				autoAnalogWrite(PIN_LED_RED, redOld);
+				analogWrite(PIN_LED_RED, redOld);
 			}
 			if (DisplayTask::current->green != greenOld) {
 				greenOld = DisplayTask::current->green;
-				autoAnalogWrite(PIN_LED_GREEN, greenOld);
+				analogWrite(PIN_LED_GREEN, greenOld);
 			}
 			if (DisplayTask::current->blue != blueOld) {
 				blueOld = DisplayTask::current->blue;
-				autoAnalogWrite(PIN_LED_BLUE, blueOld);
+				analogWrite(PIN_LED_BLUE, blueOld);
 			}
 		}
 
