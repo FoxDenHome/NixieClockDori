@@ -72,19 +72,22 @@ bool DisplayTask_Date::refresh() {
 
 	if (!DisplayTask::editMode) {
 		const time_t _n = now();
-		const byte yk = (year(_n) / 100) % 100;
 		const byte y = year(_n) % 100;
 		const byte m = month(_n);
 		const byte d = day(_n);
 
 		dateChanged = (this->d != d);
 
-		this->yk = yk;
 		this->y = y;
 		this->m = m;
 		this->d = d;
+
+		this->insertTemp();
 	}
 	else {
+		this->setDisplayData(6, NO_TUBES);
+		this->setDisplayData(7, NO_TUBES);
+		this->setDisplayData(8, NO_TUBES);
 		dateChanged = true;
 	}
 
@@ -94,13 +97,7 @@ bool DisplayTask_Date::refresh() {
 
 	insert2(0, this->d, false);
 	insert2(2, this->m, false);
-	if (DisplayTask::editMode) {
-		insert2(4, this->y, false);
-	}
-	else {
-		insert2(4, this->yk, false);
-		insert2(6, this->y, false);
-	}
+	insert2(4, this->y, false);
 
 	return DisplayTask::refresh();
 }

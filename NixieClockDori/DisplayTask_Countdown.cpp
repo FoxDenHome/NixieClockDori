@@ -100,7 +100,7 @@ bool DisplayTask_Countdown::refresh() {
 		}
 	}
 
-	return (showShortTime(DisplayTask::editMode ? this->timeReset : this->time, !DisplayTask::editMode, DisplayTask::editMode) || !this->running) && DisplayTask::refresh();
+	return (showShortTime(DisplayTask::editMode ? this->timeReset : this->time, !DisplayTask::editMode) || !this->running) && DisplayTask::refresh();
 }
 
 void DisplayTask_Countdown::reset() {

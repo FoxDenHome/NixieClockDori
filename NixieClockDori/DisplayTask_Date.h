@@ -15,6 +15,6 @@ protected:
 	bool _canShow() const override;
 private:
 	bool cycleAuto;
-	byte d, m, y, yk;
+	byte d, m, y;
 	int16_t base = -1;
 };
