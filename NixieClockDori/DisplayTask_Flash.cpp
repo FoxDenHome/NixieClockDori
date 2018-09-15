@@ -15,9 +15,6 @@ bool DisplayTask_Flash::refresh() {
 		cycleDisplayUpdater();
 	}
 
-	for (byte i = 0; i < 9; i++) {
-		displayData[i] = this->symbols[i];
-	}
 	return this->allowEffects;
 }
 

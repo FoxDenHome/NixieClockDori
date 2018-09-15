@@ -10,7 +10,6 @@ unsigned long lastDisplayRender = 0;
 volatile uint16_t displayData[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 volatile byte dataIsTransitioning[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-volatile uint16_t dataToDisplayPrevious[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 volatile bool renderAlways = false;
 volatile bool renderNoMultiplex = false;
 
@@ -33,34 +32,13 @@ void displayAntiPoison(const unsigned long count) {
 	}
 }
 
-bool showShortTime(const unsigned long timeMs, bool trimLZ, bool alwaysLong) {
-	trimLZ = insert2(0, (timeMs / ONE_HOUR_IN_MS) % 100, trimLZ);
-	trimLZ = insert2(2, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ);
-	trimLZ = insert2(4, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ);
-	insert2(6, (timeMs / 10UL) % 100, trimLZ);
-	return false;
-}
-
-void insert1(const byte offset, const byte data, const bool trimLeadingZero) {
-	if (data == 0 && trimLeadingZero) {
-		displayData[offset] = NO_TUBES;
-	}
-	else {
-		displayData[offset] = getNumber(data);
-	}
-}
-
-bool insert2(const byte offset, const byte data, const bool trimLeadingZero) {
-	insert1(offset, data / 10, trimLeadingZero);
-	insert1(offset + 1, data, trimLeadingZero);
-	return data == 0 && trimLeadingZero;
-}
-
 void renderNixies() {
 	static byte oldAntiPoisonIdx = 255;
 	static uint16_t antiPoisonTable[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	static bool hasEffects = false;
 
 	bool allowEffects = false;
+	bool isDirty = false;
 
 	static byte redOld = 1, greenOld = 1, blueOld = 1;
 
@@ -91,6 +69,7 @@ void renderNixies() {
 				dataIsTransitioning[i] = 0;
 			}
 			oldAntiPoisonIdx = idx;
+			isDirty = true;
 		}
 		if (lastCallDelta >= antiPoisonLeft) {
 			antiPoisonLeft = 0;
@@ -148,46 +127,53 @@ void renderNixies() {
 			}
 		}
 
-		dotMask = DisplayTask::current->dotMask;
+		isDirty = (dotMask != DisplayTask::current->dotMask) || DisplayTask::current->isDirty;
+		if (isDirty) {
+			dotMask = DisplayTask::current->dotMask;
+
+			for (byte i = 0; i < 9; i++) {
+				displayData[i] = DisplayTask::current->displayData[i];
+			}
+
+			DisplayTask::current->isDirty = false;
+		}
 	}
 
 	// Progress through effect
 	const bool effectsOn = allowEffects && currentEffect != NONE;
 
-	//bool hasEffects = false;
-	for (byte i = 0; i < 9; i++) {
-		const uint16_t cur = displayData[i];
-		if (dataToDisplayOld[i] != cur) {
-			dataToDisplayPrevious[i] = dataToDisplayOld[i];
-			dataToDisplayOld[i] = cur;
-			if (effectsOn) {
-				dataIsTransitioning[i] = EFFECT_SPEED;
-			}
-		}
+	if (isDirty || hasEffects) {
+		hasEffects = false;
 
-		if (!effectsOn) {
-			continue;
-		}
+		for (byte i = 0; i < 9; i++) {
+			const uint16_t cur = displayData[i];
+			if (dataToDisplayOld[i] != cur && isDirty) {
+				dataToDisplayOld[i] = cur;
+				if (effectsOn) {
+					dataIsTransitioning[i] = EFFECT_SPEED;
+				}
+			}
 
-		const byte tubeTrans = dataIsTransitioning[i];
-		if (tubeTrans > 1) {
-			if (currentEffect == SLOT_MACHINE) {
-				displayData[i] = getNumber(tubeTrans / (EFFECT_SPEED / 10));
+			if (!effectsOn) {
+				continue;
 			}
-			dataIsTransitioning[i]--;
-			//hasEffects = true;
-		}
-		else if (tubeTrans == 1) {
-			if (currentEffect == SLOT_MACHINE) {
-				displayData[i] = dataToDisplayOld[i];
+
+			const byte tubeTrans = dataIsTransitioning[i];
+			if (tubeTrans > 1) {
+				if (currentEffect == SLOT_MACHINE) {
+					displayData[i] = getNumber(tubeTrans / (EFFECT_SPEED / 10));
+				}
+				dataIsTransitioning[i]--;
+				hasEffects = true;
 			}
-			dataIsTransitioning[i] = 0;
+			else if (tubeTrans == 1) {
+				if (currentEffect == SLOT_MACHINE) {
+					displayData[i] = dataToDisplayOld[i];
+				}
+				dataIsTransitioning[i] = 0;
+			}
 		}
 	}
-
-	//if (effectsOn && currentEffect == TRANSITION) {
-	//	renderAlways = hasEffects;
-	//}
 
 	displayDriverRefresh();
 

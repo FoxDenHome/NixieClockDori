@@ -143,6 +143,7 @@ void setup() {
 	displayTemp.loadColor(EEPROM_STORAGE_TEMPERATURE_RGB);
 
 	DisplayTask::current = &displayClock;
+	DisplayTask::current->isDirty = true;
 
 	SETUP_BUTTON(UP);
 	SETUP_BUTTON(DOWN);
@@ -317,7 +318,7 @@ void serialPoll() {
 			displayFlash.dotMask = (inputString[9] - '0') | ((inputString[10] - '0') << 2) | ((inputString[11] - '0') << 4);
 
 			for (byte i = 0; i < 9; i++) {
-				displayFlash.symbols[i] = charToTube(inputString[i + 12]);
+				displayFlash.setDisplayData(i, charToTube(inputString[i + 12]));
 			}
 
 			setColorFromInput(&displayFlash, 16, -1);
@@ -422,6 +423,7 @@ void showIfPossibleOtherwiseRotateIfCurrent(DisplayTask *displayTask) {
 		displayTask->add();
 		DisplayTask::editMode = false;
 		DisplayTask::current = displayTask;
+		DisplayTask::current->isDirty = true;
 		DisplayTask::lastDisplayCycleMicros = micros();
 	}
 	else if (displayTask == DisplayTask::current) {

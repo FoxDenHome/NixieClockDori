@@ -68,7 +68,7 @@ void DisplayTask_Date::handleEdit(const byte digit, const bool up) {
 }
 
 bool DisplayTask_Date::refresh() {
-	displayData[8] = NO_TUBES;
+	bool dateChanged = false;
 
 	if (!DisplayTask::editMode) {
 		const time_t _n = now();
@@ -77,10 +77,19 @@ bool DisplayTask_Date::refresh() {
 		const byte m = month(_n);
 		const byte d = day(_n);
 
+		dateChanged = (this->d != d);
+
 		this->yk = yk;
 		this->y = y;
 		this->m = m;
 		this->d = d;
+	}
+	else {
+		dateChanged = true;
+	}
+
+	if (!dateChanged) {
+		return true;
 	}
 
 	insert2(0, this->d, false);

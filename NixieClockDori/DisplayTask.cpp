@@ -5,6 +5,7 @@
 #include "Display.h"
 #include "reset.h"
 #include "temperature.h"
+#include "const.h"
 
 DisplayTask *dt_first;
 DisplayTask *dt_last;
@@ -44,6 +45,7 @@ void DisplayTask::cycleDisplayUpdater() {
 	}
 
 	DisplayTask::current = DisplayTask::findNextValid(DisplayTask::current, true);
+	DisplayTask::current->isDirty = true;
 }
 
 void DisplayTask::buttonHandler(const Button button, const PressType pressType) {
@@ -66,8 +68,40 @@ bool DisplayTask::refresh() {
 
 void DisplayTask::insertTemp(const unsigned long curMillis) {
 	const float temp = temperatureGet();
-	displayData[8] = SYMBOL_DEGREES_C;
+	this->setDisplayData(8, SYMBOL_DEGREES_C);
 	insert2(6, temp, false);
+}
+
+void DisplayTask::setDisplayData(const byte offset, const uint16_t data) {
+	if (this->displayData[offset] == data) {
+		return;
+	}
+	this->displayData[offset] = data;
+	this->isDirty = true;
+}
+
+void DisplayTask::insert1(const byte offset, const byte data, const bool trimLeadingZero) {
+	if (data == 0 && trimLeadingZero) {
+		this->setDisplayData(offset, NO_TUBES);
+	}
+	else {
+		this->setDisplayData(offset, getNumber(data));
+	}
+}
+
+bool DisplayTask::insert2(const byte offset, const byte data, const bool trimLeadingZero) {
+	this->insert1(offset, data / 10, trimLeadingZero);
+	this->insert1(offset + 1, data, trimLeadingZero);
+	return data == 0 && trimLeadingZero;
+}
+
+
+bool DisplayTask::showShortTime(const unsigned long timeMs, bool trimLZ, bool alwaysLong) {
+	trimLZ = this->insert2(0, (timeMs / ONE_HOUR_IN_MS) % 100, trimLZ);
+	trimLZ = this->insert2(2, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ);
+	trimLZ = this->insert2(4, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ);
+	this->insert2(6, (timeMs / 10UL) % 100, trimLZ);
+	return false;
 }
 
 void __handleEditHelperSingle(const byte digit, const bool up, byte& a, const byte amax) {
@@ -150,6 +184,7 @@ void DisplayTask::handleButtonPress(const Button button, const PressType pressTy
 			}
 			else {
 				DisplayTask::current = DisplayTask::findNextValid(DisplayTask::current, false);
+				DisplayTask::current->isDirty = true;
 			}
 			break;
 		case LongPressStart:

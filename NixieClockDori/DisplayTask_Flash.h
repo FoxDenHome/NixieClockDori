@@ -8,7 +8,6 @@ public:
 
 	bool refresh() override;
 
-	uint16_t symbols[9];
 	unsigned long endTime = 0;
 	unsigned long lastUpdate = 0;
 	bool allowEffects = true;

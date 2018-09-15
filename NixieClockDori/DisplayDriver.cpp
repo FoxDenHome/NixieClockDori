@@ -10,33 +10,16 @@
 // [89012345] [11222222]
 // [01234567] [11111111]
 #define SPI_3TUBE_XFER(A, B, C, DOTOFF) { \
-	t1 = lastSentTubes[A]; \
-	t2 = lastSentTubes[B]; \
-	t3 = lastSentTubes[C]; \
-	SPI.transfer(t3 >> 4 | ((lastSentDots >> DOTOFF) & 0x3) << 6); \
+	t1 = displayData[A]; \
+	t2 = displayData[B]; \
+	t3 = displayData[C]; \
+	SPI.transfer(t3 >> 4 | ((dotMask >> DOTOFF) & 0x3) << 6); \
 	SPI.transfer(t2 >> 6 | t3 << 4); \
 	SPI.transfer(t1 >> 8 | t2 << 2); \
 	SPI.transfer(t1); \
 }
 
 void displayDriverRefresh() {
-	static uint16_t lastSentTubes[9] = { INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES, INVALID_TUBES };
-	static byte lastSentDots = 0xFF;
-
-	bool displayDiffers = lastSentDots != dotMask;
-	for (int i = 0; i < 9; i++) {
-		if (lastSentTubes[i] != displayData[i]) {
-			lastSentTubes[i] = displayData[i];
-			displayDiffers = true;
-		}
-	}
-
-	if (!displayDiffers) {
-		return;
-	}
-
-	lastSentDots = dotMask;
-
 	uint16_t t1, t2, t3;
 
 	SPI.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE2));
