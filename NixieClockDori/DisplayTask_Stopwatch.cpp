@@ -45,7 +45,7 @@ bool DisplayTask_Stopwatch::refresh() {
 		this->lastCall = curMillis;
 	}
 
-	return showShortTime(this->time, false, false) || !this->running;
+	return showShortTime(this->time, false) || !this->running;
 }
 
 void DisplayTask_Stopwatch::reset() {

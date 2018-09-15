@@ -60,7 +60,7 @@ bool DisplayTask_Clock::refresh() {
 		this->m = m;
 		this->s = s;
 
-		this->insertTemp(curMillis);
+		this->insertTemp();
 	}
 	else {
 		this->setDisplayData(6, NO_TUBES);

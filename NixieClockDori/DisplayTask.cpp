@@ -66,7 +66,7 @@ bool DisplayTask::refresh() {
 	return true;
 }
 
-void DisplayTask::insertTemp(const unsigned long curMillis) {
+void DisplayTask::insertTemp() {
 	const float temp = temperatureGet();
 	this->setDisplayData(8, SYMBOL_DEGREES_C);
 	insert2(6, temp, false);
@@ -96,7 +96,7 @@ bool DisplayTask::insert2(const byte offset, const byte data, const bool trimLea
 }
 
 
-bool DisplayTask::showShortTime(const unsigned long timeMs, bool trimLZ, bool alwaysLong) {
+bool DisplayTask::showShortTime(const unsigned long timeMs, bool trimLZ) {
 	trimLZ = this->insert2(0, (timeMs / ONE_HOUR_IN_MS) % 100, trimLZ);
 	trimLZ = this->insert2(2, (timeMs / ONE_MINUTE_IN_MS) % 60, trimLZ);
 	trimLZ = this->insert2(4, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ);
