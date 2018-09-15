@@ -31,10 +31,10 @@
 #include "DisplayTask_Temperature.h"
 
 #ifdef __AVR_ATmega1280__
-#define ENABLE_SERIAL1_GPS 1
+#define ENABLE_SERIAL1_GPS
 #endif
 #ifdef __AVR_ATmega2560__
-#define ENABLE_SERIAL1_GPS 1
+#define ENABLE_SERIAL1_GPS
 #endif
 
 /****************/
