@@ -161,7 +161,7 @@ void renderNixies() {
 			const byte tubeTrans = dataIsTransitioning[i];
 			if (tubeTrans > 1) {
 				if (currentEffect == SLOT_MACHINE) {
-					displayData[i] = getNumber(tubeTrans / (EFFECT_SPEED / 10));
+					displayData[i] = getNumber(dataToDisplayOld[i] + (tubeTrans / (EFFECT_SPEED / 10)));
 				}
 				dataIsTransitioning[i]--;
 				hasEffects = true;
