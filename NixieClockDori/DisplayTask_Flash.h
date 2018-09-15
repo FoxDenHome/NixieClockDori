@@ -12,6 +12,8 @@ public:
 	unsigned long lastUpdate = 0;
 	bool allowEffects = true;
 
+	void setDataFromSerial();
+
 protected:
 	bool _canShow() const override;
 };

@@ -101,10 +101,10 @@
     <ClCompile Include="DisplayTask_Temperature.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="reset.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="temperature.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="reset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

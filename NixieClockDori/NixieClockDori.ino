@@ -171,48 +171,6 @@ void loop() {
 	serialPoll();
 }
 
-static uint16_t charToTube(const byte chr) {
-	switch (chr) {
-		// Special tube layouts
-	case 'N':
-		return NO_TUBES;
-		break;
-	case 'A':
-		return ALL_TUBES;
-		break;
-
-		// Symbols for IN-19
-	case '%':
-		return SYMBOL_PERCENT;
-		break;
-	case 'M':
-		return SYMBOL_M;
-		break;
-	case 'P':
-		return SYMBOL_P;
-		break;
-	case 'm':
-		return SYMBOL_m;
-		break;
-	case 'K':
-		return SYMBOL_K;
-		break;
-	case 'n':
-		return SYMBOL_n;
-		break;
-	case 'u':
-		return SYMBOL_MICRO;
-		break;
-	case 'C':
-		return SYMBOL_DEGREES_C;
-		break;
-
-	default:
-		return getNumber(chr - '0');
-		break;
-	}
-}
-
 void serialPoll() {
 #ifdef ENABLE_SERIAL1_GPS
 	static String gpsSerial;
@@ -238,7 +196,6 @@ void serialPoll() {
 		}
 
 		byte tmpData;
-		const unsigned long curMillis = millis();
 
 		switch (inputString[0]) {
 			// T HH II SS DD MM YY
@@ -311,18 +268,7 @@ void serialPoll() {
 				break;
 			}
 
-			displayFlash.allowEffects = (curMillis - displayFlash.lastUpdate) >= 400;
-			displayFlash.lastUpdate = curMillis;
-			displayFlash.endTime = curMillis + (unsigned long)inputString.substring(1, 9).toInt();
-
-			displayFlash.dotMask = (inputString[9] - '0') | ((inputString[10] - '0') << 2) | ((inputString[11] - '0') << 4);
-
-			for (byte i = 0; i < 9; i++) {
-				displayFlash.setDisplayData(i, charToTube(inputString[i + 12]));
-			}
-
-			setColorFromInput(&displayFlash, 16, -1);
-			showIfPossibleOtherwiseRotateIfCurrent(&displayFlash);
+			displayFlash.setDataFromSerial();
 
 			serialSendF("F OK");
 			break;
@@ -339,8 +285,8 @@ void serialPoll() {
 				displayCountdown.timeReset = inputString.substring(1, 9).toInt();
 				displayCountdown.start();
 			}
-			setColorFromInput(&displayCountdown, 9, EEPROM_STORAGE_COUNTDOWN_RGB);
-			showIfPossibleOtherwiseRotateIfCurrent(&displayCountdown);
+			displayCountdown.setColorFromInput(9, EEPROM_STORAGE_COUNTDOWN_RGB);
+			displayCountdown.showIfPossibleOtherwiseRotateIfCurrent();
 			serialSendF("C OK");
 			break;
 			// W C [RR GG BB]
@@ -353,7 +299,7 @@ void serialPoll() {
 				serialSendF("W BAD (Invalid length; expected 2)");
 				break;
 			}
-			setColorFromInput(&displayStopwatch, 2, EEPROM_STORAGE_STOPWATCH_RGB);
+			displayStopwatch.setColorFromInput(2, EEPROM_STORAGE_STOPWATCH_RGB);
 			tmpData = true;
 			switch (inputString[1]) {
 			case 'R':
@@ -374,7 +320,7 @@ void serialPoll() {
 				break;
 			}
 			if (tmpData) {
-				showIfPossibleOtherwiseRotateIfCurrent(&displayStopwatch);
+				displayStopwatch.showIfPossibleOtherwiseRotateIfCurrent();
 				serialSendF("W OK");
 			}
 			break;
@@ -401,43 +347,4 @@ void serialPoll() {
 			break;
 		}
 	}
-}
-
-
-/*********************/
-/* UTILITY FUNCTIONS */
-/*********************/
-
-void setColorFromInput(DisplayTask *displayTask, const byte offset, const int16_t eepromBase) {
-	if (inputString.length() < (unsigned int)offset + 6) {
-		return;
-	}
-	displayTask->red = hexInputToByte(offset);
-	displayTask->green = hexInputToByte(offset + 2);
-	displayTask->blue = hexInputToByte(offset + 4);
-	displayTask->saveColor(eepromBase);
-}
-
-void showIfPossibleOtherwiseRotateIfCurrent(DisplayTask *displayTask) {
-	if (displayTask->canShow()) {
-		displayTask->add();
-		DisplayTask::editMode = false;
-		DisplayTask::current = displayTask;
-		DisplayTask::current->isDirty = true;
-		DisplayTask::lastDisplayCycleMicros = micros();
-	}
-	else if (displayTask == DisplayTask::current) {
-		DisplayTask::cycleDisplayUpdater();
-	}
-	else {
-		return;
-	}
-	displayAntiPoisonOff();
-}
-
-#define hexCharToNum(c) ((c <= '9') ? c - '0' : c - '7')
-byte hexInputToByte(const byte offset) {
-	const byte msn = inputString[offset];
-	const byte lsn = inputString[offset + 1];
-	return (hexCharToNum(msn) << 4) + hexCharToNum(lsn);
 }

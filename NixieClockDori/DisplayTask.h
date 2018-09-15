@@ -29,6 +29,7 @@ public:
 
 	static DisplayTask* findNextValid(DisplayTask *dt_current, const bool mustCanShow);
 	static void cycleDisplayUpdater();
+	void showIfPossibleOtherwiseRotateIfCurrent();
 
 	byte red = 0, green = 0, blue = 0;
 	byte dotMask = 0;
@@ -45,6 +46,7 @@ public:
 	void saveColor(int16_t addr);
 	void loadColor(int16_t addr);
 	void setDisplayData(const byte offset, const uint16_t data);
+	void setColorFromInput(const byte offset, const int16_t eepromBase);
 
 protected:
 	static unsigned long lastButtonPress;

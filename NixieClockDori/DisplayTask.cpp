@@ -6,6 +6,8 @@
 #include "reset.h"
 #include "temperature.h"
 #include "const.h"
+#include "crcserial.h"
+#include "utils.h"
 
 DisplayTask *dt_first;
 DisplayTask *dt_last;
@@ -46,6 +48,23 @@ void DisplayTask::cycleDisplayUpdater() {
 
 	DisplayTask::current = DisplayTask::findNextValid(DisplayTask::current, true);
 	DisplayTask::current->isDirty = true;
+}
+
+void DisplayTask::showIfPossibleOtherwiseRotateIfCurrent() {
+	if (this->canShow()) {
+		this->add();
+		DisplayTask::editMode = false;
+		DisplayTask::current = this;
+		this->isDirty = true;
+		DisplayTask::lastDisplayCycleMicros = micros();
+	}
+	else if (this == DisplayTask::current) {
+		DisplayTask::cycleDisplayUpdater();
+	}
+	else {
+		return;
+	}
+	displayAntiPoisonOff();
 }
 
 void DisplayTask::buttonHandler(const Button button, const PressType pressType) {
@@ -102,6 +121,16 @@ bool DisplayTask::showShortTime(const unsigned long timeMs, bool trimLZ) {
 	trimLZ = this->insert2(4, (timeMs / ONE_SECOND_IN_MS) % 60, trimLZ);
 	this->insert2(6, (timeMs / 10UL) % 100, trimLZ);
 	return false;
+}
+
+void DisplayTask::setColorFromInput(const byte offset, const int16_t eepromBase) {
+	if (inputString.length() < (unsigned int)offset + 6) {
+		return;
+	}
+	this->red = hexInputToByte(offset);
+	this->green = hexInputToByte(offset + 2);
+	this->blue = hexInputToByte(offset + 4);
+	this->saveColor(eepromBase);
 }
 
 void __handleEditHelperSingle(const byte digit, const bool up, byte& a, const byte amax) {
