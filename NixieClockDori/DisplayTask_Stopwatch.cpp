@@ -37,8 +37,6 @@ bool DisplayTask_Stopwatch::_canShow() const {
 }
 
 bool DisplayTask_Stopwatch::refresh() {
-	displayData[8] = NO_TUBES;
-
 	DisplayTask::editMode = false;
 
 	if (this->running) {

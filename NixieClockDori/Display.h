@@ -20,7 +20,6 @@ extern volatile byte dotMask;
 extern volatile bool renderAlways;
 extern volatile uint16_t displayData[9];
 extern volatile byte dataIsTransitioning[9];
-extern volatile uint16_t dataToDisplayPrevious[9];
 
 void displayInit();
 void displayLoop();
@@ -52,6 +51,3 @@ inline uint16_t getNumber(const byte idx) {
 #define SYMBOL_MICRO _MKSYM(6)
 #define SYMBOL_DEGREES_C _MKSYM(7)
 
-void insert1(const byte offset, const byte data, const bool trimLeadingZero);
-bool insert2(const byte offset, const byte data, const bool trimLeadingZero);
-bool showShortTime(const unsigned long timeMs, bool trimLZ, bool alwaysLong);

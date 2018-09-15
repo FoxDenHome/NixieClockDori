@@ -32,6 +32,8 @@ public:
 
 	byte red = 0, green = 0, blue = 0;
 	byte dotMask = 0;
+	uint16_t displayData[9];
+	bool isDirty = false;
 
 	bool loPri = false;
 	static bool editMode;
@@ -42,6 +44,7 @@ public:
 
 	void saveColor(int16_t addr);
 	void loadColor(int16_t addr);
+	void setDisplayData(const byte offset, const uint16_t data);
 
 protected:
 	static unsigned long lastButtonPress;
@@ -53,7 +56,10 @@ protected:
 
 	void _handleEditHelper(const byte digit, const bool up, byte& a, byte& b, byte& c, const byte amax, const byte bmax, const byte cmax);
 
-	static void insertTemp(const unsigned long curMillis);
+	void insertTemp(const unsigned long curMillis);
+	void insert1(const byte offset, const byte data, const bool trimLeadingZero);
+	bool insert2(const byte offset, const byte data, const bool trimLeadingZero);
+	bool showShortTime(const unsigned long timeMs, bool trimLZ, bool alwaysLong);
 
 private:
 

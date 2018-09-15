@@ -79,8 +79,6 @@ bool DisplayTask_Countdown::_canShow() const {
 }
 
 bool DisplayTask_Countdown::refresh() {
-	displayData[8] = NO_TUBES;
-
 	if (this->running) {
 		DisplayTask::editMode = false;
 		const unsigned long curMillis = millis();
@@ -96,7 +94,7 @@ bool DisplayTask_Countdown::refresh() {
 		if (this->time <= 0) {
 			const byte osym = (second() % 2) ? NO_TUBES : getNumber(0);
 			for (byte i = 0; i < 8; i++) {
-				displayData[i] = osym;
+				this->setDisplayData(i, osym);
 			}
 			return this->running;
 		}

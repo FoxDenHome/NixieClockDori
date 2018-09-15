@@ -4,6 +4,7 @@
 
 DisplayTask_Temperature::DisplayTask_Temperature() {
 	this->dotMask = DOT_2_DOWN;
+	this->displayData[8] = SYMBOL_DEGREES_C;
 }
 
 bool DisplayTask_Temperature::_canShow() const {
@@ -19,8 +20,6 @@ bool DisplayTask_Temperature::refresh() {
 	insert2(2, temp, hideNext);
 	insert2(4, temp * 100.0, false);
 	insert2(6, temp * 10000.0, false);
-
-	displayData[8] = SYMBOL_DEGREES_C;
 
 	return true;
 }

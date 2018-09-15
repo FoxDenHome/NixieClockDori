@@ -33,6 +33,7 @@ void DisplayTask_Clock::handleEdit(const byte digit, const bool up) {
 
 bool DisplayTask_Clock::refresh() {
 	const unsigned long curMillis = millis();
+	bool timeChanged = false;
 
 	if (!DisplayTask::editMode) {
 		const time_t _n = now();
@@ -41,6 +42,7 @@ bool DisplayTask_Clock::refresh() {
 		const byte s = second(_n);
 
 		if (this->s != s) {
+			timeChanged = true;
 #ifdef CLOCK_TICK_HALFSECOND
 			lastSChange = curMillis;
 #endif
@@ -58,12 +60,13 @@ bool DisplayTask_Clock::refresh() {
 		this->m = m;
 		this->s = s;
 
-		DisplayTask::insertTemp(curMillis);
+		this->insertTemp(curMillis);
 	}
 	else {
-		displayData[6] = NO_TUBES;
-		displayData[7] = NO_TUBES;
-		displayData[8] = NO_TUBES;
+		this->setDisplayData(6, NO_TUBES);
+		this->setDisplayData(7, NO_TUBES);
+		this->setDisplayData(8, NO_TUBES);
+		timeChanged = true;
 	}
 
 	if (DisplayTask::editMode ||
@@ -77,6 +80,10 @@ bool DisplayTask_Clock::refresh() {
 	}
 	else {
 		this->dotMask = 0;
+	}
+
+	if (!timeChanged) {
+		return true;
 	}
 
 #ifdef CLOCK_TRIM_HOURS
