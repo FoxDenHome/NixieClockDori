@@ -57,8 +57,6 @@ bool gpsToSerial = false;
 /* ARDUINO EVENT HANDLERS */
 /**************************/
 
-void(*resetFunc) (void) = 0;
-
 #define _DECL_BUTTON_FN(NAME, FUNC) \
 	void __ ## NAME ## _BUTTON_ ## FUNC () { \
 		DisplayTask::buttonHandler(NAME, FUNC); \
