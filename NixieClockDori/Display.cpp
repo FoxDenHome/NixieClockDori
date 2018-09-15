@@ -173,9 +173,9 @@ void renderNixies() {
 				dataIsTransitioning[i] = 0;
 			}
 		}
-	}
 
-	displayDriverRefresh();
+		displayDriverRefresh();
+	}
 
 	lastCallMillis = curMillis;
 }
