@@ -7,16 +7,36 @@ extern String inputString;
 void serialInit();
 
 void serialSend(const String& str);
-void serialSendFirst(const String &str);
-void serialSendNext(const String &str);
+void serialSendFirst(const String& str);
+void serialSendNext(const String& str);
 void serialSendEnd();
 
-#define serialSend1(a) { serialSend(a); }
-#define serialSend2(a, b) { serialSendFirst(a); serialSendNext(b); serialSendEnd(); }
-#define serialSend3(a, b, c) { serialSendFirst(a); serialSendNext(b); serialSendNext(c); serialSendEnd(); }
-#define serialSend4(a, b, c, d) { serialSendFirst(a); serialSendNext(b); serialSendNext(c); serialSendNext(d); serialSendEnd(); }
-#define serialSend5(a, b, c, d, e) { serialSendFirst(a); serialSendNext(b); serialSendNext(c); serialSendNext(d); serialSendNext(e); serialSendEnd(); }
-#define serialSend6(a, b, c, d, e, f) { serialSendFirst(a); serialSendNext(b); serialSendNext(c); serialSendNext(d); serialSendNext(e); serialSendNext(f); serialSendEnd(); }
+template<typename T>
+inline void serialSendN_(const T& str) {
+	serialSendNext(str);
+}
+
+inline void serialSendN_() {
+
+}
+
+template<typename T, typename... Args>
+inline void serialSendN_(const T& first, Args... args) {
+	serialSendNext(first);
+	serialSendN_(args...);
+}
+
+template<typename T, typename... Args>
+inline void serialSendN(const T& first, Args... args) {
+	serialSendFirst(first);
+	serialSendN_(args...);
+	serialSendEnd();
+}
+
+template<typename T>
+inline void serialSendN(const T& first) {
+	serialSend(first);
+}
 
 #define serialSendF(a) { serialSend(F(a)); }
 

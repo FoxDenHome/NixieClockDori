@@ -72,16 +72,16 @@ bool serialReadNext() {
 	if (inChar == '\n') {
 		receivedStart = false;
 		if (!inChecksum) {
-			serialSend2(F("> NOCRC "), inputString);
+			serialSendN(F("> NOCRC "), inputString);
 			return false;
 		}
 		int computedCRC = stringCRC(inputString);
 		int receivedCRC = inputChecksum.toInt();
 		if (computedCRC != receivedCRC) {
-			serialSend6(F("> BADCRC "), String(computedCRC), " ", String(receivedCRC), " ", inputString);
+			serialSendN(F("> BADCRC "), String(computedCRC), " ", String(receivedCRC), " ", inputString);
 			return false;
 		}
-		serialSend2(F("> OK "), inputString);
+		serialSendN(F("> OK "), inputString);
 		return true;
 	}
 

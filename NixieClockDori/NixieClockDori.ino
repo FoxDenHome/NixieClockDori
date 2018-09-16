@@ -147,7 +147,7 @@ void setup() {
 	SETUP_BUTTON(DOWN);
 	SETUP_BUTTON(SET);
 
-	serialSend2(F("< Ready "), String(mcusr_mirror));
+	serialSendN(F("< Ready "), String(mcusr_mirror));
 
 	wdt_enable(WDTO_250MS);
 }
@@ -178,7 +178,7 @@ void serialPoll() {
 		char c = Serial1.read();
 		if (c == '\r' || c == '\n') {
 			if (gpsToSerial && gpsSerial.length() > 0 && gpsSerial[0] == '$') {
-				serialSend1(gpsSerial);
+				serialSend(gpsSerial);
 			}
 			gpsSerial = "";
 			continue;
@@ -336,7 +336,7 @@ void serialPoll() {
 			// ^D|-5712
 			// ^D111|-15634
 		case 'D':
-			serialSend2(F("D OK "), String(mu_freeRam()));
+			serialSendN(F("D OK "), String(mu_freeRam()));
 			break;
 			// ^G0|-16633
 			// ^G1|-20698
