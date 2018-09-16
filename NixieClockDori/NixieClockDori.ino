@@ -341,6 +341,10 @@ void serialPoll() {
 			// ^G0|-16633
 			// ^G1|-20698
 		case 'G':
+			if (inputString.length() < 2) {
+				serialSendF("G BAD (Invalid length; expected 2)");
+				break;
+			}
 			gpsToSerial = inputString[1] == '1';
 			serialSendF("G OK");
 			break;
