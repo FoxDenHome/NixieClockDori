@@ -112,6 +112,7 @@
     <ClInclude Include="reset.h" />
     <ClInclude Include="rtc.h" />
     <ClInclude Include="temperature.h" />
+    <ClInclude Include="utils.h" />
     <ClInclude Include="__vm\.NixieClockDori.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>

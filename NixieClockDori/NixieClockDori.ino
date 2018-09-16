@@ -342,6 +342,7 @@ void serialPoll() {
 			// ^G1|-20698
 		case 'G':
 			gpsToSerial = inputString[1] == '1';
+			serialSendF("G OK");
 			break;
 		}
 	}
