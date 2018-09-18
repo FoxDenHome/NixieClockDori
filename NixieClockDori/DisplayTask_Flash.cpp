@@ -5,10 +5,10 @@
 static uint16_t charToTube(const byte chr) {
 	switch (chr) {
 		// Special tube layouts
-	case 'N':
+	case ' ':
 		return NO_TUBES;
 		break;
-	case 'A':
+	case '*':
 		return ALL_TUBES;
 		break;
 
@@ -39,6 +39,10 @@ static uint16_t charToTube(const byte chr) {
 		break;
 
 	default:
+		if (chr < '0' || chr > '9') {
+			return NO_TUBES;
+		}
+
 		return getNumber(chr - '0');
 		break;
 	}

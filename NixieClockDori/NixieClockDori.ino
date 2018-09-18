@@ -254,7 +254,7 @@ void serialPoll() {
 			// M = milliseconds (Dec), D = dots (Bitmask Dec) to show the message, N = Nixie message (Dec), R = Red (Hex), G = Green (Hex), B = Blue (Hex)
 			// Shows a "flash"/"alert" message on the clock (will show this message instead of the time for <M> milliseconds. Does not use/reset hold when 0). Dots are bit 1 for lower and bit 2 for upper. Turned off when HIGH
 			// If sent without any parameters, resets current flash message and goes back to clock mode
-			// ^F000010002131337NA012|-2470
+			// ^F000010002131337 *012|26595
 		case 'F':
 			if (inputString.length() < 21) {
 				if (inputString.length() < 3) { // Allow for \r\n

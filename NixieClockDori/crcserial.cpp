@@ -43,7 +43,7 @@ bool serialReadNext() {
 	static bool inChecksum = false;
 
 	const char inChar = (char)Serial.read();
-	if (inChar == '\r' || inChar == ' ') { // Ignore those always
+	if (inChar == '\r' || inChar == '\t') { // Ignore those always
 		return false;
 	}
 
