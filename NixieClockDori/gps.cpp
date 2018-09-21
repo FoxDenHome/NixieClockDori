@@ -35,7 +35,14 @@ void gpsLoop() {
 		}
 		if (gpsToSerial) {
 			serialSend(nmea + 1);
+			if (GPS.year > 0) {
+				serialSend(String(GPS.year));
+			}
 		}
 	}
 #endif
+}
+
+void gpsSendDebug() {
+	serialSendN("G ", String(GPS.hour), " ", String(GPS.minute), " ", String(GPS.seconds), " ", String(GPS.year), " ", String(GPS.month), " ", String(GPS.day));
 }
