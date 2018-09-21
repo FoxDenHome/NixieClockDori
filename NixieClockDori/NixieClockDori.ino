@@ -315,13 +315,19 @@ void serialPoll() {
 			break;
 			// ^G0|-16633
 			// ^G1|-20698
+			// ^GD|-32492
 		case 'G':
 			if (inputString.length() < 2) {
 				serialSendF("G BAD (Invalid length; expected 2)");
 				break;
 			}
-			gpsToSerial = inputString[1] == '1';
-			serialSendF("G OK");
+			if (inputString[1] == 'D') {
+				gpsSendDebug();
+			}
+			else {
+				gpsToSerial = inputString[1] == '1';
+				serialSendF("G OK");
+			}
 			break;
 		}
 	}

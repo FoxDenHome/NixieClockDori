@@ -4,5 +4,6 @@
 
 void gpsInit();
 void gpsLoop();
+void gpsSendDebug();
 
 extern bool gpsToSerial;
