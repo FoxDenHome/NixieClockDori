@@ -109,6 +109,7 @@
     <ClInclude Include="DisplayTask_Flash.h" />
     <ClInclude Include="DisplayTask_Stopwatch.h" />
     <ClInclude Include="DisplayTask_Temperature.h" />
+    <ClInclude Include="gps.h" />
     <ClInclude Include="reset.h" />
     <ClInclude Include="rtc.h" />
     <ClInclude Include="temperature.h" />
@@ -124,6 +125,7 @@
     <ClCompile Include="DisplayTask_Flash.cpp" />
     <ClCompile Include="DisplayTask_Stopwatch.cpp" />
     <ClCompile Include="DisplayTask_Temperature.cpp" />
+    <ClCompile Include="gps.cpp" />
     <ClCompile Include="reset.cpp" />
     <ClCompile Include="temperature.cpp" />
   </ItemGroup>

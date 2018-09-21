@@ -8,10 +8,13 @@
 #include <MemoryUsage.h>
 #include <OneButton.h>
 #include <FastCRC.h>
+#include <Adafruit_GPS.h>
+#include <SoftwareSerial.h>
 
 #include <avr/wdt.h>
 
 #include "rtc.h"
+#include "gps.h"
 #include "temperature.h"
 #include "reset.h"
 #include "config.h"
@@ -30,13 +33,6 @@
 #include "DisplayTask_Flash.h"
 #include "DisplayTask_Temperature.h"
 
-#ifdef __AVR_ATmega1280__
-#define ENABLE_SERIAL1_GPS
-#endif
-#ifdef __AVR_ATmega2560__
-#define ENABLE_SERIAL1_GPS
-#endif
-
 /****************/
 /* PROGRAM CODE */
 /****************/
@@ -51,7 +47,6 @@ DisplayTask_Stopwatch displayStopwatch;
 DisplayTask_Countdown displayCountdown;
 DisplayTask_Flash displayFlash;
 DisplayTask_Temperature displayTemp;
-bool gpsToSerial = false;
 
 /**************************/
 /* ARDUINO EVENT HANDLERS */
@@ -110,10 +105,7 @@ void setup() {
 	temperatureInit();
 	displayInit();
 	displayDriverInit();
-
-#ifdef ENABLE_SERIAL1_GPS
-	Serial1.begin(9600);
-#endif
+	gpsInit();
 
 	randomSeed(analogRead(A4) + now());
 
@@ -165,29 +157,12 @@ void loop() {
 	displayLoop();
 	displayDriverLoop();
 	temperatureLoop();
+	gpsLoop();
 
 	serialPoll();
 }
 
 void serialPoll() {
-#ifdef ENABLE_SERIAL1_GPS
-	static String gpsSerial;
-	gpsSerial.reserve(256);
-
-	while (Serial1.available()) {
-		char c = Serial1.read();
-		if (c == '\r' || c == '\n') {
-			if (gpsToSerial && gpsSerial.length() > 0 && gpsSerial[0] == '$') {
-				serialSend(gpsSerial);
-			}
-			gpsSerial = "";
-			continue;
-		}
-
-		gpsSerial += c;
-	}
-#endif
-
 	while (Serial.available()) {
 		if (!serialReadNext()) {
 			continue;
