@@ -1,7 +1,7 @@
 language: c
 sudo: false
 before_install:
-- source <(curl -SLs https://doridian.net/arduino_travis.sh)
+- source <(curl -SLs https://doridian.com/arduino_travis.sh)
 install:
 - arduino --install-library "Time","DS3232RTC","MemoryUsage","OneButton","OneWire","DallasTemperature","Adafruit GPS Library"
 - git clone https://github.com/FrankBoesing/FastCRC.git $HOME/arduino_ide/libraries/FastCRC
