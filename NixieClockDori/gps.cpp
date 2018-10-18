@@ -44,5 +44,7 @@ void gpsLoop() {
 }
 
 void gpsSendDebug() {
+#ifdef GPS_ENABLE
 	serialSendN("G ", String(GPS.hour), " ", String(GPS.minute), " ", String(GPS.seconds), " ", String(GPS.year), " ", String(GPS.month), " ", String(GPS.day));
+#endif
 }
