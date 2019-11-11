@@ -1,10 +1,22 @@
 from binascii import crc_hqx
 from serial import Serial
 
+bytesHasTwoArgs = False
+try:
+	test = bytes("test", "ascii")
+	bytesHasTwoArgs = True
+except:
+	pass
+
+def _bytes(data):
+	if bytesHasTwoArgs:
+		return bytes(data, "ascii")
+	return bytes(data)
+
 nixieCOM = Serial()
 
 def _crc(data):
-	return crc_hqx(bytes(data, "ascii"), 0xffff)
+	return crc_hqx(_bytes(data), 0xffff)
 
 def _readline(data, retryAfter = 5):
 	i = 0
@@ -15,12 +27,7 @@ def _readline(data, retryAfter = 5):
 			nixieCOM.write(data)
 			nixieCOM.flush()
 
-		try:
-			line = nixieCOM.readline().decode("ascii").strip()
-		except KeyboardInterrupt:
-			raise
-		except:
-			continue
+		line = nixieCOM.readline().decode("ascii").strip()
 
 		lineStart = line.find('^')
 		if lineStart < 0:
@@ -36,7 +43,9 @@ def _readline(data, retryAfter = 5):
 		calcCrc = _crc(line)
 
 		if readCrc == calcCrc:
-			if ord(line[0]) == data[1]:
+			lineChar = ord(line[0])
+			matchChar = data[1]
+			if lineChar == matchChar or lineChar == ord(matchChar):
 				return line
 			#else:
 			#	print("Got async data: %s" % line)
@@ -46,7 +55,7 @@ def _readline(data, retryAfter = 5):
 def sendCommand(cmd):
 	checksum = _crc(cmd)
 	data = "^%s|%d\n" % (cmd, checksum)
-	data = bytes(data, "ascii")
+	data = _bytes(data)
 	nixieCOM.write(data)
 	nixieCOM.flush()
 	return _readline(data)
