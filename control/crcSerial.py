@@ -45,7 +45,11 @@ def _readline(data, retryAfter = 5):
 		if readCrc == calcCrc:
 			lineChar = ord(line[0])
 			matchChar = data[1]
-			if lineChar == matchChar or lineChar == ord(matchChar):
+			try:
+				matchChar = ord(matchChar)
+			except:
+				pass
+			if lineChar == matchChar:
 				return line
 			#else:
 			#	print("Got async data: %s" % line)
