@@ -329,6 +329,26 @@ void serialPoll() {
 				serialSendF("G OK");
 			}
 			break;
+		case 'L':
+			if (inputString.length() < 2) {
+				serialSendF("L BAD (Invalid length; expected 2)");
+				break;
+			}
+
+			switch (inputString[1]) {
+			case '0':
+				DisplayTask::buttonLock = false;
+				serialSendF("L OK 0");
+				break;
+			case '1':
+				DisplayTask::buttonLock = true;
+				serialSendF("L OK 1");
+				break;
+			default:
+				serialSendF("L BAD (Invalid argument)");
+				break;
+			}
+			break;
 		}
 	}
 }
