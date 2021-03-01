@@ -14,6 +14,8 @@ DisplayTask *dt_last;
 
 DisplayTask* DisplayTask::current;
 
+bool DisplayTask::buttonLock = false;
+
 unsigned long DisplayTask::lastDisplayCycleMicros = 0;
 bool DisplayTask::editMode = false;
 byte DisplayTask::editModePos = 0;
@@ -68,6 +70,12 @@ void DisplayTask::showIfPossibleOtherwiseRotateIfCurrent() {
 }
 
 void DisplayTask::buttonHandler(const Button button, const PressType pressType) {
+	if (DisplayTask::buttonLock) {
+		DisplayTask::current->editMode = false;
+		DisplayTask::current->editModePos = 0;
+		return;
+	}
+
 	DisplayTask::lastDisplayCycleMicros = micros();
 	displayAntiPoisonOff();
 	DisplayTask::lastButtonPress = millis();

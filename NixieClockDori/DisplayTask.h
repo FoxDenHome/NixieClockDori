@@ -38,6 +38,7 @@ public:
 
 	bool loPri = false;
 	static bool editMode;
+	static bool buttonLock;
 
 	static DisplayTask *current;
 
