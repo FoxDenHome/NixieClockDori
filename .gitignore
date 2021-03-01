@@ -8,4 +8,5 @@ Release/
 board.txt
 *.user
 buildinfo.h
-
+obj
+bin

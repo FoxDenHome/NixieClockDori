@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "NixieClockSync": {
+      "commandName": "Project",
+      "commandLineArgs": "COM3"
+    }
+  }
+}
