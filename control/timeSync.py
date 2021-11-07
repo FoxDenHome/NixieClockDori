@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from datetime import datetime
 from crcSerial import sendCommand, connect
 from sys import argv
