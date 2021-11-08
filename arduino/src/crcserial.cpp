@@ -1,7 +1,6 @@
 #include <FastCRC.h>
 #include "crcserial.h"
-
-#define CONTROL_SERIAL Serial
+#include "config.h"
 
 FastCRC16 crc;
 String inputString;
