@@ -1,7 +1,5 @@
 #pragma once
 
-//#include "buildinfo.h"
-
 //#define CLOCK_TRIM_HOURS
 #define EFFECT_SPEED 30
 #define ANTI_POISON_DELAY 200
