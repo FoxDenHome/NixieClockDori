@@ -134,7 +134,7 @@ void setup() {
 }
 
 void serialPoll() {
-	while (Serial.available()) {
+	while (CONTROL_SERIAL.available()) {
 		if (!serialReadNext()) {
 			continue;
 		}
