@@ -10,3 +10,5 @@ board.txt
 buildinfo.h
 obj
 bin
+.DS_Store
+

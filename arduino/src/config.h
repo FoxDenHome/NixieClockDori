@@ -1,6 +1,6 @@
 #pragma once
 
-#include "buildinfo.h"
+//#include "buildinfo.h"
 
 //#define CLOCK_TRIM_HOURS
 #define EFFECT_SPEED 30
