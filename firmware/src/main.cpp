@@ -97,6 +97,8 @@ void setup() {
 	displayInit();
 	displayDriverInit();
 
+	WIFI_SERIAL.begin(115200);
+
 	randomSeed(analogRead(A4) + now());
 
 	DisplayEffect loadEffect;
@@ -135,6 +137,12 @@ void setup() {
 }
 
 void serialPoll() {
+	while (WIFI_SERIAL.available()) {
+		serialSendFirst("< WiFi: ");
+		serialSendNext(WIFI_SERIAL.readString());
+		serialSendEnd();
+	}
+
 	while (CONTROL_SERIAL.available()) {
 		if (!serialReadNext()) {
 			continue;
