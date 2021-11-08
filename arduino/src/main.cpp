@@ -13,6 +13,7 @@
 #include "Display.h"
 #include "DisplayDriver.h"
 #include "DisplayTask.h"
+#include "version.h"
 
 #include <Arduino.h>
 
@@ -165,7 +166,9 @@ void serialPoll() {
 			// Pings the display ("Hello")
 			// ^H|10300
 		case 'H':
-			serialSendF("H OK " FW_VERSION);
+			serialSendFirst(F("H OK "));
+			serialSendNext(FW_VERSION);
+			serialSendEnd();
 			break;
 			// X
 			// Performs a display reset of all modes
