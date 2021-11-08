@@ -304,6 +304,10 @@ void serialPoll() {
 				break;
 			}
 			break;
+		default:
+			serialSendFirst(inputString);
+			serialSendF(" BAD (Invalid command)");
+			break;
 		}
 	}
 }
