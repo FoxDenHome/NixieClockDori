@@ -1,14 +1,6 @@
-#include <SPI.h>
 #include <EEPROM.h>
-#include <Wire.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
-#include <TimeLib.h>
-#include <DS3232RTC.h>
 #include <MemoryUsage.h>
 #include <OneButton.h>
-#include <FastCRC.h>
-#include <SoftwareSerial.h>
 
 #include <avr/wdt.h>
 

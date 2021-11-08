@@ -1,6 +1,8 @@
 #include <FastCRC.h>
 #include "crcserial.h"
 
+#define CONTROL_SERIAL Serial
+
 FastCRC16 crc;
 String inputString;
 String inputChecksum;
@@ -14,24 +16,24 @@ void serialSend(const String& str) {
 }
 
 void serialInit() {
-	Serial.begin(115200);
+	CONTROL_SERIAL.begin(115200);
 	inputChecksum.reserve(16);
 	inputString.reserve(32);
 }
 
 uint16_t crcCalc;
 void serialSendFirst(const String &str) {
-	Serial.print('^');
-	Serial.print(str);
+	CONTROL_SERIAL.print('^');
+	CONTROL_SERIAL.print(str);
 	crcCalc = stringCRC(str);
 }
 void serialSendNext(const String &str) {
-	Serial.print(str);
+	CONTROL_SERIAL.print(str);
 	crcCalc = stringCRCUpdate(str);
 }
 void serialSendEnd() {
-	Serial.print('|');
-	Serial.println(crcCalc);
+	CONTROL_SERIAL.print('|');
+	CONTROL_SERIAL.println(crcCalc);
 }
 void serialSendSimple(const String &str) {
 	serialSendFirst(str);
@@ -42,7 +44,7 @@ bool serialReadNext() {
 	static bool receivedStart = false;
 	static bool inChecksum = false;
 
-	const char inChar = (char)Serial.read();
+	const char inChar = (char)CONTROL_SERIAL.read();
 	if (inChar == '\r' || inChar == '\t') { // Ignore those always
 		return false;
 	}
