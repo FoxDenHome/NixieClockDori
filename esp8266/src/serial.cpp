@@ -41,7 +41,7 @@ static void httpFlash() {
                 Serial.println("$");
                 break;
             case HTTP_UPDATE_NO_UPDATES:
-                Serial.println("^RNo updated!$");
+                Serial.println("^RNo updates!$");
                 break;
             case HTTP_UPDATE_OK:
                 Serial.println("^RUpdate OK!$");
