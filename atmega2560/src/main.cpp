@@ -70,7 +70,6 @@ DECL_BUTTON(SET)
 void setup() {
 	const uint8_t mcusr_mirror = MCUSR;
 	MCUSR = 0;
-	wdt_reset();
 	wdt_disable();
 
 	// Pin setup
