@@ -1,19 +1,25 @@
 #include <ESP8266WiFi.h>
 #include <Arduino.h>
 #include <ArduinoOTA.h>
-#include <NTPClient.h>
+#include <time.h>
+#include <coredecls.h>
 
 #include "config.h"
 
-const long utcOffsetInSeconds = 3600 * TIME_ZONE;
-WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "192.168.4.10", utcOffsetInSeconds);
-
-unsigned long lastRun = LONG_MAX;
+time_t now;
+tm now_tm;
+void time_is_set(bool is_sntp){
+  if (!is_sntp) {
+    return;
+  }
+  time(&now);
+  localtime_r(&now, &now_tm);
+  Serial.printf("^T%02d%02d%02d%02d%02d%02d$\n", now_tm.tm_hour, now_tm.tm_min, now_tm.tm_sec, now_tm.tm_mday, now_tm.tm_mon, now_tm.tm_year % 100);
+}
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("^E Booting...$");
+  Serial.println("^EBooting...$");
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
@@ -27,23 +33,10 @@ void setup() {
   ArduinoOTA.setPassword((const char *)OTA_PASSWORD);
   ArduinoOTA.begin();
 
-  timeClient.begin();
+  settimeofday_cb(time_is_set);
+  configTime(TIME_ZONE, NTP_SERVER);
 }
 
 void loop() {
-	const unsigned long curMillis = millis();
-	const unsigned long timeSinceLast = curMillis - lastRun;
-
   ArduinoOTA.handle();
-
-  if (timeSinceLast >= 60000UL) {
-    timeClient.forceUpdate();
-    const unsigned long time = timeClient.getEpochTime();
-    if (time > 0) {
-      Serial.print("^T");
-      Serial.print(time);
-      Serial.println("$");
-    }
-    lastRun = curMillis;
-  }
 }

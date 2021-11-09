@@ -15,6 +15,7 @@
 #include "DisplayTask.h"
 #include "version.h"
 #include "wifi.h"
+#include "serialtime.h"
 
 #include <Arduino.h>
 
@@ -154,14 +155,7 @@ void serialPoll() {
 				serialSendF("T BAD (Invalid length; expected 13)");
 				break;
 			}
-			tmElements_t tm;
-			tm.Hour = inputString.substring(1, 3).toInt();
-			tm.Minute = inputString.substring(3, 5).toInt();
-			tm.Second = inputString.substring(5, 7).toInt();
-			tm.Day = inputString.substring(6, 9).toInt();
-			tm.Month = inputString.substring(9, 11).toInt();
-			tm.Year = y2kYearToTm(inputString.substring(11, 13).toInt());
-			rtcSetTime(tm);
+			parseTimeFromSerial(inputString.substring(1));
 			serialSendF("T OK");
 			break;
 			// H

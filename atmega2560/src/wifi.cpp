@@ -4,6 +4,7 @@
 #include "wifi.h"
 #include "crcserial.h"
 #include "rtc.h"
+#include "serialtime.h"
 
 #define STATE_LOOKING_FOR_START 0
 #define STATE_LOOKING_FOR_COMMAND 1
@@ -28,7 +29,13 @@ static void wifiProcessCommand() {
             serialSendEnd();
             break;
         case 'T':
-            rtcSetTimeRaw(atol(wifiBuffer.c_str()));
+            if (wifiBuffer.length() < 12) {
+                serialSendFirst(F("< NTP BAD: "));
+                serialSendNext(wifiBuffer);
+                serialSendEnd();
+                break;
+            }
+            parseTimeFromSerial(wifiBuffer);
             serialSendFirst(F("< NTP: "));
             serialSendNext(wifiBuffer);
             serialSendEnd();
