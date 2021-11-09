@@ -36,7 +36,7 @@ void loop() {
 
   ArduinoOTA.handle();
 
-  if (timeSinceLast >= 10000UL) {
+  if (timeSinceLast >= 60000UL) {
     timeClient.forceUpdate();
     const unsigned long time = timeClient.getEpochTime();
     if (time > 0) {
