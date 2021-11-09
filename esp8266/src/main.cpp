@@ -3,8 +3,13 @@
 #include <ArduinoOTA.h>
 #include <time.h>
 #include <coredecls.h>
+#include <sntp.h>
 
 #include "config.h"
+
+uint32_t sntp_update_delay_MS_rfc_not_less_than_15000() {
+  return NTP_UPDATE_INTERVAL;
+}
 
 time_t now;
 tm now_tm;
