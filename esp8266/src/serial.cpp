@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <ESP8266httpUpdate.h>
 
 #include "config.h"
 #include "eeprom.h"
@@ -29,6 +30,29 @@ static void processEEPROMCommand(const int offset) {
     Serial.println("^RWrite OK$");
 }
 
+static void httpFlash() {
+        WiFiClient client;
+        ESPhttpUpdate.rebootOnUpdate(false);
+        HTTPUpdateResult ret = ESPhttpUpdate.update(client, inputString);
+        switch (ret) {
+            case HTTP_UPDATE_FAILED:
+                Serial.print("^RFAIL: ");
+                Serial.print(ESPhttpUpdate.getLastErrorString());
+                Serial.println("$");
+                break;
+            case HTTP_UPDATE_NO_UPDATES:
+                Serial.println("^RNo updated!$");
+                break;
+            case HTTP_UPDATE_OK:
+                Serial.println("^RUpdate OK!$");
+                ESP.restart();
+                break;
+            default:
+                Serial.println("^RUpdate unknown error!$");
+                break;
+        }
+}
+
 static void serialProcessCommand() {
     switch (serialCommand) {
         case 'S': // SSID
@@ -56,6 +80,9 @@ static void serialProcessCommand() {
         case 'R': // Reset
             Serial.println("^RReset!$");
             ESP.reset();
+            break;
+        case 'F': // Flash from HTTP
+            httpFlash();
             break;
         default:
             Serial.println("^RUnknown command$");
