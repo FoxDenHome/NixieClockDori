@@ -1,0 +1,21 @@
+#pragma once
+
+#include <Arduino.h>
+
+#define EEPROM_LEN_STRING 128
+
+#define EEPROM_BASE 0
+
+#define EEPROM_WIFI_SSID (EEPROM_BASE)
+#define EEPROM_WIFI_PASSWORD (EEPROM_WIFI_SSID + EEPROM_LEN_STRING)
+#define EEPROM_NTP_SERVER (EEPROM_WIFI_PASSWORD + EEPROM_LEN_STRING)
+#define EEPROM_TIME_ZONE (EEPROM_NTP_SERVER + EEPROM_LEN_STRING)
+#define EEPROM_OTA_HOSTNAME (EEPROM_TIME_ZONE + EEPROM_LEN_STRING)
+#define EEPROM_OTA_PASSWORD (EEPROM_OTA_HOSTNAME + EEPROM_LEN_STRING)
+
+#define EEPROM_END (EEPROM_OTA_PASSWORD + EEPROM_LEN_STRING + 1)
+
+void eepromWrite(const int offset, const String& data);
+String eepromRead(const int offset);
+void eepromCommit();
+void eepromInit();

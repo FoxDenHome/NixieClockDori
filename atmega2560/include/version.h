@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef FW_VERSION
 #ifdef GIT_COMMIT
 #define FW_ADD_QUOTES_H(s) #s

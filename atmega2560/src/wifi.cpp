@@ -23,7 +23,7 @@ void wifiInit() {
 
 void wifiSerialSend(const String& str) {
     WIFI_SERIAL.print('^');
-    WIFI_SERIAL.print(inputString);
+    WIFI_SERIAL.print(str);
     WIFI_SERIAL.println('$');
 }
 

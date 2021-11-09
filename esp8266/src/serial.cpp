@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #include "config.h"
+#include "eeprom.h"
 
 #define STATE_LOOKING_FOR_START 0
 #define STATE_LOOKING_FOR_COMMAND 1
@@ -17,35 +18,49 @@ void serialInit() {
     serialCommandState = STATE_LOOKING_FOR_START;
 }
 
-static void serialOK() {
-    Serial.println("^ROK$");
-}
-
-void serialSend(const String& str) {
-    Serial.print('^');
-    Serial.print(inputString);
-    Serial.println('$');
+static void processEEPROMCommand(const int offset) {
+    if (inputString.length() < 1) {
+        Serial.print("^RRead: ");
+        Serial.print(eepromRead(offset));
+        Serial.println("$");
+        return;
+    }
+    eepromWrite(offset, inputString);
+    Serial.println("^RWrite OK$");
 }
 
 static void serialProcessCommand() {
     switch (serialCommand) {
         case 'S': // SSID
+            processEEPROMCommand(EEPROM_WIFI_SSID);
             break;
         case 'P': // Password
-            break;
-        case 'H': // Hostname
-            break;
-        case 'O': // OTA password
+            processEEPROMCommand(EEPROM_WIFI_PASSWORD);
             break;
         case 'N': // NTP
+            processEEPROMCommand(EEPROM_NTP_SERVER);
             break;
         case 'T': // TimeZone
+            processEEPROMCommand(EEPROM_TIME_ZONE);
+            break;
+        case 'H': // Hostname
+            processEEPROMCommand(EEPROM_OTA_HOSTNAME);
+            break;
+        case 'O': // OTA password
+            processEEPROMCommand(EEPROM_OTA_PASSWORD);
+            break;
+        case 'C': // Commit
+            eepromCommit();
+            Serial.println("^RCommit OK$");
+            break;
+        case 'R': // Reset
+            Serial.println("^RReset!$");
+            ESP.reset();
             break;
         default:
-            Serial.println("^RFAIL$");
-            return;
+            Serial.println("^RUnknown command$");
+            break;
     }
-    serialOK();
 }
 
 void serialLoop() {

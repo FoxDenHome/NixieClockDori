@@ -7,6 +7,7 @@
 
 #include "config.h"
 #include "serial.h"
+#include "eeprom.h"
 
 uint32_t sntp_update_delay_MS_rfc_not_less_than_15000() {
   return NTP_UPDATE_INTERVAL;
@@ -26,21 +27,23 @@ void time_is_set(bool is_sntp){
 void setup() {
   Serial.begin(115200);
   Serial.println(F("^EBooting...$"));
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println(F("^EConnection Failed! Rebooting...$"));
-    delay(5000);
-    ESP.restart();
-  }
-  Serial.println(F("^EConnected!$"));
+  eepromInit();
 
-  ArduinoOTA.setHostname("esp-nixie-clock-dori");
-  ArduinoOTA.setPassword((const char *)OTA_PASSWORD);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(eepromRead(EEPROM_WIFI_SSID), eepromRead(EEPROM_WIFI_PASSWORD));
+
+  if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    Serial.println(F("^EConnection Failed! Please configure!$"));
+  } else {
+    Serial.println(F("^EConnected!$"));
+  }
+
+  ArduinoOTA.setHostname(eepromRead(EEPROM_OTA_HOSTNAME).c_str());
+  ArduinoOTA.setPassword(eepromRead(EEPROM_OTA_PASSWORD).c_str());
   ArduinoOTA.begin();
 
   settimeofday_cb(time_is_set);
-  configTime(TIME_ZONE, NTP_SERVER);
+  configTime(eepromRead(EEPROM_TIME_ZONE).c_str(), eepromRead(EEPROM_NTP_SERVER).c_str());
 }
 
 void loop() {
