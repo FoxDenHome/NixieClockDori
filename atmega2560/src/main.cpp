@@ -14,6 +14,7 @@
 #include "DisplayDriver.h"
 #include "DisplayTask.h"
 #include "version.h"
+#include "wifi.h"
 
 #include <Arduino.h>
 
@@ -69,6 +70,7 @@ DECL_BUTTON(SET)
 void setup() {
 	const uint8_t mcusr_mirror = MCUSR;
 	MCUSR = 0;
+	wdt_reset();
 	wdt_disable();
 
 	// Pin setup
@@ -96,8 +98,7 @@ void setup() {
 	temperatureInit();
 	displayInit();
 	displayDriverInit();
-
-	WIFI_SERIAL.begin(115200);
+	wifiInit();
 
 	randomSeed(analogRead(A4) + now());
 
@@ -137,12 +138,6 @@ void setup() {
 }
 
 void serialPoll() {
-	while (WIFI_SERIAL.available()) {
-		serialSendFirst("< WiFi: ");
-		serialSendNext(WIFI_SERIAL.readString());
-		serialSendEnd();
-	}
-
 	while (CONTROL_SERIAL.available()) {
 		if (!serialReadNext()) {
 			continue;
@@ -334,6 +329,7 @@ void loop() {
 	displayLoop();
 	displayDriverLoop();
 	temperatureLoop();
+	wifiLoop();
 
 	serialPoll();
 }

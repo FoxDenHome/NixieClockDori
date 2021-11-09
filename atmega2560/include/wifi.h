@@ -1,0 +1,2 @@
+void wifiInit();
+void wifiLoop();
