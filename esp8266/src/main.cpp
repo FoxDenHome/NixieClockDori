@@ -6,6 +6,7 @@
 #include <sntp.h>
 
 #include "config.h"
+#include "serial.h"
 
 uint32_t sntp_update_delay_MS_rfc_not_less_than_15000() {
   return NTP_UPDATE_INTERVAL;
@@ -24,15 +25,15 @@ void time_is_set(bool is_sntp){
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("^EBooting...$");
+  Serial.println(F("^EBooting...$"));
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println("^EConnection Failed! Rebooting...$");
+    Serial.println(F("^EConnection Failed! Rebooting...$"));
     delay(5000);
     ESP.restart();
   }
-  Serial.println("^EConnected!$");
+  Serial.println(F("^EConnected!$"));
 
   ArduinoOTA.setHostname("esp-nixie-clock-dori");
   ArduinoOTA.setPassword((const char *)OTA_PASSWORD);
@@ -44,4 +45,5 @@ void setup() {
 
 void loop() {
   ArduinoOTA.handle();
+  serialLoop();
 }

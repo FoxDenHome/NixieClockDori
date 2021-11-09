@@ -301,6 +301,9 @@ void serialPoll() {
 				break;
 			}
 			break;
+		case 'N':
+			wifiSerialSend(inputString.substring(1));
+			break;
 		default:
 			serialSendFirst(inputString);
 			serialSendF(" BAD (Invalid command)");

@@ -24,4 +24,5 @@ def syncTime():
 if __name__ == "__main__":
 	print("Connecting...")
 	print(connect(argv[1]))
-	print(sendCommand("X"))
+	for arg in argv[2:]:
+		print(sendCommand(arg))

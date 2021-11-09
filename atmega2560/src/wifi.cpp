@@ -21,26 +21,31 @@ void wifiInit() {
     wifiCommandState = STATE_LOOKING_FOR_START;
 }
 
+void wifiSerialSend(const String& str) {
+    WIFI_SERIAL.print('^');
+    WIFI_SERIAL.print(inputString);
+    WIFI_SERIAL.println('$');
+}
+
 static void wifiProcessCommand() {
     switch (wifiCommand) {
-        case 'E':
+        case 'E': // Echo
             serialSendFirst(F("< WiFi: "));
-            serialSendNext(wifiBuffer);
-            serialSendEnd();
             break;
-        case 'T':
+        case 'T': // Time
             if (wifiBuffer.length() < 12) {
                 serialSendFirst(F("< NTP BAD: "));
-                serialSendNext(wifiBuffer);
-                serialSendEnd();
                 break;
             }
             parseTimeFromSerial(wifiBuffer);
             serialSendFirst(F("< NTP: "));
-            serialSendNext(wifiBuffer);
-            serialSendEnd();
+            break;
+        case 'R': // Respond
+            serialSendFirst(F("N "));
             break;
     }
+    serialSendNext(wifiBuffer);
+    serialSendEnd();
 }
 
 void wifiLoop() {

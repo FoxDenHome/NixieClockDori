@@ -51,8 +51,8 @@ def _readline(data, retryAfter = 5):
 				pass
 			if lineChar == matchChar:
 				return line
-			#else:
-			#	print("Got async data: %s" % line)
+			else:
+				print("Got async data: %s" % line)
 		else:
 			print("CRC mismatch: %s" % line)
 
