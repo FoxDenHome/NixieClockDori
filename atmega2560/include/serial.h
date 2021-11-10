@@ -14,6 +14,9 @@ public:
 	void sendEnd(const String& text);
 	void send(const String& text);
 
+	void sendFirst();
+	void sendEnd();
+
 protected:
 	virtual void handle() = 0;
 

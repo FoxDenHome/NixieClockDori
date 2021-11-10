@@ -18,8 +18,12 @@ void CommandSerial::init() {
 	this->serial->begin(115200);
 }
 
-void CommandSerial::sendFirst(const String& text) {
+void CommandSerial::sendFirst() {
 	this->serial->print('^');
+}
+
+void CommandSerial::sendFirst(const String& text) {
+    this->sendFirst();
 	this->serial->print(text);
 }
 
@@ -27,15 +31,19 @@ void CommandSerial::sendNext(const String& text) {
 	this->serial->print(text);
 }
 
-void CommandSerial::sendEnd(const String& text) {
-	this->serial->print(text);
+void CommandSerial::sendEnd() {
 	this->serial->print('\n');
 }
 
-void CommandSerial::send(const String& text) {
-	this->serial->print('^');
+void CommandSerial::sendEnd(const String& text) {
 	this->serial->print(text);
-	this->serial->print('\n');
+	this->sendEnd();
+}
+
+void CommandSerial::send(const String& text) {
+	this->sendFirst();
+	this->serial->print(text);
+	this->sendEnd();
 }
 
 void CommandSerial::loop() {

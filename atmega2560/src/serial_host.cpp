@@ -27,17 +27,17 @@ void HostSerial::handle() {
         // ^T175630010318|17199
     case 'T':
         if (this->buffer.length() < 12) {
-            this->send(F("T BAD (Invalid length; expected 12)"));
+            this->send(F("TBAD (Invalid length; expected 12)"));
             break;
         }
         parseTimeFromSerial(this->buffer);
-        this->send(F("T OK"));
+        this->send(F("TOK"));
         break;
         // H
         // Pings the display ("Hello")
         // ^H|10300
     case 'H':
-        this->send(F("H OK " FW_VERSION));
+        this->send(F("HOK " FW_VERSION));
         break;
         // X
         // Performs a display reset of all modes
@@ -49,7 +49,7 @@ void HostSerial::handle() {
         for (uint16_t i = 0; i < EEPROM.length(); i++) {
             EEPROM.write(i, 0);
         }
-        this->send(F("X OK"));
+        this->send(F("XOK"));
 
         forceReset();
         break;
@@ -66,7 +66,7 @@ void HostSerial::handle() {
         else {
             displayAntiPoison(this->buffer.substring(0, 2).toInt());
         }
-        this->send(F("P OK"));
+        this->send(F("POK"));
         break;
         // F [MMMMMMMM DDD NNNNNN [RR GG BB]]
         // M = milliseconds (Dec), D = dots (Bitmask Dec) to show the message, N = Nixie message (Dec), R = Red (Hex), G = Green (Hex), B = Blue (Hex)
@@ -77,16 +77,16 @@ void HostSerial::handle() {
         if (this->buffer.length() < 20) {
             if (this->buffer.length() < 1) {
                 DisplayTask::cycleDisplayUpdater();
-                this->send(F("F OK"));
+                this->send(F("FOK"));
                 break;
             }
-            this->send(F("F BAD (Invalid length; expected 20 or 0)"));
+            this->send(F("FBAD (Invalid length; expected 20 or 0)"));
             break;
         }
 
         displayFlash.setDataFromSerial(this->buffer);
 
-        this->send(F("F OK"));
+        this->send(F("FOK"));
         break;
         // C [MMMMMMMM [RR GG BB]]
         // M = Time in ms (Dec), R = Red (Hex), G = Green (Hex), B = Blue (Hex)
@@ -103,7 +103,7 @@ void HostSerial::handle() {
         }
         displayCountdown.setColorFromInput(8, EEPROM_STORAGE_COUNTDOWN_RGB, this->buffer);
         displayCountdown.showIfPossibleOtherwiseRotateIfCurrent();
-        this->send(F("C OK"));
+        this->send(F("COK"));
         break;
         // W C [RR GG BB]
         // C = subcommand, R = Red (Hex), G = Green (Hex), B = Blue (Hex)
@@ -112,7 +112,7 @@ void HostSerial::handle() {
         // ^WR|-3952
     case 'W':
         if (this->buffer.length() < 1) {
-            this->send(F("W BAD (Invalid length; expected 1)"));
+            this->send(F("WBAD (Invalid length; expected 1)"));
             break;
         }
         displayStopwatch.setColorFromInput(1, EEPROM_STORAGE_STOPWATCH_RGB, this->buffer);
@@ -132,12 +132,12 @@ void HostSerial::handle() {
             break;
         default:
             tmpData = false;
-            this->send(F("W BAD (Invalid C)"));
+            this->send(F("WBAD (Invalid C)"));
             break;
         }
         if (tmpData) {
             displayStopwatch.showIfPossibleOtherwiseRotateIfCurrent();
-            this->send(F("W OK"));
+            this->send(F("WOK"));
         }
         break;
         // ^E0|-9883
@@ -145,35 +145,35 @@ void HostSerial::handle() {
         // ^E2|-1753
     case 'E':
         if (this->buffer.length() < 1) {
-            this->send(F("E BAD (Invalid length; expected 1)"));
+            this->send(F("EBAD (Invalid length; expected 1)"));
             break;
         }
         currentEffect = (DisplayEffect)(this->buffer[0] - '0');
-        this->send(F("E OK"));
+        this->send(F("EOK"));
         break;
         // ^D|-5712
         // ^D111|-15634
     case 'D':
-        this->sendFirst(F("D OK "));
+        this->sendFirst(F("DOK "));
         this->sendEnd(String(mu_freeRam()));
         break;
     case 'L':
         if (this->buffer.length() < 1) {
-            this->send(F("L BAD (Invalid length; expected 1)"));
+            this->send(F("LBAD (Invalid length; expected 1)"));
             break;
         }
 
         switch (this->buffer[0]) {
         case '0':
             DisplayTask::buttonLock = false;
-            this->send(F("L OK 0"));
+            this->send(F("LOK 0"));
             break;
         case '1':
             DisplayTask::buttonLock = true;
-            this->send(F("L OK 1"));
+            this->send(F("LOK 1"));
             break;
         default:
-            this->send(F("L BAD (Invalid argument)"));
+            this->send(F("LBAD (Invalid argument)"));
             break;
         }
         break;
@@ -182,7 +182,7 @@ void HostSerial::handle() {
         break;
     default:
         this->sendFirst(String(this->command));
-        this->send(F(" BAD (Invalid command)"));
+        this->send(F("BAD (Invalid command)"));
         break;
     }
 }
