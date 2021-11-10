@@ -14,15 +14,15 @@ WifiSerial::WifiSerial(HardwareSerial& serial) : CommandSerial(serial) {
 void WifiSerial::handle() {
     switch (this->command) {
         case '<': // Echo
-            hostSerial.sendFirst(F("<WiFi: "));
+            hostSerial.echoFirst(F("WiFi: "));
             break;
         case 'T': // Time
             if (this->buffer.length() < 12) {
-                hostSerial.sendFirst(F("<NTP BAD: "));
+                hostSerial.echoFirst(F("NTP BAD: "));
                 break;
             }
             parseTimeFromSerial(this->buffer);
-            hostSerial.sendFirst(F("<NTP: "));
+            hostSerial.echoFirst(F("NTP: "));
             break;
         case '$': // Respond
             hostSerial.sendFirst(F("$N"));

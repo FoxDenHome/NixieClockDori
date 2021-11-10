@@ -17,7 +17,7 @@ void rtcSetTime(tmElements_t& tm) {
 void rtcInit() {
 	setSyncProvider(RTC.get);
 	if (timeStatus() != timeSet) {
-		hostSerial.send("<Warning! Unable to sync with RTC! Try setting the time?");
+		hostSerial.echo(F("Warning! Unable to sync with RTC! Try setting the time?"));
 	}
 }
 

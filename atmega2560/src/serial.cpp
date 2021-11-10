@@ -14,8 +14,18 @@ CommandSerial::CommandSerial(HardwareSerial& serial) {
 	this->buffer.reserve(128);
 }
 
-void CommandSerial::init() {
-	this->serial->begin(115200);
+void CommandSerial::echoFirst() {
+    this->sendFirst("<");
+}
+
+void CommandSerial::echoFirst(const String& text) {
+    this->echoFirst();
+    this->sendNext(text);
+}
+
+void CommandSerial::echo(const String& text) {
+    this->echoFirst();
+    this->sendEnd(text);
 }
 
 void CommandSerial::replyFirst() {
@@ -31,6 +41,10 @@ void CommandSerial::replyFirst(const String& reply) {
 void CommandSerial::reply(const String& reply) {
     this->replyFirst(reply);
     this->sendEnd();
+}
+
+void CommandSerial::init() {
+	this->serial->begin(115200);
 }
 
 void CommandSerial::sendFirst() {

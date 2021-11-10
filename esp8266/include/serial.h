@@ -14,6 +14,10 @@ public:
 	void sendEnd(const String& text);
 	void send(const String& text);
 
+	void echoFirst();
+	void echoFirst(const String& text);
+	void echo(const String& text);
+
 	void sendFirst();
 	void sendEnd();
 

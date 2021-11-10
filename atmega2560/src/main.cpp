@@ -107,7 +107,7 @@ void setup() {
 	SETUP_BUTTON(DOWN);
 	SETUP_BUTTON(SET);
 
-	hostSerial.sendFirst(F("<Ready "));
+	hostSerial.echoFirst(F("Ready "));
 	hostSerial.sendEnd(String(mcusr_mirror));
 
 	wdt_enable(WDTO_250MS);
