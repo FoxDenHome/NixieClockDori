@@ -71,6 +71,10 @@ void ArduinoSerial::handle() {
         case 'F': // Flash from HTTP
             this->httpFlash();
             break;
+        case '<': // Echo, ignore
+            break;
+        case '$': // Command reply, ignore
+            break;
         default:
             this->reply("Unknown command");
             break;

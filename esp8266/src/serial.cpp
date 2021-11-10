@@ -15,7 +15,7 @@ CommandSerial::CommandSerial(HardwareSerial& serial) {
 }
 
 void CommandSerial::replyFirst() {
-    this->sendFirst("R");
+    this->sendFirst("$");
     this->sendNext(String(this->command));
 }
 

@@ -184,6 +184,10 @@ void HostSerial::handle() {
         }
         wifiSerial.send(this->buffer);
         break;
+    case '<': // Echo, ignore
+        break;
+    case '$': // Command reply, ignore
+        break;
     default:
         this->reply(F("BAD (Invalid command)"));
         break;

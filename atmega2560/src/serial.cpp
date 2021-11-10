@@ -19,7 +19,7 @@ void CommandSerial::init() {
 }
 
 void CommandSerial::replyFirst() {
-    this->sendFirst("R");
+    this->sendFirst("$");
     this->sendNext(String(this->command));
 }
 

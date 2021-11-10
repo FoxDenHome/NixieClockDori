@@ -33,7 +33,7 @@ def _readline(data, retryAfter = 5):
 
 		line = line[lineStart + 1:]
 
-		if line[0] != "R":
+		if line[0] != "$":
 			print("# %s" % line)
 			continue
 		

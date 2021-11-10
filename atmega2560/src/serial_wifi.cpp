@@ -24,8 +24,8 @@ void WifiSerial::handle() {
             parseTimeFromSerial(this->buffer);
             hostSerial.sendFirst(F("<NTP: "));
             break;
-        case 'R': // Respond
-            hostSerial.sendFirst(F("RN"));
+        case '$': // Respond
+            hostSerial.sendFirst(F("$N"));
             break;
     }
     hostSerial.sendEnd(this->buffer);
