@@ -27,7 +27,7 @@ void HostSerial::handle() {
         // ^T175630010318
     case 'T':
         if (this->buffer.length() < 12) {
-            this->reply(F("BAD (Invalid length; expected 12)"));
+            this->reply(F("BAD Invalid length; expected 12"));
             break;
         }
 
@@ -93,7 +93,7 @@ void HostSerial::handle() {
                 this->reply(F("OK"));
                 break;
             }
-            this->reply(F("BAD (Invalid length; expected 20 or 0)"));
+            this->reply(F("BAD Invalid length; expected 20 or 0"));
             break;
         }
 
@@ -125,7 +125,7 @@ void HostSerial::handle() {
         // ^WR
     case 'W':
         if (this->buffer.length() < 1) {
-            this->reply(F("BAD (Invalid length; expected 1)"));
+            this->reply(F("BAD Invalid length; expected 1"));
             break;
         }
         displayStopwatch.setColorFromInput(1, EEPROM_STORAGE_STOPWATCH_RGB, this->buffer);
@@ -145,7 +145,7 @@ void HostSerial::handle() {
             break;
         default:
             tmpData = false;
-            this->reply(F("BAD (Invalid C)"));
+            this->reply(F("BAD Invalid C"));
             break;
         }
         if (tmpData) {
@@ -158,7 +158,7 @@ void HostSerial::handle() {
         // ^E2
     case 'E':
         if (this->buffer.length() < 1) {
-            this->reply(F("BAD (Invalid length; expected 1)"));
+            this->reply(F("BAD Invalid length; expected 1"));
             break;
         }
         currentEffect = (DisplayEffect)(this->buffer[0] - '0');
@@ -173,7 +173,7 @@ void HostSerial::handle() {
         // ^L1
     case 'L':
         if (this->buffer.length() < 1) {
-            this->reply(F("BAD (Invalid length; expected 1)"));
+            this->reply(F("BAD Invalid length; expected 1"));
             break;
         }
 
@@ -187,14 +187,14 @@ void HostSerial::handle() {
             this->reply(F("OK 1"));
             break;
         default:
-            this->reply(F("BAD (Invalid argument)"));
+            this->reply(F("BAD Invalid argument"));
             break;
         }
         break;
         // ^N [data]
     case 'N':
         if (this->buffer.length() < 1) {
-            this->reply(F("BAD (Invalid length; expected 1)"));
+            this->reply(F("BAD Invalid length; expected 1"));
             break;
         }
         wifiSerial.send(this->buffer);
@@ -204,7 +204,7 @@ void HostSerial::handle() {
     case '$': // Command reply, ignore
         break;
     default:
-        this->reply(F("BAD (Invalid command)"));
+        this->reply(F("BAD Invalid command"));
         break;
     }
 }

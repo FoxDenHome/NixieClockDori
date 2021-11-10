@@ -10,12 +10,12 @@ ArduinoSerial::ArduinoSerial(HardwareSerial& serial) : CommandSerial(serial) {
 
 void ArduinoSerial::processEEPROMCommand(const int offset) {
     if (this->buffer.length() < 1) {
-        this->replyFirst("Read: ");
+        this->replyFirst(F("OK Read: "));
         this->sendEnd(eepromRead(offset));
         return;
     }
     eepromWrite(offset, this->buffer);
-    this->reply("Write OK");
+    this->reply(F("OK Write"));
 }
 
 void ArduinoSerial::httpFlash() {
@@ -24,18 +24,18 @@ void ArduinoSerial::httpFlash() {
         HTTPUpdateResult ret = ESPhttpUpdate.update(client, this->buffer);
         switch (ret) {
             case HTTP_UPDATE_FAILED:
-                this->replyFirst("FAIL");
+                this->replyFirst(F("BAD "));
                 this->sendEnd(ESPhttpUpdate.getLastErrorString());
                 break;
             case HTTP_UPDATE_NO_UPDATES:
-                this->reply("No updates");
+                this->reply(F("OK No updates"));
                 break;
             case HTTP_UPDATE_OK:
-                this->reply("Update OK");
+                this->reply(F("OK Updated"));
                 ESP.restart();
                 break;
             default:
-                this->reply("Unknown update error");
+                this->reply(F("BAD Unknown update error"));
                 break;
         }
 }
@@ -62,10 +62,10 @@ void ArduinoSerial::handle() {
             break;
         case 'C': // Commit
             eepromCommit();
-            this->reply("Commit OK");
+            this->reply(F("OK Commit"));
             break;
         case 'R': // Reset
-            this->reply("Reset");
+            this->reply(F("OK Reset"));
             ESP.reset();
             break;
         case 'F': // Flash from HTTP
@@ -76,7 +76,7 @@ void ArduinoSerial::handle() {
         case '$': // Command reply, ignore
             break;
         default:
-            this->reply("Unknown command");
+            this->reply(F("BAD Unknown command"));
             break;
     }
 }
