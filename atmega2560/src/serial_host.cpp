@@ -24,7 +24,7 @@ void HostSerial::handle() {
         // T HH II SS DD MM YY
         // H = Hours, I = Minutes, S = Seconds, D = Day of month, M = month, Y = year (ALL Dec)
         // Sets the time on the clock
-        // ^T175630010318|17199
+        // ^T175630010318
     case 'T':
         if (this->buffer.length() < 12) {
             this->reply(F("BAD (Invalid length; expected 12)"));
@@ -48,13 +48,13 @@ void HostSerial::handle() {
         break;
         // H
         // Pings the display ("Hello")
-        // ^H|10300
+        // ^H
     case 'H':
         this->reply(F("OK " FW_VERSION));
         break;
         // X
         // Performs a display reset of all modes
-        // ^X|14861
+        // ^X
     case 'X':
         MCUSR = 0;
         wdt_disable();
@@ -69,9 +69,9 @@ void HostSerial::handle() {
         // P [CC]
         // C = Count (Dec)
         // Performs an anti poisoning routine <C> times
-        // ^P04|-7920
-        // ^P01|-20043
-        // ^P|-17659
+        // ^P04
+        // ^P01
+        // ^P
     case 'P':
         if (this->buffer.length() < 2) {
             displayAntiPoisonOff();
@@ -85,7 +85,7 @@ void HostSerial::handle() {
         // M = milliseconds (Dec), D = dots (Bitmask Dec) to show the message, N = Nixie message (Dec), R = Red (Hex), G = Green (Hex), B = Blue (Hex)
         // Shows a "flash"/"alert" message on the clock (will show this message instead of the time for <M> milliseconds. Does not use/reset hold when 0). Dots are bit 1 for lower and bit 2 for upper. Turned off when HIGH
         // If sent without any parameters, resets current flash message and goes back to clock mode
-        // ^F000010002131337 *012|26595
+        // ^F000010002131337 *012
     case 'F':
         if (this->buffer.length() < 20) {
             if (this->buffer.length() < 1) {
@@ -104,8 +104,8 @@ void HostSerial::handle() {
         // C [MMMMMMMM [RR GG BB]]
         // M = Time in ms (Dec), R = Red (Hex), G = Green (Hex), B = Blue (Hex)
         // Starts a countdown for <M> ms. Stops countdown if <M> = 0
-        // ^C00010000|9735
-        // ^C|-26281
+        // ^C00010000
+        // ^C
     case 'C':
         if (this->buffer.length() < 8) {
             displayCountdown.reset();
@@ -121,8 +121,8 @@ void HostSerial::handle() {
         // W C [RR GG BB]
         // C = subcommand, R = Red (Hex), G = Green (Hex), B = Blue (Hex)
         // Controls the stopwatch. R for reset/disable, P for pause, U for un-pause, S for start/restart
-        // ^WS|-8015
-        // ^WR|-3952
+        // ^WS
+        // ^WR
     case 'W':
         if (this->buffer.length() < 1) {
             this->reply(F("BAD (Invalid length; expected 1)"));
@@ -153,9 +153,9 @@ void HostSerial::handle() {
             this->reply(F("OK"));
         }
         break;
-        // ^E0|-9883
-        // ^E1|-14012
-        // ^E2|-1753
+        // ^E0
+        // ^E1
+        // ^E2
     case 'E':
         if (this->buffer.length() < 1) {
             this->reply(F("BAD (Invalid length; expected 1)"));
@@ -164,12 +164,13 @@ void HostSerial::handle() {
         currentEffect = (DisplayEffect)(this->buffer[0] - '0');
         this->reply(F("OK"));
         break;
-        // ^D|-5712
-        // ^D111|-15634
+        // ^D
     case 'D':
         this->replyFirst(F("OK "));
         this->sendEnd(String(mu_freeRam()));
         break;
+        // ^L0
+        // ^L1
     case 'L':
         if (this->buffer.length() < 1) {
             this->reply(F("BAD (Invalid length; expected 1)"));
@@ -190,6 +191,7 @@ void HostSerial::handle() {
             break;
         }
         break;
+        // ^N [data]
     case 'N':
         if (this->buffer.length() < 1) {
             this->reply(F("BAD (Invalid length; expected 1)"));
