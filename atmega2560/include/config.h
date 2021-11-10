@@ -6,5 +6,5 @@
 #define DISPLAY_RENDER_STEP 200
 #define DISPLAY_CYCLE_PERIOD 30000000
 
-#define CONTROL_SERIAL Serial
+#define HOST_SERIAL Serial
 #define WIFI_SERIAL Serial3

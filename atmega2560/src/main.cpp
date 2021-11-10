@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <EEPROM.h>
-#include <MemoryUsage.h>
 #include <OneButton.h>
 
 #include <avr/wdt.h>
@@ -15,33 +14,7 @@
 #include "DisplayDriver.h"
 #include "DisplayTask.h"
 #include "version.h"
-#include "serial_wifi.h"
-#include "serial_host.h"
-
-#include "DisplayTask_Clock.h"
-#include "DisplayTask_Date.h"
-#include "DisplayTask_Stopwatch.h"
-#include "DisplayTask_Countdown.h"
-#include "DisplayTask_Flash.h"
-#include "DisplayTask_Temperature.h"
-
-/****************/
-/* PROGRAM CODE */
-/****************/
-
-WifiSerial wifiSerial(WIFI_SERIAL);
-HostSerial hostSerial(CONTROL_SERIAL);
-
-/******************/
-/* TASK VARIABLES */
-/******************/
-
-DisplayTask_Clock displayClock;
-DisplayTask_Date displayDate;
-DisplayTask_Stopwatch displayStopwatch;
-DisplayTask_Countdown displayCountdown;
-DisplayTask_Flash displayFlash;
-DisplayTask_Temperature displayTemp;
+#include "variables.h"
 
 /**************************/
 /* ARDUINO EVENT HANDLERS */
