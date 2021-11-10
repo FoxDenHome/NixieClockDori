@@ -5,11 +5,11 @@
 
 #include "serial_host.h"
 #include "serial_wifi.h"
-#include "serialtime.h"
 #include "const.h"
 #include "version.h"
 #include "reset.h"
 #include "variables.h"
+#include "rtc.h"
 
 #include "Display.h"
 
@@ -30,8 +30,21 @@ void HostSerial::handle() {
             this->reply(F("BAD (Invalid length; expected 12)"));
             break;
         }
-        parseTimeFromSerial(this->buffer);
+
+        tmElements_t tm;
+        tm.Hour = this->buffer.substring(0, 2).toInt();
+        tm.Minute = this->buffer.substring(2, 4).toInt();
+        tm.Second = this->buffer.substring(4, 6).toInt();
+        tm.Day = this->buffer.substring(5, 8).toInt();
+        tm.Month = this->buffer.substring(8, 10).toInt();
+        tm.Year = y2kYearToTm(this->buffer.substring(10, 12).toInt());
+        rtcSetTime(tm);
+
+        hostSerial.echoFirst(F("Time changed: "));
+        hostSerial.sendEnd(this->buffer);
+
         this->reply(F("OK"));
+
         break;
         // H
         // Pings the display ("Hello")
