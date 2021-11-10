@@ -13,7 +13,7 @@ WifiSerial::WifiSerial(HardwareSerial& serial) : CommandSerial(serial) {
 
 void WifiSerial::handle() {
     switch (this->command) {
-        case 'E': // Echo
+        case '<': // Echo
             hostSerial.sendFirst(F("<WiFi: "));
             break;
         case 'T': // Time
@@ -25,7 +25,7 @@ void WifiSerial::handle() {
             hostSerial.sendFirst(F("<NTP: "));
             break;
         case 'R': // Respond
-            hostSerial.sendFirst(F("N"));
+            hostSerial.sendFirst(F("RN"));
             break;
     }
     hostSerial.sendEnd(this->buffer);

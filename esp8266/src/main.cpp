@@ -34,16 +34,16 @@ char ntp_server[EEPROM_LEN_STRING];
 char hostname[EEPROM_LEN_STRING];
 void setup() {
   arduinoSerial.init();
-  arduinoSerial.send(F("EBooting..."));
+  arduinoSerial.send(F("<Booting..."));
   eepromInit();
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(eepromRead(EEPROM_WIFI_SSID), eepromRead(EEPROM_WIFI_PASSWORD));
 
   if (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    arduinoSerial.send(F("EConnection Failed! Please configure!"));
+    arduinoSerial.send(F("<Connection Failed! Please configure!"));
   } else {
-    arduinoSerial.send(F("EConnected"));
+    arduinoSerial.send(F("<Connected"));
   }
 
   strcpy(hostname, eepromRead(EEPROM_OTA_HOSTNAME).c_str());

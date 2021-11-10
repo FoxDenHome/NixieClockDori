@@ -8,21 +8,6 @@ ArduinoSerial::ArduinoSerial(HardwareSerial& serial) : CommandSerial(serial) {
 
 }
 
-void ArduinoSerial::replyFirst() {
-    this->sendFirst("R");
-    this->sendNext(String(this->command));
-}
-
-void ArduinoSerial::replyFirst(const String& reply) {
-    this->replyFirst();
-    this->sendNext(reply);
-}
-
-void ArduinoSerial::reply(const String& reply) {
-    this->replyFirst(reply);
-    this->sendEnd();
-}
-
 void ArduinoSerial::processEEPROMCommand(const int offset) {
     if (this->buffer.length() < 1) {
         this->replyFirst("Read: ");

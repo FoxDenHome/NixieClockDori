@@ -33,27 +33,37 @@ def _readline(data, retryAfter = 5):
 
 		line = line[lineStart + 1:]
 
+		if line[0] != "R":
+			print("# %s" % line)
+			continue
+		
+		line = line[1:]
+
 		lineChar = ord(line[0])
 		matchChar = data[1]
 		try:
 			matchChar = ord(matchChar)
 		except:
 			pass
+		line = line[1:]
 
-		if lineChar in DOUBLE_CHARS and lineChar == matchChar:
-			lineChar = ord(line[1])
+		if lineChar in DOUBLE_CHARS and lineChar == matchChar and len(data) > 3:
+			lineChar = ord(line[0])
 			matchChar = data[2]
 			try:
 				matchChar = ord(matchChar)
 			except:
 				pass
+			line = line[1:]
 
 		if lineChar == matchChar:
 			return line
 		else:
-			print("Got async data: %s" % line)
+			print("# %s" % line)
 
 def sendCommand(cmd):
+	if len(cmd) < 1:
+		return "No command given"
 	data = "^%s\n" % cmd
 	data = _bytes(data)
 	nixieCOM.write(data)

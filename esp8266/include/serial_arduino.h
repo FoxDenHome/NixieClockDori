@@ -14,7 +14,4 @@ protected:
 private:
     void processEEPROMCommand(const int offset);
     void httpFlash();
-    void replyFirst();
-    void replyFirst(const String& reply);
-    void reply(const String& reply);
 };

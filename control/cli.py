@@ -6,5 +6,5 @@ from sys import argv
 if __name__ == "__main__":
 	print("Connecting...")
 	print(connect(argv[1]))
-	for arg in argv[2:]:
-		print(sendCommand(arg))
+	while True:
+		print(sendCommand(input("$ ")))

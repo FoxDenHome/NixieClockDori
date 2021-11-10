@@ -20,6 +20,10 @@ public:
 protected:
 	virtual void handle() = 0;
 
+    void replyFirst();
+    void replyFirst(const String& reply);
+    void reply(const String& reply);
+
 	HardwareSerial* serial;
 	String buffer;
 	byte commandState;
