@@ -14,6 +14,8 @@ def _bytes(data):
 
 nixieCOM = Serial()
 
+DOUBLE_CHARS = set([ord('N')])
+
 def _readline(data, retryAfter = 5):
 	i = 0
 	while True:
@@ -37,6 +39,15 @@ def _readline(data, retryAfter = 5):
 			matchChar = ord(matchChar)
 		except:
 			pass
+
+		if lineChar in DOUBLE_CHARS and lineChar == matchChar:
+			lineChar = ord(line[1])
+			matchChar = data[2]
+			try:
+				matchChar = ord(matchChar)
+			except:
+				pass
+
 		if lineChar == matchChar:
 			return line
 		else:
