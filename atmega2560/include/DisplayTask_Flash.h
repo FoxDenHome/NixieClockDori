@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Arduino.h>
+
 #include "DisplayTask.h"
 
 class DisplayTask_Flash : public DisplayTask {
@@ -12,7 +14,7 @@ public:
 	unsigned long lastUpdate = 0;
 	bool allowEffects = true;
 
-	void setDataFromSerial();
+	void setDataFromSerial(const String& data);
 
 protected:
 	bool _canShow() const override;

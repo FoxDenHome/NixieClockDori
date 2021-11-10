@@ -1,6 +1,6 @@
 #include "DisplayTask_Flash.h"
 #include "Display.h"
-#include "crcserial.h"
+#include "serial.h"
 
 static uint16_t charToTube(const byte chr) {
 	switch (chr) {
@@ -56,20 +56,20 @@ bool DisplayTask_Flash::_canShow() const {
 	return this->endTime > 0 && millis() < this->endTime;
 }
 
-void DisplayTask_Flash::setDataFromSerial() {
+void DisplayTask_Flash::setDataFromSerial(const String& data) {
 	const unsigned long curMillis = millis();
 
 	this->allowEffects = (curMillis - this->lastUpdate) >= 400;
 	this->lastUpdate = curMillis;
-	this->endTime = curMillis + (unsigned long)inputString.substring(1, 9).toInt();
+	this->endTime = curMillis + (unsigned long)data.substring(0, 8).toInt();
 
-	this->dotMask = (inputString[9] - '0') | ((inputString[10] - '0') << 2) | ((inputString[11] - '0') << 4);
+	this->dotMask = (data[8] - '0') | ((data[9] - '0') << 2) | ((data[10] - '0') << 4);
 
 	for (byte i = 0; i < 9; i++) {
-		this->setDisplayData(i, charToTube(inputString[i + 12]));
+		this->setDisplayData(i, charToTube(data[i + 11]));
 	}
 
-	this->setColorFromInput(16, -1);
+	this->setColorFromInput(20, -1, data);
 	this->showIfPossibleOtherwiseRotateIfCurrent();
 }
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from datetime import datetime
-from crcSerial import sendCommand, connect
+from cmdSerial import sendCommand, connect
 from sys import argv
 from time import sleep
 

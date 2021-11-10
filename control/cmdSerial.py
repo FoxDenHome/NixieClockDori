@@ -1,4 +1,3 @@
-from binascii import crc_hqx
 from serial import Serial
 
 bytesHasTwoArgs = False
@@ -14,9 +13,6 @@ def _bytes(data):
 	return bytes(data)
 
 nixieCOM = Serial()
-
-def _crc(data):
-	return crc_hqx(_bytes(data), 0xffff)
 
 def _readline(data, retryAfter = 5):
 	i = 0
@@ -34,31 +30,20 @@ def _readline(data, retryAfter = 5):
 			continue
 
 		line = line[lineStart + 1:]
-		lineStart = line.find('|')
-		if lineStart < 0:
-			continue
 
-		readCrc = int(line[lineStart+1:], 10)
-		line = line[:lineStart]
-		calcCrc = _crc(line)
-
-		if readCrc == calcCrc:
-			lineChar = ord(line[0])
-			matchChar = data[1]
-			try:
-				matchChar = ord(matchChar)
-			except:
-				pass
-			if lineChar == matchChar:
-				return line
-			else:
-				print("Got async data: %s" % line)
+		lineChar = ord(line[0])
+		matchChar = data[1]
+		try:
+			matchChar = ord(matchChar)
+		except:
+			pass
+		if lineChar == matchChar:
+			return line
 		else:
-			print("CRC mismatch: %s" % line)
+			print("Got async data: %s" % line)
 
 def sendCommand(cmd):
-	checksum = _crc(cmd)
-	data = "^%s|%d\n" % (cmd, checksum)
+	data = "^%s\n" % cmd
 	data = _bytes(data)
 	nixieCOM.write(data)
 	nixieCOM.flush()

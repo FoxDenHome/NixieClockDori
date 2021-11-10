@@ -47,7 +47,7 @@ public:
 	void saveColor(int16_t addr);
 	void loadColor(int16_t addr);
 	void setDisplayData(const byte offset, const uint16_t data);
-	void setColorFromInput(const byte offset, const int16_t eepromBase);
+	void setColorFromInput(const byte offset, const int16_t eepromBase, const String& data);
 
 protected:
 	static unsigned long lastButtonPress;

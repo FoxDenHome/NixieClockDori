@@ -23,11 +23,11 @@ static void processEEPROMCommand(const int offset) {
     if (inputString.length() < 1) {
         Serial.print("^RRead: ");
         Serial.print(eepromRead(offset));
-        Serial.println("$");
+        Serial.print('\n');
         return;
     }
     eepromWrite(offset, inputString);
-    Serial.println("^RWrite OK$");
+    Serial.println("^RWrite OK");
 }
 
 static void httpFlash() {
@@ -38,17 +38,17 @@ static void httpFlash() {
             case HTTP_UPDATE_FAILED:
                 Serial.print("^RFAIL: ");
                 Serial.print(ESPhttpUpdate.getLastErrorString());
-                Serial.println("$");
+                Serial.print('\n');
                 break;
             case HTTP_UPDATE_NO_UPDATES:
-                Serial.println("^RNo updates!$");
+                Serial.println("^RNo updates");
                 break;
             case HTTP_UPDATE_OK:
-                Serial.println("^RUpdate OK!$");
+                Serial.println("^RUpdate OK");
                 ESP.restart();
                 break;
             default:
-                Serial.println("^RUpdate unknown error!$");
+                Serial.println("^RUpdate unknown error");
                 break;
         }
 }
@@ -75,17 +75,17 @@ static void serialProcessCommand() {
             break;
         case 'C': // Commit
             eepromCommit();
-            Serial.println("^RCommit OK$");
+            Serial.println("^RCommit OK");
             break;
         case 'R': // Reset
-            Serial.println("^RReset!$");
+            Serial.println("^RReset!");
             ESP.reset();
             break;
         case 'F': // Flash from HTTP
             httpFlash();
             break;
         default:
-            Serial.println("^RUnknown command$");
+            Serial.println("^RUnknown command");
             break;
     }
 }
@@ -93,6 +93,10 @@ static void serialProcessCommand() {
 void serialLoop() {
     while (Serial.available()) {
         char data = Serial.read();
+
+        if (data == '\r' || data == '\t') {
+            continue;
+        }
 
         if (data == '^') {
             serialCommandState = STATE_LOOKING_FOR_COMMAND;
@@ -108,7 +112,7 @@ void serialLoop() {
                 serialCommandState = STATE_LOOKING_FOR_END;
                 break;
             case STATE_LOOKING_FOR_END:
-                if (data == '$') {
+                if (data == '\n') {
                     serialProcessCommand();
                     serialCommandState = STATE_LOOKING_FOR_START;
                     break;

@@ -1,8 +1,9 @@
 #include <Arduino.h>
 #include <TimeLib.h>
 #include <DS3232RTC.h>
-#include "crcserial.h"
+
 #include "rtc.h"
+#include "variables.h"
 
 void rtcSetTimeRaw(const time_t t) {
 	setTime(t);
@@ -16,7 +17,7 @@ void rtcSetTime(tmElements_t& tm) {
 void rtcInit() {
 	setSyncProvider(RTC.get);
 	if (timeStatus() != timeSet) {
-		serialSendF("< Warning! Unable to sync with RTC! Try setting the time?");
+		hostSerial.send("< Warning! Unable to sync with RTC! Try setting the time?");
 	}
 }
 

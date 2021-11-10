@@ -21,7 +21,7 @@ void time_is_set(bool is_sntp){
   }
   time(&now);
   localtime_r(&now, &now_tm);
-  Serial.printf("^T%02d%02d%02d%02d%02d%02d$\n", now_tm.tm_hour, now_tm.tm_min, now_tm.tm_sec, now_tm.tm_mday, now_tm.tm_mon, now_tm.tm_year % 100);
+  Serial.printf("^T%02d%02d%02d%02d%02d%02d\n", now_tm.tm_hour, now_tm.tm_min, now_tm.tm_sec, now_tm.tm_mday, now_tm.tm_mon, now_tm.tm_year % 100);
 }
 
 char tz[EEPROM_LEN_STRING];
@@ -29,16 +29,16 @@ char ntp_server[EEPROM_LEN_STRING];
 char hostname[EEPROM_LEN_STRING];
 void setup() {
   Serial.begin(115200);
-  Serial.println(F("^EBooting...$"));
+  Serial.println(F("^EBooting..."));
   eepromInit();
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(eepromRead(EEPROM_WIFI_SSID), eepromRead(EEPROM_WIFI_PASSWORD));
 
   if (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println(F("^EConnection Failed! Please configure!$"));
+    Serial.println(F("^EConnection Failed! Please configure!"));
   } else {
-    Serial.println(F("^EConnected!$"));
+    Serial.println(F("^EConnected!"));
   }
 
   strcpy(hostname, eepromRead(EEPROM_OTA_HOSTNAME).c_str());

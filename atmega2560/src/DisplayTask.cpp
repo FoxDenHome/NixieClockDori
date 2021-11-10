@@ -6,7 +6,7 @@
 #include "reset.h"
 #include "temperature.h"
 #include "const.h"
-#include "crcserial.h"
+#include "serial.h"
 #include "utils.h"
 
 DisplayTask *dt_first;
@@ -131,13 +131,13 @@ bool DisplayTask::showShortTime(const unsigned long timeMs, bool trimLZ) {
 	return false;
 }
 
-void DisplayTask::setColorFromInput(const byte offset, const int16_t eepromBase) {
-	if (inputString.length() < (unsigned int)offset + 6) {
+void DisplayTask::setColorFromInput(const byte offset, const int16_t eepromBase, const String& data) {
+	if (data.length() < (unsigned int)offset + 6) {
 		return;
 	}
-	this->red = hexInputToByte(offset);
-	this->green = hexInputToByte(offset + 2);
-	this->blue = hexInputToByte(offset + 4);
+	this->red = hexInputToByte(offset, data);
+	this->green = hexInputToByte(offset + 2, data);
+	this->blue = hexInputToByte(offset + 4, data);
 	this->saveColor(eepromBase);
 }
 
