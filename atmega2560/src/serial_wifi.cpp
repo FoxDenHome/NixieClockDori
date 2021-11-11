@@ -14,13 +14,14 @@ void WifiSerial::handle() {
     switch (this->command) {
         case '<': // Echo
             hostSerial.echoFirst(F("WiFi: "));
+            hostSerial.sendEnd(this->buffer);
             break;
         case '$': // Respond
             hostSerial.sendFirst(F("$N"));
+            hostSerial.sendEnd(this->buffer);
             break;
         default:
             HostSerial::handle();
-            return;
+            break;
     }
-    hostSerial.sendEnd(this->buffer);
 }
