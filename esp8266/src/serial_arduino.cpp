@@ -3,6 +3,9 @@
 
 #include "serial_arduino.h"
 #include "eeprom.h"
+#include "mqtt.h"
+
+ArduinoSerial arduinoSerial(Serial);
 
 ArduinoSerial::ArduinoSerial(HardwareSerial& serial) : CommandSerial(serial) {
 
@@ -60,20 +63,35 @@ void ArduinoSerial::handle() {
         case 'O': // OTA password
             this->processEEPROMCommand(EEPROM_OTA_PASSWORD);
             break;
+        case 'M': // MQTT broker/server
+            this->processEEPROMCommand(EEPROM_MQTT_BROKER);
+            break;
+        case 'A': // MQTT username
+            this->processEEPROMCommand(EEPROM_MQTT_USERNAME);
+            break;
+        case 'B': // MQTT password
+            this->processEEPROMCommand(EEPROM_MQTT_PASSWORD);
+            break;
+        case 'D': // MQTT topic
+            this->processEEPROMCommand(EEPROM_MQTT_TOPIC);
+            break;
         case 'C': // Commit
             eepromCommit();
             this->reply(F("OK Commit"));
             break;
         case 'R': // Reset
             this->reply(F("OK Reset"));
+            this->serial->print("\n\n\n\n");
             ESP.reset();
             break;
         case 'F': // Flash from HTTP
             this->httpFlash();
             break;
         case '<': // Echo, ignore
+            mqttSend(this->command + this->buffer);
             break;
         case '$': // Command reply, ignore
+            mqttSend(this->command + this->buffer);
             break;
         default:
             this->reply(F("BAD Unknown command"));

@@ -15,3 +15,5 @@ private:
     void processEEPROMCommand(const int offset);
     void httpFlash();
 };
+
+extern ArduinoSerial arduinoSerial;

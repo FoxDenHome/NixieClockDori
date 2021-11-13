@@ -4,16 +4,18 @@
 #include <time.h>
 #include <coredecls.h>
 #include <sntp.h>
+#include <PubSubClient.h>
 
 #include "config.h"
 #include "serial_arduino.h"
 #include "eeprom.h"
-
-ArduinoSerial arduinoSerial(Serial);
+#include "mqtt.h"
 
 uint32_t sntp_update_delay_MS_rfc_not_less_than_15000() {
   return NTP_UPDATE_INTERVAL;
 }
+
+bool wifiConnected = false;
 
 time_t now;
 tm now_tm;
@@ -42,8 +44,10 @@ void setup() {
 
   if (WiFi.waitForConnectResult() != WL_CONNECTED) {
     arduinoSerial.echo(F("Connection Failed! Please configure!"));
+    return;
   } else {
     arduinoSerial.echo(F("Connected"));
+    wifiConnected = true;
   }
 
   strcpy(hostname, eepromRead(EEPROM_OTA_HOSTNAME).c_str());
@@ -56,9 +60,14 @@ void setup() {
   strcpy(tz, eepromRead(EEPROM_TIME_ZONE).c_str());
   strcpy(ntp_server, eepromRead(EEPROM_NTP_SERVER).c_str());
   configTime(tz, ntp_server);
+
+  mqttInit();
 }
 
 void loop() {
-  ArduinoOTA.handle();
   arduinoSerial.loop();
+  if (!wifiConnected) {
+    return;
+  }
+  ArduinoOTA.handle();
 }
