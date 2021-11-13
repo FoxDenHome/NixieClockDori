@@ -11,6 +11,8 @@
 WiFiClient espMqttClient;
 PubSubClient mqttClient(espMqttClient);
 
+bool mqttEnabled = false;
+
 char mqttTopicSub[EEPROM_LEN_STRING];
 char mqttTopicPub[EEPROM_LEN_STRING];
 char mqttBroker[EEPROM_LEN_STRING];
@@ -20,6 +22,31 @@ void mqttCallback(char *topic, byte *payload, unsigned int len) {
     memcpy(str, payload, len);
     str[len] = 0;
     arduinoSerial.send(String(str));
+}
+
+bool mqttEnsureConnected() {
+    if (!mqttEnabled) {
+        return false;
+    }
+
+    if (mqttClient.connected()) {
+        return true;
+    }
+
+    mqttClient.setServer(mqttBroker, MQTT_PORT);
+    mqttClient.setCallback(mqttCallback);
+    String clientId = "esp-nixie-clock-dori-" + String(WiFi.macAddress());
+
+    if (!mqttClient.connect(clientId.c_str(), eepromRead(EEPROM_MQTT_USERNAME).c_str(), eepromRead(EEPROM_MQTT_PASSWORD).c_str())) {
+        arduinoSerial.echoFirst("MQTT could not connect: ");
+        arduinoSerial.sendEnd(String(mqttClient.state()));
+        return false;
+    }
+
+    arduinoSerial.echo("MQTT connected");
+
+    mqttClient.subscribe(mqttTopicSub);
+    return true;
 }
 
 void mqttInit() {
@@ -35,23 +62,12 @@ void mqttInit() {
     String _mqttTopicPub = _mqttTopic + "/out";
     strcpy(mqttTopicPub, _mqttTopicPub.c_str());
 
-    mqttClient.setServer(mqttBroker, MQTT_PORT);
-    mqttClient.setCallback(mqttCallback);
-    String clientId = "esp-nixie-clock-dori-" + String(WiFi.macAddress());
-
-    if (!mqttClient.connect(clientId.c_str(), eepromRead(EEPROM_MQTT_USERNAME).c_str(), eepromRead(EEPROM_MQTT_PASSWORD).c_str())) {
-        arduinoSerial.echoFirst("MQTT could not connect: ");
-        arduinoSerial.sendEnd(String(mqttClient.state()));
-        return;
-    }
-
-    arduinoSerial.echo("MQTT connected");
-
-    mqttClient.subscribe(mqttTopicSub);
+    mqttEnabled = true;
+    mqttEnsureConnected();
 }
 
 void mqttSend(const String& data) {
-    if (!mqttClient.connected()) {
+    if (!mqttEnsureConnected()) {
         return;
     }
     mqttClient.publish(mqttTopicPub, data.c_str());
