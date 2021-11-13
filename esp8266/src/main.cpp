@@ -70,4 +70,5 @@ void loop() {
     return;
   }
   ArduinoOTA.handle();
+  mqttLoop();
 }

@@ -66,6 +66,10 @@ void mqttInit() {
     mqttEnsureConnected();
 }
 
+void mqttLoop() {
+    mqttClient.loop();
+}
+
 void mqttSend(const String& data) {
     if (!mqttEnsureConnected()) {
         return;
