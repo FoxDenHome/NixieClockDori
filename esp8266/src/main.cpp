@@ -40,6 +40,13 @@ void setup() {
   eepromInit();
 
   WiFi.mode(WIFI_STA);
+
+  strcpy(hostname, eepromRead(EEPROM_OTA_HOSTNAME).c_str());
+  if (strlen(hostname) < 1) {
+    strcpy(hostname, WiFi.getHostname());
+  }
+
+  WiFi.setHostname(hostname);
   WiFi.begin(eepromRead(EEPROM_WIFI_SSID), eepromRead(EEPROM_WIFI_PASSWORD));
 
   if (WiFi.waitForConnectResult() != WL_CONNECTED) {
@@ -50,7 +57,6 @@ void setup() {
     wifiConnected = true;
   }
 
-  strcpy(hostname, eepromRead(EEPROM_OTA_HOSTNAME).c_str());
   ArduinoOTA.setHostname(hostname);
   ArduinoOTA.setPassword(eepromRead(EEPROM_OTA_PASSWORD).c_str());
   ArduinoOTA.begin();
