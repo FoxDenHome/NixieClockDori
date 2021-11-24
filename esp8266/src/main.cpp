@@ -27,7 +27,7 @@ void time_is_set(bool is_sntp){
   time(&now);
   localtime_r(&now, &now_tm);
 
-  sprintf(timeSerialBuffer, "T%02d%02d%02d%02d%02d%02d", now_tm.tm_hour, now_tm.tm_min, now_tm.tm_sec, now_tm.tm_mday, now_tm.tm_mon, now_tm.tm_year % 100);
+  sprintf(timeSerialBuffer, "T%02d%02d%02d%02d%02d%02d", now_tm.tm_hour, now_tm.tm_min, now_tm.tm_sec, now_tm.tm_mday, now_tm.tm_mon + 1, now_tm.tm_year % 100);
   arduinoSerial.send(String(timeSerialBuffer));
 }
 

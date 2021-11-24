@@ -35,7 +35,7 @@ void HostSerial::handle() {
         tm.Hour = this->buffer.substring(0, 2).toInt();
         tm.Minute = this->buffer.substring(2, 4).toInt();
         tm.Second = this->buffer.substring(4, 6).toInt();
-        tm.Day = this->buffer.substring(5, 8).toInt();
+        tm.Day = this->buffer.substring(6, 8).toInt();
         tm.Month = this->buffer.substring(8, 10).toInt();
         tm.Year = y2kYearToTm(this->buffer.substring(10, 12).toInt());
         rtcSetTime(tm);
