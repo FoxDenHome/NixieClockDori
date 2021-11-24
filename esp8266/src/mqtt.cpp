@@ -25,6 +25,10 @@ void mqttCallback(char *topic, byte *payload, unsigned int len) {
 }
 
 bool mqttEnsureConnected() {
+    if (!WiFi.isConnected()) {
+        return false;
+    }
+
     if (!mqttEnabled) {
         return false;
     }

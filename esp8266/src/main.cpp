@@ -51,10 +51,8 @@ void setup() {
 
   if (WiFi.waitForConnectResult() != WL_CONNECTED) {
     arduinoSerial.echo(F("Connection Failed! Please configure!"));
-    return;
   } else {
     arduinoSerial.echo(F("Connected"));
-    wifiConnected = true;
   }
 
   ArduinoOTA.setHostname(hostname);
@@ -70,11 +68,32 @@ void setup() {
   mqttInit();
 }
 
-void loop() {
-  arduinoSerial.loop();
-  if (!wifiConnected) {
+void checkWiFiTimeout() {
+  static unsigned long lastWiFiConnected = 0;
+  static unsigned long lastWiFiChecked = 0;
+  const unsigned long currentMilis = millis();
+
+  if ((currentMilis - lastWiFiChecked) <= WIFI_CHECK_INTERVAL) {
     return;
   }
+  lastWiFiChecked = currentMilis;
+
+  if (WiFi.isConnected()) {
+    lastWiFiConnected = currentMilis;
+    return;
+  }
+
+  if ((currentMilis - lastWiFiConnected) <= WIFI_TIMEOUT) {
+    return;
+  }
+
+  arduinoSerial.echo(F("Not connected for too long. Resetting..."));
+  ESP.reset();
+}
+
+void loop() {
+  arduinoSerial.loop();
   ArduinoOTA.handle();
   mqttLoop();
+  checkWiFiTimeout();
 }
