@@ -41,7 +41,7 @@ bool DisplayTask_Clock::refresh() {
 		const byte m = minute(_n);
 		const byte s = second(_n);
 
-		if (this->s != s) {
+		if (this->s != s || this->m != m || this->h != h) {
 			timeChanged = true;
 #ifdef CLOCK_TICK_HALFSECOND
 			lastSChange = curMillis;

@@ -76,7 +76,7 @@ bool DisplayTask_Date::refresh() {
 		const byte m = month(_n);
 		const byte d = day(_n);
 
-		dateChanged = (this->d != d);
+		dateChanged = (this->d != d || this->m != m || this->y != y);
 
 		this->y = y;
 		this->m = m;
