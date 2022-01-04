@@ -61,7 +61,7 @@ void CommandSerial::sendNext(const String& text) {
 }
 
 void CommandSerial::sendEnd() {
-	this->serial->print('\n');
+	this->serial->print("\r\n");
 }
 
 void CommandSerial::sendEnd(const String& text) {
