@@ -1,0 +1,43 @@
+esp8266:
+  board: esp12e
+
+uart:
+  rx_pin: RX
+  tx_pin: TX
+  id: uart_main
+  baud_rate: 115200
+  debug:
+    direction: RX
+    dummy_receiver: true
+    after:
+      delimiter: "\n"
+    sequence:
+      - lambda: UARTDebug::log_string(direction, bytes);
+
+time:
+  - platform: homeassistant
+    id: time_source
+    on_time_sync:
+      then:
+        - lambda: |-
+            char str[64];
+            tm now_tm;
+            time_t now = id(time_source).now().timestamp;
+            localtime_r(&now, &now_tm);
+            snprintf(str, 64, "^T%02d%02d%02d%02d%02d%02d\n", now_tm.tm_hour, now_tm.tm_min, now_tm.tm_sec, now_tm.tm_mday, now_tm.tm_mon + 1, now_tm.tm_year % 100);
+            id(uart_main).write_str(str);
+api:
+  services:
+    - service: nixie_clock_flash
+      variables:
+        duration: int
+        text: string
+        dots: string
+        red: int
+        green: int
+        blue: int
+      then:
+        - lambda: |-
+            char str[64];
+            snprintf(str, 64, "^F%08d%03s% 9s%02x%02x%02x\n", duration, dots.c_str(), text.c_str(), red, green, blue);
+            id(uart_main).write_str(str);
