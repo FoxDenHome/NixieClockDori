@@ -7,7 +7,7 @@ uart:
   id: uart_main
   baud_rate: 115200
   debug:
-    direction: RX
+    direction: BOTH
     dummy_receiver: true
     after:
       delimiter: "\n"
@@ -24,11 +24,12 @@ time:
             tm now_tm;
             time_t now = id(time_source).now().timestamp;
             localtime_r(&now, &now_tm);
-            snprintf(str, 64, "^T%02d%02d%02d%02d%02d%02d\n", now_tm.tm_hour, now_tm.tm_min, now_tm.tm_sec, now_tm.tm_mday, now_tm.tm_mon + 1, now_tm.tm_year % 100);
+            snprintf(str, 64, "^T%02d%02d%02d%02d%02d%04d\n", now_tm.tm_hour, now_tm.tm_min, now_tm.tm_sec, now_tm.tm_mday, now_tm.tm_mon + 1, now_tm.tm_year + 1900);
             id(uart_main).write_str(str);
+
 api:
   services:
-    - service: nixie_clock_flash
+    - service: notify
       variables:
         duration: int
         text: string
