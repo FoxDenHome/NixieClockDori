@@ -21,13 +21,13 @@ void HostSerial::handle() {
     byte tmpData;
 
     switch (this->command) {
-        // T HH II SS DD MM YY
+        // T HH II SS DD MM YYYY
         // H = Hours, I = Minutes, S = Seconds, D = Day of month, M = month, Y = year (ALL Dec)
         // Sets the time on the clock
         // ^T175630010318
     case 'T':
-        if (this->buffer.length() < 12) {
-            this->reply(F("BAD Invalid length; expected 12"));
+        if (this->buffer.length() < 14) {
+            this->reply(F("BAD Invalid length; expected 14"));
             break;
         }
 
@@ -37,7 +37,7 @@ void HostSerial::handle() {
         tm.Second = this->buffer.substring(4, 6).toInt();
         tm.Day = this->buffer.substring(6, 8).toInt();
         tm.Month = this->buffer.substring(8, 10).toInt();
-        tm.Year = y2kYearToTm(this->buffer.substring(10, 12).toInt());
+        tm.Year = CalendarYrToTm(this->buffer.substring(10, 14).toInt());
         rtcSetTime(tm);
 
         hostSerial.echoFirst(F("Time changed: "));
