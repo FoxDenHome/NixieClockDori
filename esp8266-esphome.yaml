@@ -49,3 +49,11 @@ api:
               return;
             }
             id(uart_main).write_str(str);
+    - service: command
+      variables:
+        command: string
+      then:
+        - lambda: |-
+            id(uart_main).write_byte('^');
+            id(uart_main).write_str(command.c_str());
+            id(uart_main).write_byte('\n');
