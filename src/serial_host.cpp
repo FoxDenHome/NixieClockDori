@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 #include <avr/wdt.h>
-#include <MemoryUsage.h>
 
 #include "serial_host.h"
 #include "serial_wifi.h"
@@ -163,11 +162,6 @@ void HostSerial::handle() {
         }
         currentEffect = (DisplayEffect)(this->buffer[0] - '0');
         this->reply(F("OK"));
-        break;
-        // ^D
-    case 'D':
-        this->replyFirst(F("OK "));
-        this->sendEnd(String(mu_freeRam()));
         break;
         // ^L0
         // ^L1
