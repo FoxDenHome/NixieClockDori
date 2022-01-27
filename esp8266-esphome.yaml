@@ -24,7 +24,10 @@ time:
             tm now_tm;
             time_t now = id(time_source).now().timestamp;
             localtime_r(&now, &now_tm);
-            snprintf(str, 64, "^T%02d%02d%02d%02d%02d%04d\n", now_tm.tm_hour, now_tm.tm_min, now_tm.tm_sec, now_tm.tm_mday, now_tm.tm_mon + 1, now_tm.tm_year + 1900);
+            int len = snprintf(str, sizeof(str), "^T%02d%02d%02d%02d%02d%04d\n", now_tm.tm_hour, now_tm.tm_min, now_tm.tm_sec, now_tm.tm_mday, now_tm.tm_mon + 1, now_tm.tm_year + 1900);
+            if (len < 0 || len >= sizeof(str)) {
+              return;
+            }
             id(uart_main).write_str(str);
 
 api:
@@ -34,11 +37,15 @@ api:
         duration: int
         text: string
         dots: string
-        red: int
-        green: int
-        blue: int
+        color: int[]
       then:
         - lambda: |-
+            if (color.size() != 3) {
+              return;
+            }
             char str[64];
-            snprintf(str, 64, "^F%08d%03s% 9s%02x%02x%02x\n", duration, dots.c_str(), text.c_str(), red, green, blue);
+            int len = snprintf(str, sizeof(str), "^F%08d%03s% 9s%02x%02x%02x\n", duration, dots.c_str(), text.c_str(), color[0], color[1], color[2]);
+            if (len < 0 || len >= sizeof(str)) {
+              return;
+            }
             id(uart_main).write_str(str);
