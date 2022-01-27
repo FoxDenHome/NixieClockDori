@@ -1,14 +1,9 @@
-*.tmp
-.vs
 __pycache__/
 *.pyc
-__vm/
-Debug/
-Release/
-board.txt
-*.user
-buildinfo.h
-obj
-bin
 .DS_Store
+.pio
+.vscode/.browse.c_cpp.db*
+.vscode/c_cpp_properties.json
+.vscode/launch.json
+.vscode/ipch
 
