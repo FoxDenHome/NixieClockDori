@@ -68,13 +68,11 @@ void renderSendToNixies(const bool isDirty) {
 		const uint16_t old = dataToDisplayPrevious[i];
 		const unsigned long tubeTrans = dataIsTransitioning[i];
 		if (tubeTrans > lastCallDelta) {
-			const unsigned long transitionDoneTemp = tubeTrans / (EFFECT_SPEED / 1000UL);
-			const uint16_t transitionDoneThousandths = transitionDoneTemp;
-	
+			const unsigned long transitionLeft = tubeTrans / (EFFECT_SPEED / 100UL);
 			if (currentEffect == SLOT_MACHINE) {
-				effectDo = getNumber(dataToDisplayTransitionEnd[i] + (transitionDoneThousandths / 100UL));
+				effectDo = getNumber(dataToDisplayTransitionEnd[i] + (transitionLeft / 10UL));
 			} else if (currentEffect == TRANSITION) {
-				effectDo = (curMicros % 1000) > transitionDoneThousandths ? old : cur;
+				effectDo = ((curMicros % 10UL) > (transitionLeft / 10UL)) ? cur : old;
 			}
 			dataIsTransitioning[i] -= lastCallDelta;
 			hasEffects = true;
@@ -212,14 +210,10 @@ void displayInit() {
 
 void displayLoop() {
 	const unsigned long curMicros = micros();
-	static byte stepCount = 0;
 	if ((curMicros - lastDisplayRender) >= (DISPLAY_RENDER_STEP * 33UL)) {
-		if (stepCount++ >= 9) {
-			stepCount = 0;
-			renderNixies();
-		} else {
-			renderSendToNixies(false);
-		}
+		renderNixies();
 		lastDisplayRender = curMicros;
+		return;
 	}
+	renderSendToNixies(false);
 }
