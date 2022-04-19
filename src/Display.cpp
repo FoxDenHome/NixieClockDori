@@ -9,11 +9,12 @@ unsigned long lastDisplayRender = 0;
 
 volatile uint16_t displayData[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-volatile byte dataIsTransitioning[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+volatile unsigned long dataIsTransitioning[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 volatile bool renderAlways = false;
 volatile bool renderNoMultiplex = false;
 
 volatile byte dotMask = 0;
+volatile bool allowEffects = false;
 
 volatile DisplayEffect currentEffect = SLOT_MACHINE;
 
@@ -32,25 +33,86 @@ void displayAntiPoison(const unsigned long count) {
 	}
 }
 
+void renderSendToNixies(const bool isDirty) {
+	static bool hasEffects = false;
+	static uint16_t dataToDisplayTransitionEnd[9] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
+	static uint16_t dataToDisplayPrevious[9] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
+	static unsigned long lastCallMicros = 0;
+	const unsigned long curMicros = micros();
+	const unsigned long lastCallDelta = curMicros - lastCallMicros;
+
+	const bool effectsOn = allowEffects && currentEffect != NONE;
+
+	if (!isDirty && !hasEffects) {
+		return;
+	}
+
+	bool needsRender = isDirty;
+	hasEffects = false;
+
+	for (byte i = 0; i < 9; i++) {
+		const uint16_t cur = displayData[i];
+		if (isDirty && dataToDisplayTransitionEnd[i] != cur) {
+			dataToDisplayPrevious[i] = dataToDisplayTransitionEnd[i];
+			dataToDisplayTransitionEnd[i] = cur;
+			if (effectsOn) {
+				dataIsTransitioning[i] = EFFECT_SPEED + lastCallDelta;
+			}
+		}
+
+		if (!effectsOn) {
+			continue;
+		}
+
+		uint16_t effectDo = cur;
+		const uint16_t old = dataToDisplayPrevious[i];
+		const unsigned long tubeTrans = dataIsTransitioning[i];
+		if (tubeTrans > lastCallDelta) {
+			const unsigned long transitionDoneTemp = tubeTrans / (EFFECT_SPEED / 1000UL);
+			const uint16_t transitionDoneThousandths = transitionDoneTemp;
+	
+			if (currentEffect == SLOT_MACHINE) {
+				effectDo = getNumber(dataToDisplayTransitionEnd[i] + (transitionDoneThousandths / 100UL));
+			} else if (currentEffect == TRANSITION) {
+				effectDo = (curMicros % 1000) > transitionDoneThousandths ? old : cur;
+			}
+			dataIsTransitioning[i] -= lastCallDelta;
+			hasEffects = true;
+		}
+		else if (tubeTrans > 0) {
+			effectDo = dataToDisplayTransitionEnd[i];
+			dataIsTransitioning[i] = 0;
+		}
+
+		if (effectDo != cur) {
+			needsRender = true;
+			displayData[i] = effectDo;
+		}
+	}
+
+	if (needsRender) {
+		displayDriverRefresh();
+	}
+	lastCallMicros = curMicros;
+}
+
 void renderNixies() {
 	static byte oldAntiPoisonIdx = 255;
 	static uint16_t antiPoisonTable[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	static bool hasEffects = false;
 
-	bool allowEffects = false;
 	bool isDirty = false;
 
 	static byte redOld = 1, greenOld = 1, blueOld = 1;
 
-	static uint16_t dataToDisplayOld[9] = { NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES, NO_TUBES };
 	static byte redPrevious, greenPrevious, bluePrevious;
-	static byte colorTransProg;
+	static unsigned long colorTransProg;
 
-	const unsigned long curMillis = millis();
-	static unsigned long lastCallMillis = 0;
-	const unsigned long lastCallDelta = curMillis - lastCallMillis;
+	const unsigned long curMicros = micros();
+	static unsigned long lastCallMicros = 0;
+	const unsigned long lastCallDelta = curMicros - lastCallMicros;
 
 	if (antiPoisonLeft) {
+		allowEffects = false;
 		const byte idx = 9 - ((antiPoisonLeft / ANTI_POISON_DELAY) % 10);
 		if (idx != oldAntiPoisonIdx) {
 			for (byte i = 0; i < 9; i++) {
@@ -86,8 +148,8 @@ void renderNixies() {
 		if (currentEffect != NONE) {
 			byte redNow = redOld, greenNow = greenOld, blueNow = blueOld;
 
-			if (colorTransProg > 1 && allowEffects) {
-				colorTransProg--;
+			if (colorTransProg > lastCallDelta && allowEffects) {
+				colorTransProg -= lastCallDelta;
 				redNow = redOld + (((redPrevious - redOld) * colorTransProg) / EFFECT_SPEED);
 				greenNow = greenOld + (((greenPrevious - greenOld) * colorTransProg) / EFFECT_SPEED);
 				blueNow = blueOld + (((bluePrevious - blueOld) * colorTransProg) / EFFECT_SPEED);
@@ -95,7 +157,7 @@ void renderNixies() {
 				analogWrite(PIN_LED_GREEN, greenNow);
 				analogWrite(PIN_LED_BLUE, blueNow);
 			}
-			else if (colorTransProg == 1) {
+			else if (colorTransProg > 0) {
 				colorTransProg = 0;
 				analogWrite(PIN_LED_RED, redNow);
 				analogWrite(PIN_LED_GREEN, greenNow);
@@ -139,45 +201,9 @@ void renderNixies() {
 		}
 	}
 
-	// Progress through effect
-	const bool effectsOn = allowEffects && currentEffect != NONE;
+	renderSendToNixies(isDirty);
 
-	if (isDirty || hasEffects) {
-		hasEffects = false;
-
-		for (byte i = 0; i < 9; i++) {
-			const uint16_t cur = displayData[i];
-			if (dataToDisplayOld[i] != cur && isDirty) {
-				dataToDisplayOld[i] = cur;
-				if (effectsOn) {
-					dataIsTransitioning[i] = EFFECT_SPEED;
-				}
-			}
-
-			if (!effectsOn) {
-				continue;
-			}
-
-			const byte tubeTrans = dataIsTransitioning[i];
-			if (tubeTrans > 1) {
-				if (currentEffect == SLOT_MACHINE) {
-					displayData[i] = getNumber(dataToDisplayOld[i] + (tubeTrans / (EFFECT_SPEED / 10)));
-				}
-				dataIsTransitioning[i]--;
-				hasEffects = true;
-			}
-			else if (tubeTrans == 1) {
-				if (currentEffect == SLOT_MACHINE) {
-					displayData[i] = dataToDisplayOld[i];
-				}
-				dataIsTransitioning[i] = 0;
-			}
-		}
-
-		displayDriverRefresh();
-	}
-
-	lastCallMillis = curMillis;
+	lastCallMicros = curMicros;
 }
 
 void displayInit() {
@@ -186,8 +212,14 @@ void displayInit() {
 
 void displayLoop() {
 	const unsigned long curMicros = micros();
+	static byte stepCount = 0;
 	if ((curMicros - lastDisplayRender) >= (DISPLAY_RENDER_STEP * 33UL)) {
-		renderNixies();
+		if (stepCount++ >= 9) {
+			stepCount = 0;
+			renderNixies();
+		} else {
+			renderSendToNixies(false);
+		}
 		lastDisplayRender = curMicros;
 	}
 }

@@ -6,8 +6,8 @@
 
 enum DisplayEffect {
 	NONE = 0,
-	//TRANSITION,
 	SLOT_MACHINE,
+	TRANSITION,
 	FIRST_INVALID,
 };
 extern volatile DisplayEffect currentEffect;
@@ -19,7 +19,6 @@ const uint16_t NO_TUBES = 0;
 extern volatile byte dotMask;
 extern volatile bool renderAlways;
 extern volatile uint16_t displayData[9];
-extern volatile byte dataIsTransitioning[9];
 
 void displayInit();
 void displayLoop();

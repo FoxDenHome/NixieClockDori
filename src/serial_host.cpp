@@ -155,14 +155,17 @@ void HostSerial::handle() {
         // ^E0
         // ^E1
         // ^E2
-    case 'E':
+    case 'E': {
         if (this->buffer.length() < 1) {
             this->reply(F("BAD Invalid length; expected 1"));
             break;
         }
-        currentEffect = (DisplayEffect)(this->buffer[0] - '0');
+        const DisplayEffect effect = (DisplayEffect)(this->buffer[0] - '0');
+        currentEffect = effect;
+		EEPROM.put(EEPROM_STORAGE_CURRENT_EFFECT, effect);
         this->reply(F("OK"));
         break;
+    }
         // ^L0
         // ^L1
     case 'L':
