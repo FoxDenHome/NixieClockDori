@@ -93,10 +93,32 @@ bool DisplayTask::refresh() {
 	return true;
 }
 
-void DisplayTask::insertTemp() {
-	const float temp = temperatureGet();
-	this->setDisplayData(8, SYMBOL_DEGREES_C);
-	insert2(6, temp, false);
+bool DisplayTask::insertTemp() {
+	const int16_t temp = temperatureGetInt();
+	if (temp == this->lastTemp) {
+		return false;
+	}
+
+	if (temp == INT16_MIN) {
+		this->setDisplayData(6, NO_TUBES);
+		this->setDisplayData(7, NO_TUBES);
+		this->setDisplayData(8, NO_TUBES);
+	} else {
+		const int16_t absTemp = abs(temp);
+		if (temp < 0) {
+			this->dotMask |= DOT_3_UP;
+		}
+
+		if (absTemp >= 10) {
+			this->setDisplayData(6, getNumber(absTemp / 10));
+		} else {
+			this->setDisplayData(6, NO_TUBES);
+		}
+		this->setDisplayData(7, getNumber(absTemp + 0.5));
+		this->setDisplayData(8, SYMBOL_DEGREES_C);
+	}
+
+	return true;
 }
 
 void DisplayTask::setDisplayData(const byte offset, const uint16_t data) {

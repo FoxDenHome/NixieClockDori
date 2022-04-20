@@ -1,5 +1,5 @@
 #pragma once
 
-void temperatureInit();
-void temperatureLoop();
+void temperatureSet(float temp);
 float temperatureGet();
+int16_t temperatureGetInt();

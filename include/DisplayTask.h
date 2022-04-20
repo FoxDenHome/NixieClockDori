@@ -59,7 +59,9 @@ protected:
 
 	void _handleEditHelper(const byte digit, const bool up, byte& a, byte& b, byte& c, const byte amax, const byte bmax, const byte cmax);
 
-	void insertTemp();
+	bool insertTemp();
+	float lastTemp = NAN;
+
 	void insert1(const byte offset, const byte data, const bool trimLeadingZero);
 	bool insert2(const byte offset, const byte data, const bool trimLeadingZero);
 	bool showShortTime(const unsigned long timeMs, bool trimLZ);

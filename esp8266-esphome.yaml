@@ -1,3 +1,10 @@
+substitutions:
+  friendly_name: "Office nixie clock"
+  device_name: "clock-nixie-office"
+
+packages:
+  custom: !include base/custom.yaml
+
 esp8266:
   board: esp12e
 
@@ -30,6 +37,22 @@ time:
             }
             id(uart_main).write_str(str);
 
+sensor:
+  - platform: homeassistant
+    attribute: temperature
+    entity_id: weather.foxden_home
+    internal: true
+    id: clock_temperature
+    on_value:
+      then:
+        - lambda: |-
+            char str[64];
+            int len = snprintf(str, sizeof(str), "^S%.4f\n", x);
+            if (len < 0 || len >= sizeof(str)) {
+              return;
+            }
+            id(uart_main).write_str(str);
+
 api:
   services:
     - service: notify
@@ -38,6 +61,7 @@ api:
         text: string
         dots: string
         color: int[]
+        animations: bool
       then:
         - lambda: |-
             if (color.size() != 3) {

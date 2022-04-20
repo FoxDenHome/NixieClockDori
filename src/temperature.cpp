@@ -1,41 +1,20 @@
-#include <OneWire.h>
-#include <DallasTemperature.h>
-
 #include "const.h"
 #include "config.h"
 #include "temperature.h"
 
-OneWire temperatureOneWire = OneWire(PIN_TEMPERATURE);
-DallasTemperature temperatureSensor(&temperatureOneWire);
+float curTemp = NAN;
 
-float curTemp = 0;
-bool isInGet = false;
-unsigned long lastRun = 0;
-
-void temperatureInit() {
-	temperatureSensor.begin();
-	temperatureSensor.setWaitForConversion(false);
-
-	temperatureSensor.requestTemperatures();
-	lastRun = millis();
-	isInGet = true;
-}
-
-void temperatureLoop() {
-	const unsigned long curMillis = millis();
-	const unsigned long timeSinceLast = curMillis - lastRun;
-
-	if (isInGet && timeSinceLast >= 1000UL) {
-		curTemp = temperatureSensor.getTempCByIndex(0);
-		lastRun = curMillis;
-		isInGet = false;
-	} else if (!isInGet && timeSinceLast >= 30000UL) {
-		temperatureSensor.requestTemperatures();
-		lastRun = curMillis;
-		isInGet = true;
-	}
+void temperatureSet(float temp) {
+	curTemp = temp;
 }
 
 float temperatureGet() {
 	return curTemp;
+}
+
+int16_t temperatureGetInt() {
+	if (isnan(curTemp)) {
+		return INT16_MIN;
+	}
+	return (int16_t)round(curTemp);
 }

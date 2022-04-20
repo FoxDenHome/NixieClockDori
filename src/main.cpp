@@ -65,13 +65,12 @@ void setup() {
 	pinMode(PIN_BUTTON_UP, INPUT_PULLUP);
 	pinMode(PIN_BUTTON_DOWN, INPUT_PULLUP);
 
-	delay(2000);
+	delay(100);
 
 	// Begin initialization routines
 	hostSerial.init();
 	wifiSerial.init();
 	rtcInit();
-	temperatureInit();
 	displayInit();
 	displayDriverInit();
 
@@ -125,7 +124,6 @@ void loop() {
 	}
 	displayLoop();
 	displayDriverLoop();
-	temperatureLoop();
 
 	wifiSerial.loop();
 	hostSerial.loop();

@@ -8,12 +8,7 @@
 #include <TimeLib.h>
 
 DisplayTask_Date::DisplayTask_Date() {
-	if (this->cycleAuto) {
-		this->dotMask = DOT_1_DOWN | DOT_2_DOWN;
-	}
-	else {
-		this->dotMask = DOT_1_UP | DOT_2_UP;
-	}
+
 }
 
 void DisplayTask_Date::loadConfig(const int16_t base) {
@@ -34,13 +29,6 @@ void DisplayTask_Date::handleButtonPress(const Button button, const PressType pr
 		this->cycleAuto = !this->cycleAuto;
 		if (this->base >= 0) {
 			EEPROM.put(this->base, this->cycleAuto);
-		}
-
-		if (this->cycleAuto) {
-			this->dotMask = DOT_1_DOWN | DOT_2_DOWN;
-		}
-		else {
-			this->dotMask = DOT_1_UP | DOT_2_UP;
 		}
 		return;
 	}
@@ -70,6 +58,13 @@ void DisplayTask_Date::handleEdit(const byte digit, const bool up) {
 bool DisplayTask_Date::refresh() {
 	bool dateChanged = false;
 
+	if (this->cycleAuto) {
+		this->dotMask = DOT_1_DOWN | DOT_2_DOWN;
+	}
+	else {
+		this->dotMask = DOT_1_UP | DOT_2_UP;
+	}
+
 	if (!DisplayTask::editMode) {
 		const time_t _n = now();
 		const byte y = year(_n) % 100;
@@ -81,14 +76,16 @@ bool DisplayTask_Date::refresh() {
 		this->y = y;
 		this->m = m;
 		this->d = d;
-
-		this->insertTemp();
 	}
 	else {
 		this->setDisplayData(6, NO_TUBES);
 		this->setDisplayData(7, NO_TUBES);
 		this->setDisplayData(8, NO_TUBES);
 		dateChanged = true;
+	}
+
+	if (!DisplayTask::editMode) {
+		dateChanged |= this->insertTemp();
 	}
 
 	if (!dateChanged) {

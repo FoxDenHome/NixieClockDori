@@ -82,6 +82,10 @@ bool DisplayTask_Clock::refresh() {
 		this->dotMask = 0;
 	}
 
+	if (!DisplayTask::editMode) {
+		timeChanged |= this->insertTemp();
+	}
+
 	if (!timeChanged) {
 		return true;
 	}

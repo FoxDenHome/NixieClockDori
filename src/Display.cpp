@@ -102,8 +102,8 @@ void renderNixies() {
 
 	static byte redOld = 1, greenOld = 1, blueOld = 1;
 
-	static byte redPrevious, greenPrevious, bluePrevious;
-	static unsigned long colorTransProg;
+	static byte redPrevious = 1, greenPrevious = 1, bluePrevious = 1;
+	static unsigned long colorTransProg = 0;
 
 	const unsigned long curMicros = micros();
 	static unsigned long lastCallMicros = 0;

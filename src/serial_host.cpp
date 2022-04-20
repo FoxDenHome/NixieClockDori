@@ -9,6 +9,7 @@
 #include "reset.h"
 #include "variables.h"
 #include "rtc.h"
+#include "temperature.h"
 
 #include "Display.h"
 
@@ -45,6 +46,19 @@ void HostSerial::handle() {
         this->reply(F("OK"));
 
         break;
+        // S [D......]
+        // Set temperature in 1/1000 deg C
+        // ^S23000
+    case 'S': {
+        if (this->buffer.length() < 1) {
+            this->reply(F("BAD Invalid length; expected >= 1"));
+            break;
+        }
+        temperatureSet(this->buffer.toFloat());
+        this->reply(F("OK"));
+
+        break;
+    }
         // H
         // Pings the display ("Hello")
         // ^H
