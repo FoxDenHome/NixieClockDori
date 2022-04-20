@@ -148,9 +148,10 @@ void renderNixies() {
 
 			if (colorTransProg > lastCallDelta && allowEffects) {
 				colorTransProg -= lastCallDelta;
-				redNow = redOld + (((redPrevious - redOld) * colorTransProg) / EFFECT_SPEED);
-				greenNow = greenOld + (((greenPrevious - greenOld) * colorTransProg) / EFFECT_SPEED);
-				blueNow = blueOld + (((bluePrevious - blueOld) * colorTransProg) / EFFECT_SPEED);
+				const byte colorProgDivider = EFFECT_SPEED / colorTransProg;
+				redNow = redOld + (redPrevious - redOld) / colorProgDivider;
+				greenNow = greenOld + (greenPrevious - greenOld) / colorProgDivider;
+				blueNow = blueOld + (bluePrevious - blueOld) / colorProgDivider;
 				analogWrite(PIN_LED_RED, redNow);
 				analogWrite(PIN_LED_GREEN, greenNow);
 				analogWrite(PIN_LED_BLUE, blueNow);
