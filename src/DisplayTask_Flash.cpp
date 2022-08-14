@@ -56,6 +56,26 @@ bool DisplayTask_Flash::_canShow() const {
 	return this->endTime > 0 && millis() < this->endTime;
 }
 
+static uint8_t parseDotBitMask(const char c) {
+	switch (c) {
+		case '0':
+		case ' ':
+		default:
+			return 0b00;
+		case '1':
+		case '.':
+			return 0b01;
+		case '2':
+		case '`':
+		case '\'':
+			return 0b10;
+		case '3':
+		case ':':
+		case ';':
+			return 0b11;
+	}
+}
+
 void DisplayTask_Flash::setDataFromSerial(const String& data) {
 	const unsigned long curMillis = millis();
 
@@ -63,7 +83,7 @@ void DisplayTask_Flash::setDataFromSerial(const String& data) {
 	this->lastUpdate = curMillis;
 	this->endTime = curMillis + (unsigned long)data.substring(0, 8).toInt();
 
-	this->dotMask = (data[8] - '0') | ((data[9] - '0') << 2) | ((data[10] - '0') << 4);
+	this->dotMask = parseDotBitMask(data[8]) | (parseDotBitMask(data[9]) << 2) | (parseDotBitMask(data[10]) << 4);
 
 	for (byte i = 0; i < 9; i++) {
 		this->setDisplayData(i, charToTube(data[i + 11]));
