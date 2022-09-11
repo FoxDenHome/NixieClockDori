@@ -20,6 +20,8 @@ public:
 
 	void sendFirst();
 	void sendEnd();
+	
+	virtual int type() = 0;
 
 protected:
 	virtual void handle() = 0;

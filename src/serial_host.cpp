@@ -219,3 +219,7 @@ void HostSerial::handle() {
         break;
     }
 }
+
+int HostSerial::type() {
+    return 1;
+}

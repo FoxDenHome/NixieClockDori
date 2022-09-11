@@ -19,6 +19,16 @@
 	SPI.transfer(t1); \
 }
 
+void displayDriverBlank() {
+	SPI.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE2));
+	digitalWrite(PIN_DISPLAY_LATCH, LOW);
+	SPI.transfer(0); SPI.transfer(0); SPI.transfer(0); SPI.transfer(0);
+	SPI.transfer(0); SPI.transfer(0); SPI.transfer(0); SPI.transfer(0);
+	SPI.transfer(0); SPI.transfer(0); SPI.transfer(0); SPI.transfer(0);
+	digitalWrite(PIN_DISPLAY_LATCH, HIGH);
+	SPI.endTransaction();
+}
+
 void displayDriverRefresh() {
 	uint16_t t1, t2, t3;
 

@@ -7,6 +7,8 @@
 class WifiSerial : public HostSerial {
 public:
     WifiSerial(HardwareSerial& _serial);
+    
+    int type() override;
 
 protected:
     void handle() override;

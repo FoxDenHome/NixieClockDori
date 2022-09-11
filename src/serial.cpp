@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #include "serial.h"
+#include "espproxy.h"
 #include "config.h"
 
 #define STATE_LOOKING_FOR_START 0
@@ -76,11 +77,16 @@ void CommandSerial::send(const String& text) {
 }
 
 void CommandSerial::loop() {
-	while (this->serial->available()) {
+    while (this->serial->available()) {
         char data = this->serial->read();
 
         if (data == '\r' || data == '\t') {
             continue;
+        }
+
+        if (data == 0xC0 || data == '&') { // ESP32 SLIP packet...
+            initSerialProxy(this, data);
+            return;
         }
 
         if (data == '^') {

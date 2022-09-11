@@ -15,6 +15,7 @@
 #include "DisplayTask.h"
 #include "version.h"
 #include "variables.h"
+#include "espproxy.h"
 
 /**************************/
 /* ARDUINO EVENT HANDLERS */
@@ -114,6 +115,11 @@ void setup() {
 
 void loop() {
 	wdt_reset();
+
+	if (serialProxyMode) {
+        loopSerialProxy();
+		return;
+    }
 
 	UPButton.tick();
 	DOWNButton.tick();

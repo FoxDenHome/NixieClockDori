@@ -25,3 +25,7 @@ void WifiSerial::handle() {
             break;
     }
 }
+
+int WifiSerial::type() {
+    return 2;
+}
