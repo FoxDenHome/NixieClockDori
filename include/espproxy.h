@@ -2,6 +2,6 @@
 
 #include "serial.h"
 
-void initSerialProxy(CommandSerial *serial, uint8_t init);
-void loopSerialProxy();
-extern bool serialProxyMode;
+void initESPProxy(CommandSerial *serial, uint8_t init);
+void loopESPProxy();
+extern bool ESPPRoxyMode;

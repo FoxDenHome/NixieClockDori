@@ -3,10 +3,10 @@
 #include "variables.h"
 #include "DisplayDriver.h"
 
-bool serialProxyMode = false;
+bool ESPPRoxyMode = false;
 
-void initSerialProxy(CommandSerial *serial, uint8_t init) {
-    serialProxyMode = true;
+void initESPProxy(CommandSerial *serial, uint8_t init) {
+    ESPPRoxyMode = true;
 
     if (serial->type() == hostSerial.type()) {
         WIFI_SERIAL.write(init);
@@ -17,7 +17,7 @@ void initSerialProxy(CommandSerial *serial, uint8_t init) {
 	displayDriverBlank();
 }
 
-void loopSerialProxy() {
+void loopESPProxy() {
     while (HOST_SERIAL.available()) {
         WIFI_SERIAL.write(HOST_SERIAL.read());
     }

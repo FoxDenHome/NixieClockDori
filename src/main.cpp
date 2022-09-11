@@ -116,8 +116,8 @@ void setup() {
 void loop() {
 	wdt_reset();
 
-	if (serialProxyMode) {
-        loopSerialProxy();
+	if (ESPPRoxyMode) {
+        loopESPProxy();
 		return;
     }
 

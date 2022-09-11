@@ -85,7 +85,7 @@ void CommandSerial::loop() {
         }
 
         if (data == 0xC0 || data == '&') { // ESP32 SLIP packet...
-            initSerialProxy(this, data);
+            initESPProxy(this, data);
             return;
         }
 
