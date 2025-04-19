@@ -130,9 +130,6 @@ void loop() {
 	DOWNButton.tick();
 	SETButton.tick();
 
-	if ((micros() - DisplayTask::lastDisplayCycleMicros) >= DISPLAY_CYCLE_PERIOD) {
-		DisplayTask::cycleDisplayUpdater();
-	}
 	displayLoop();
 	displayDriverLoop();
 

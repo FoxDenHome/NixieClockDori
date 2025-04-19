@@ -28,7 +28,6 @@ public:
 	void remove();
 
 	static DisplayTask* findNextValid(DisplayTask *dt_current, const bool mustIsActive);
-	static void cycleDisplayUpdater();
 	void showIfActiveOtherwiseShowSelected();
 
 	byte red = 0, green = 0, blue = 0;
@@ -42,8 +41,6 @@ public:
 
 	static DisplayTask *current;
 	static DisplayTask *selected;
-
-	static unsigned long lastDisplayCycleMicros;
 
 	void saveColor(int16_t addr);
 	void loadColor(int16_t addr);

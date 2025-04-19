@@ -97,9 +97,8 @@ void DisplayTask_Flash::setDataFromSerial(const String& data) {
 bool DisplayTask_Flash::refresh() {
 	DisplayTask::editMode = false;
 	if (!this->isActive()) {
-		cycleDisplayUpdater();
+		this->showIfActiveOtherwiseShowSelected();
 	}
 
 	return this->allowEffects;
 }
-

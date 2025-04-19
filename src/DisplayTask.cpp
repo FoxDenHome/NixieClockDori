@@ -17,7 +17,6 @@ DisplayTask* DisplayTask::selected;
 
 bool DisplayTask::buttonLock = false;
 
-unsigned long DisplayTask::lastDisplayCycleMicros = 0;
 bool DisplayTask::editMode = false;
 byte DisplayTask::editModePos = 0;
 unsigned long DisplayTask::lastButtonPress = 0;
@@ -42,25 +41,10 @@ void DisplayTask::loadColor(const int16_t addr) {
 	EEPROM.get(addr + 2, this->blue);
 }
 
-void DisplayTask::cycleDisplayUpdater() {
-	DisplayTask::lastDisplayCycleMicros = micros();
-
-	if (DisplayTask::editMode || (DisplayTask::selected == DisplayTask::current && !DisplayTask::current->loPri && DisplayTask::current->isActive())) {
-		return;
-	}
-
-	DisplayTask::selected = DisplayTask::findNextValid(DisplayTask::current, true);
-	DisplayTask::current = DisplayTask::selected;
-	DisplayTask::current->isDirty = true;
-}
-
 void DisplayTask::showIfActiveOtherwiseShowSelected() {
 	if (this->isActive()) {
 		this->add();
-		DisplayTask::editMode = false;
 		DisplayTask::current = this;
-		this->isDirty = true;
-		DisplayTask::lastDisplayCycleMicros = micros();
 	}
 	else if (this == DisplayTask::current) {
 		DisplayTask::current = DisplayTask::selected;
@@ -68,6 +52,8 @@ void DisplayTask::showIfActiveOtherwiseShowSelected() {
 	else {
 		return;
 	}
+	DisplayTask::editMode = false;
+	DisplayTask::current->isDirty = true;
 	displayAntiPoisonOff();
 }
 
@@ -78,7 +64,6 @@ void DisplayTask::buttonHandler(const Button button, const PressType pressType) 
 		return;
 	}
 
-	DisplayTask::lastDisplayCycleMicros = micros();
 	displayAntiPoisonOff();
 	DisplayTask::lastButtonPress = millis();
 
