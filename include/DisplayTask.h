@@ -16,7 +16,7 @@ enum PressType {
 
 class DisplayTask {
 public:
-	bool canShow();
+	bool isActive();
 
 	virtual bool refresh();
 	virtual void handleButtonPress(const Button button, const PressType press);
@@ -27,7 +27,7 @@ public:
 	void add();
 	void remove();
 
-	static DisplayTask* findNextValid(DisplayTask *dt_current, const bool mustCanShow);
+	static DisplayTask* findNextValid(DisplayTask *dt_current, const bool mustIsActive);
 	static void cycleDisplayUpdater();
 	void showIfPossibleOtherwiseRotateIfCurrent();
 
@@ -52,7 +52,7 @@ public:
 protected:
 	static unsigned long lastButtonPress;
 
-	virtual bool _canShow() const;
+	virtual bool _isActive() const;
 	bool removeOnCantShow = false;
 
 	static byte editModePos;
@@ -66,10 +66,15 @@ protected:
 	bool insert2(const byte offset, const byte data, const bool trimLeadingZero);
 	bool showShortTime(const unsigned long timeMs, bool trimLZ);
 
-private:
+	void addToStack();
 
-	static DisplayTask* _findNextValid(DisplayTask *curPtr, DisplayTask *stopOn, const bool mustCanShow);
-	DisplayTask *next;
-	DisplayTask *prev;
+private:
+	static DisplayTask* _findNextValid(DisplayTask *curPtr, DisplayTask *stopOn, const bool mustIsActive);
+
+	DisplayTask *list_next;
+	DisplayTask *list_prev;
+
+	DisplayTask *stack_prev;
+
 	bool isAdded = false;
 };

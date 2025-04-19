@@ -17,5 +17,5 @@ public:
 	void setDataFromSerial(const String& data);
 
 protected:
-	bool _canShow() const override;
+	bool _isActive() const override;
 };

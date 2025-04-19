@@ -16,7 +16,7 @@ public:
 	void handleButtonPress(const Button button, const PressType press) override;
 
 protected:
-	bool _canShow() const override;
+	bool _isActive() const override;
 
 private:
 	bool running = false;

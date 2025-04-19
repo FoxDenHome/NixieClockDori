@@ -44,7 +44,7 @@ void DisplayTask::loadColor(const int16_t addr) {
 void DisplayTask::cycleDisplayUpdater() {
 	DisplayTask::lastDisplayCycleMicros = micros();
 
-	if (DisplayTask::editMode || (!DisplayTask::current->loPri && DisplayTask::current->canShow())) {
+	if (DisplayTask::editMode || (!DisplayTask::current->loPri && DisplayTask::current->isActive())) {
 		return;
 	}
 
@@ -52,8 +52,14 @@ void DisplayTask::cycleDisplayUpdater() {
 	DisplayTask::current->isDirty = true;
 }
 
+void DisplayTask::addToStack() {
+	if (DisplayTask::current != this) {
+		this->stack_prev = DisplayTask::current;
+	}
+}
+
 void DisplayTask::showIfPossibleOtherwiseRotateIfCurrent() {
-	if (this->canShow()) {
+	if (this->isActive()) {
 		this->add();
 		DisplayTask::editMode = false;
 		DisplayTask::current = this;
@@ -264,7 +270,7 @@ void DisplayTask::handleButtonPress(const Button button, const PressType pressTy
 	}
 }
 
-DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopOn, const bool mustCanShow) {
+DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopOn, const bool mustIsActive) {
 	if (!curPtr) {
 		return NULL;
 	}
@@ -274,19 +280,19 @@ DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopO
 			return NULL;
 		}
 
-		// Trigger canShow to allow self-remove, then check if added if not must can show
-		if (curPtr->canShow() || (!mustCanShow && curPtr->isAdded)) {
+		// Trigger isActive to allow self-remove, then check if added if not must can show
+		if (curPtr->isActive() || (!mustIsActive && curPtr->isAdded)) {
 			return curPtr;
 		}
-	} while ((curPtr = curPtr->next));
+	} while ((curPtr = curPtr->list_next));
 
 	return NULL;
 }
 
-DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current, const bool mustCanShow) {
+DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current, const bool mustIsActive) {
 	if (!dt_current) {
 		if (dt_first) {
-			return DisplayTask::findNextValid(dt_first, mustCanShow);
+			return DisplayTask::findNextValid(dt_first, mustIsActive);
 		}
 
 		forceReset();
@@ -295,17 +301,23 @@ DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current, const bool must
 
 	DisplayTask* curPtr;
 
-	curPtr = DisplayTask::_findNextValid(dt_current->next, NULL, mustCanShow);
+	if (dt_current->stack_prev) {
+		curPtr = dt_current->stack_prev;
+		dt_current->stack_prev = NULL;
+		return curPtr;
+	}
+
+	curPtr = DisplayTask::_findNextValid(dt_current->list_next, NULL, mustIsActive);
 	if (curPtr) {
 		return curPtr;
 	}
 
-	curPtr = DisplayTask::_findNextValid(dt_first, dt_current, mustCanShow);
+	curPtr = DisplayTask::_findNextValid(dt_first, dt_current, mustIsActive);
 	if (curPtr) {
 		return curPtr;
 	}
 
-	if (dt_current->canShow() || (!mustCanShow && dt_current->isAdded)) {
+	if (dt_current->isActive() || (!mustIsActive && dt_current->isAdded)) {
 		return dt_current;
 	}
 
@@ -313,8 +325,8 @@ DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current, const bool must
 	return NULL;
 }
 
-bool DisplayTask::canShow() {
-	if (this->_canShow()) {
+bool DisplayTask::isActive() {
+	if (this->_isActive()) {
 		return true;
 	}
 	if (this->removeOnCantShow) {
@@ -324,7 +336,7 @@ bool DisplayTask::canShow() {
 }
 
 
-bool DisplayTask::_canShow() const {
+bool DisplayTask::_isActive() const {
 	return true;
 }
 
@@ -334,11 +346,11 @@ void DisplayTask::add() {
 	}
 	this->isAdded = true;
 
-	this->next = NULL;
+	this->list_next = NULL;
 
 	if (dt_last) {
-		dt_last->next = this;
-		this->prev = dt_last;
+		dt_last->list_next = this;
+		this->list_prev = dt_last;
 		dt_last = this;
 		return;
 	}
@@ -352,32 +364,32 @@ void DisplayTask::remove() {
 	}
 	this->isAdded = false;
 
-	if (this->next) {
-		this->next->prev = this->prev;
+	if (this->list_next) {
+		this->list_next->list_prev = this->list_prev;
 	}
 
-	if (this->prev) {
-		this->prev->next = this->next;
+	if (this->list_prev) {
+		this->list_prev->list_next = this->list_next;
 	}
 
 	if (this == dt_first) {
-		if (this->next) {
-			dt_first = this->next;
+		if (this->list_next) {
+			dt_first = this->list_next;
 		}
 		else {
-			dt_first = this->prev;
+			dt_first = this->list_prev;
 		}
 	}
 	if (this == dt_last) {
-		if (this->prev) {
-			dt_last = this->prev;
+		if (this->list_prev) {
+			dt_last = this->list_prev;
 		}
 		else {
-			dt_last = this->next;
+			dt_last = this->list_next;
 		}
 	}
 
-	this->next = NULL;
-	this->prev = NULL;
+	this->list_next = NULL;
+	this->list_prev = NULL;
 }
 

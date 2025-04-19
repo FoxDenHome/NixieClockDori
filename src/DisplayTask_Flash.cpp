@@ -52,7 +52,7 @@ DisplayTask_Flash::DisplayTask_Flash() {
 	this->removeOnCantShow = true;
 }
 
-bool DisplayTask_Flash::_canShow() const {
+bool DisplayTask_Flash::_isActive() const {
 	return this->duration > 0 && (millis() - this->lastUpdate) <= this->duration;
 }
 
@@ -90,12 +90,14 @@ void DisplayTask_Flash::setDataFromSerial(const String& data) {
 	}
 
 	this->setColorFromInput(20, -1, data);
+
+	this->addToStack();
 	this->showIfPossibleOtherwiseRotateIfCurrent();
 }
 
 bool DisplayTask_Flash::refresh() {
 	DisplayTask::editMode = false;
-	if (!this->canShow()) {
+	if (!this->isActive()) {
 		cycleDisplayUpdater();
 	}
 

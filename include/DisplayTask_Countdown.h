@@ -20,7 +20,7 @@ public:
 	void handleEdit(const byte digit, const bool up) override;
 
 protected:
-	bool _canShow() const override;
+	bool _isActive() const override;
 
 private:
 	bool running = false;

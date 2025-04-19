@@ -74,7 +74,7 @@ void DisplayTask_Countdown::handleButtonPress(const Button button, const PressTy
 	DisplayTask::handleButtonPress(button, press);
 }
 
-bool DisplayTask_Countdown::_canShow() const {
+bool DisplayTask_Countdown::_isActive() const {
 	return this->running || this->time != this->timeReset;
 }
 

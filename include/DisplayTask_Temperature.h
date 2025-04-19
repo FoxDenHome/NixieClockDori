@@ -9,7 +9,7 @@ public:
 	bool refresh() override;
 
 protected:
-	bool _canShow() const override;
+	bool _isActive() const override;
 
 private:
 	unsigned long lastTempRefresh = 0;

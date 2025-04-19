@@ -12,7 +12,7 @@ public:
 	void handleEdit(const byte digit, const bool up) override;
 	void handleButtonPress(const Button button, const PressType press) override;
 protected:
-	bool _canShow() const override;
+	bool _isActive() const override;
 private:
 	bool cycleAuto;
 	byte d, m, y;
