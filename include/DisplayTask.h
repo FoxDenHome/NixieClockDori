@@ -46,6 +46,8 @@ public:
 	void loadColor(int16_t addr);
 	void setDisplayData(const byte offset, const uint16_t data);
 	void setColorFromInput(const byte offset, const int16_t eepromBase, const String& data);
+	void select();
+	bool isSelected() const;
 
 	static void clearStack();
 

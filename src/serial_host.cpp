@@ -49,7 +49,7 @@ void HostSerial::handle() {
         // S [D......]
         // Set temperature in 1/1000 deg C
         // ^S23000
-    case 'S': {
+    case 'S':
         if (this->buffer.length() < 1) {
             this->reply(F("BAD Invalid length; expected >= 1"));
             break;
@@ -58,7 +58,71 @@ void HostSerial::handle() {
         this->reply(F("OK"));
 
         break;
-    }
+        // ? [X]
+        // Select a screen
+        //     T = Time
+        //     D = Date
+        //     W = Stopwatch
+        //     C = Countdown
+        //     S = Temperature
+        //     _ = current user-selection
+        // ^?T
+    case '?':
+        if (this->buffer.length() < 1) {
+            if (displayClock.isSelected()) {
+                this->reply(F("OK T"));
+                break;
+            } else if (displayDate.isSelected()) {
+                this->reply(F("OK D"));
+                break;
+            } else if (displayStopwatch.isSelected()) {
+                this->reply(F("OK W"));
+                break;
+            } else if (displayCountdown.isSelected()) {
+                this->reply(F("OK C"));
+                break;
+            } else if (displayTemp.isSelected()) {
+                this->reply(F("OK S"));
+                break;
+            } else {
+                this->reply(F("BAD Invalid screen"));
+                break;
+            }
+            break;
+        }
+
+        tmpData = true;
+        switch (this->buffer[0]) {
+        case 'T':
+            displayClock.select();
+            break;
+        case 'D':
+            displayDate.select();
+            break;
+        case 'W':
+            displayStopwatch.select();
+            break;
+        case 'C':
+            displayCountdown.select();
+            break;
+        case 'S':
+            displayTemp.select();
+            break;
+        case '_':
+            break;
+        default:
+            tmpData = false;
+            this->reply(F("BAD Invalid screen"));
+            break;
+        }
+
+        if (tmpData) { 
+            DisplayTask::current = DisplayTask::selected;
+            DisplayTask::current->isDirty = true;
+            this->reply(F("OK"));
+        }
+
+        break;
         // H
         // Pings the display ("Hello")
         // ^H

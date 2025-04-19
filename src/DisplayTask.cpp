@@ -41,6 +41,14 @@ void DisplayTask::loadColor(const int16_t addr) {
 	EEPROM.get(addr + 2, this->blue);
 }
 
+void DisplayTask::select() {
+	DisplayTask::selected = this;
+}
+
+bool DisplayTask::isSelected() const {
+	return DisplayTask::selected == this;
+}
+
 void DisplayTask::showIfActiveOtherwiseShowSelected() {
 	if (this->isActive()) {
 		this->add();
