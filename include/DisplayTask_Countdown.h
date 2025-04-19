@@ -28,5 +28,6 @@ private:
 	bool running = false;
 	unsigned long time = 0;
 	unsigned long lastCall = 0;
+	unsigned long idleTime = 0;
 	int16_t base = -1;
 };

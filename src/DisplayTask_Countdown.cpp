@@ -6,6 +6,7 @@
 #include <TimeLib.h>
 
 #define COUNTDOWN_MAX_TIME (100UL * 60UL * 60UL * 1000UL)
+#define COUNTDOWN_IDLE_TIME (30UL * 1000UL)
 
 DisplayTask_Countdown::DisplayTask_Countdown() {
 	this->dotMask = DOT_1_UP | DOT_2_UP | DOT_3_DOWN;
@@ -92,6 +93,11 @@ bool DisplayTask_Countdown::refresh() {
 		this->lastCall = curMillis;
 
 		if (this->time <= 0) {
+			this->idleTime += milliDiff;
+			if (this->idleTime >= COUNTDOWN_IDLE_TIME) {
+				this->reset();
+			}
+
 			const byte osym = (second() % 2) ? NO_TUBES : getNumber(0);
 			for (byte i = 0; i < 8; i++) {
 				this->setDisplayData(i, osym);
@@ -106,10 +112,12 @@ bool DisplayTask_Countdown::refresh() {
 void DisplayTask_Countdown::reset() {
 	this->time = this->timeReset;
 	this->running = false;
+	this->idleTime = 0;
 }
 
 void DisplayTask_Countdown::pause() {
 	this->running = false;
+	this->idleTime = 0;
 }
 
 void DisplayTask_Countdown::resume() {
@@ -117,12 +125,14 @@ void DisplayTask_Countdown::resume() {
 		this->lastCall = millis();
 	}
 	this->running = true;
+	this->idleTime = 0;
 }
 
 void DisplayTask_Countdown::start() {
 	this->time = this->timeReset;
 	this->lastCall = millis();
 	this->running = true;
+	this->idleTime = 0;
 }
 
 unsigned long DisplayTask_Countdown::getTime() const {
