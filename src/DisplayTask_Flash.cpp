@@ -49,7 +49,7 @@ static uint16_t charToTube(const byte chr) {
 }
 
 DisplayTask_Flash::DisplayTask_Flash() {
-	this->removeOnCantShow = true;
+	this->removeOnInactive = true;
 }
 
 bool DisplayTask_Flash::_isActive() const {
@@ -91,11 +91,7 @@ void DisplayTask_Flash::setDataFromSerial(const String& data) {
 
 	this->setColorFromInput(20, -1, data);
 
-	this->showIfPossibleOtherwiseRotateIfCurrent();
-}
-
-bool DisplayTask_Flash::canStackPopTo() const {
-	return false;
+	this->showIfActiveOtherwiseShowSelected();
 }
 
 bool DisplayTask_Flash::refresh() {

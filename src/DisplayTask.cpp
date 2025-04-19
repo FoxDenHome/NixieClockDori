@@ -13,6 +13,7 @@ DisplayTask *dt_first;
 DisplayTask *dt_last;
 
 DisplayTask* DisplayTask::current;
+DisplayTask* DisplayTask::selected;
 
 bool DisplayTask::buttonLock = false;
 
@@ -44,46 +45,25 @@ void DisplayTask::loadColor(const int16_t addr) {
 void DisplayTask::cycleDisplayUpdater() {
 	DisplayTask::lastDisplayCycleMicros = micros();
 
-	if (DisplayTask::editMode || (!DisplayTask::current->loPri && DisplayTask::current->isActive())) {
+	if (DisplayTask::editMode || (DisplayTask::selected == DisplayTask::current && !DisplayTask::current->loPri && DisplayTask::current->isActive())) {
 		return;
 	}
 
-	if (DisplayTask::current->stack_prev) {
-		DisplayTask *curPtr = DisplayTask::current->stack_prev;
-		DisplayTask::current->stack_prev = NULL;
-
-		DisplayTask::current = curPtr;
-		curPtr->isDirty = true;
-		return;
-	}
-
-	DisplayTask::clearStack();
-	DisplayTask::current = DisplayTask::findNextValid(DisplayTask::current, true);
+	DisplayTask::selected = DisplayTask::findNextValid(DisplayTask::current, true);
+	DisplayTask::current = DisplayTask::selected;
 	DisplayTask::current->isDirty = true;
 }
 
-void DisplayTask::addToStack() {
-	DisplayTask *dt_ptr = DisplayTask::current;
-	while (dt_ptr == this || !dt_ptr->canStackPopTo()) {
-		dt_ptr = dt_ptr->stack_prev;
-		if (!dt_ptr) {
-			break;
-		}
-	}
-	this->stack_prev = dt_ptr;
-}
-
-void DisplayTask::showIfPossibleOtherwiseRotateIfCurrent() {
+void DisplayTask::showIfActiveOtherwiseShowSelected() {
 	if (this->isActive()) {
 		this->add();
-		this->addToStack();
 		DisplayTask::editMode = false;
 		DisplayTask::current = this;
 		this->isDirty = true;
 		DisplayTask::lastDisplayCycleMicros = micros();
 	}
 	else if (this == DisplayTask::current) {
-		DisplayTask::cycleDisplayUpdater();
+		DisplayTask::current = DisplayTask::selected;
 	}
 	else {
 		return;
@@ -264,8 +244,8 @@ void DisplayTask::handleButtonPress(const Button button, const PressType pressTy
 				}
 			}
 			else {
-				DisplayTask::clearStack();
-				DisplayTask::current = DisplayTask::findNextValid(DisplayTask::current, false);
+				DisplayTask::selected = DisplayTask::findNextValid(DisplayTask::current, false);
+				DisplayTask::current = DisplayTask::selected;
 				DisplayTask::current->isDirty = true;
 			}
 			break;
@@ -287,7 +267,7 @@ void DisplayTask::handleButtonPress(const Button button, const PressType pressTy
 	}
 }
 
-DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopOn, const bool mustIsActive) {
+DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopOn, const bool onlyActive) {
 	if (!curPtr) {
 		return NULL;
 	}
@@ -298,7 +278,7 @@ DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopO
 		}
 
 		// Trigger isActive to allow self-remove, then check if added if not must can show
-		if (curPtr->isActive() || (!mustIsActive && curPtr->isAdded)) {
+		if (curPtr->isActive() || (!onlyActive && curPtr->isAdded)) {
 			return curPtr;
 		}
 	} while ((curPtr = curPtr->list_next));
@@ -306,10 +286,10 @@ DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopO
 	return NULL;
 }
 
-DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current, const bool mustIsActive) {
+DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current, const bool onlyActive) {
 	if (!dt_current) {
 		if (dt_first) {
-			return DisplayTask::findNextValid(dt_first, mustIsActive);
+			return DisplayTask::findNextValid(dt_first, onlyActive);
 		}
 
 		forceReset();
@@ -318,17 +298,17 @@ DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current, const bool must
 
 	DisplayTask* curPtr;
 
-	curPtr = DisplayTask::_findNextValid(dt_current->list_next, NULL, mustIsActive);
+	curPtr = DisplayTask::_findNextValid(dt_current->list_next, NULL, onlyActive);
 	if (curPtr) {
 		return curPtr;
 	}
 
-	curPtr = DisplayTask::_findNextValid(dt_first, dt_current, mustIsActive);
+	curPtr = DisplayTask::_findNextValid(dt_first, dt_current, onlyActive);
 	if (curPtr) {
 		return curPtr;
 	}
 
-	if (dt_current->isActive() || (!mustIsActive && dt_current->isAdded)) {
+	if (dt_current->isActive() || (!onlyActive && dt_current->isAdded)) {
 		return dt_current;
 	}
 
@@ -340,7 +320,7 @@ bool DisplayTask::isActive() {
 	if (this->_isActive()) {
 		return true;
 	}
-	if (this->removeOnCantShow) {
+	if (this->removeOnInactive) {
 		this->remove();
 	}
 	return false;
@@ -350,25 +330,12 @@ bool DisplayTask::_isActive() const {
 	return true;
 }
 
-bool DisplayTask::canStackPopTo() const {
-	return true;
-}
-
-void DisplayTask::clearStack() {
-	DisplayTask *dt_ptr = dt_first;
-	while (dt_ptr) {
-		dt_ptr->stack_prev = NULL;
-		dt_ptr = dt_ptr->list_next;
-	}
-}
-
 void DisplayTask::add() {
 	if (this->isAdded) {
 		return;
 	}
 	this->isAdded = true;
 
-	this->stack_prev = NULL;
 	this->list_next = NULL;
 
 	if (dt_last) {
@@ -414,6 +381,5 @@ void DisplayTask::remove() {
 
 	this->list_next = NULL;
 	this->list_prev = NULL;
-	this->stack_prev = NULL;
 }
 

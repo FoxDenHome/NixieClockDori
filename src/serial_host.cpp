@@ -168,7 +168,7 @@ void HostSerial::handle() {
             }
 
             if (tmpData) {
-                displayCountdown.showIfPossibleOtherwiseRotateIfCurrent();
+                displayCountdown.showIfActiveOtherwiseShowSelected();
                 this->reply(F("OK"));
             }
         }
@@ -210,7 +210,7 @@ void HostSerial::handle() {
             break;
         }
         if (tmpData) {
-            displayStopwatch.showIfPossibleOtherwiseRotateIfCurrent();
+            displayStopwatch.showIfActiveOtherwiseShowSelected();
             this->reply(F("OK"));
         }
         break;

@@ -29,7 +29,7 @@ public:
 
 	static DisplayTask* findNextValid(DisplayTask *dt_current, const bool mustIsActive);
 	static void cycleDisplayUpdater();
-	void showIfPossibleOtherwiseRotateIfCurrent();
+	void showIfActiveOtherwiseShowSelected();
 
 	byte red = 0, green = 0, blue = 0;
 	byte dotMask = 0;
@@ -41,6 +41,7 @@ public:
 	static bool buttonLock;
 
 	static DisplayTask *current;
+	static DisplayTask *selected;
 
 	static unsigned long lastDisplayCycleMicros;
 
@@ -54,9 +55,8 @@ public:
 protected:
 	static unsigned long lastButtonPress;
 
-	virtual bool canStackPopTo() const;
 	virtual bool _isActive() const;
-	bool removeOnCantShow = false;
+	bool removeOnInactive = false;
 
 	static byte editModePos;
 
@@ -71,12 +71,9 @@ protected:
 
 private:
 	static DisplayTask* _findNextValid(DisplayTask *curPtr, DisplayTask *stopOn, const bool mustIsActive);
-	void addToStack();
 
 	DisplayTask *list_next;
 	DisplayTask *list_prev;
-
-	DisplayTask *stack_prev;
 
 	bool isAdded = false;
 };
