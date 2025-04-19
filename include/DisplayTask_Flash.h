@@ -17,6 +17,6 @@ public:
 	void setDataFromSerial(const String& data);
 
 protected:
-	bool isStackable() const override;
+	bool canStackPopTo() const override;
 	bool _isActive() const override;
 };

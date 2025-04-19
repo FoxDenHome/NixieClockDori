@@ -48,13 +48,23 @@ void DisplayTask::cycleDisplayUpdater() {
 		return;
 	}
 
+	if (DisplayTask::current->stack_prev) {
+		DisplayTask *curPtr = DisplayTask::current->stack_prev;
+		DisplayTask::current->stack_prev = NULL;
+
+		DisplayTask::current = curPtr;
+		curPtr->isDirty = true;
+		return;
+	}
+
+	DisplayTask::clearStack();
 	DisplayTask::current = DisplayTask::findNextValid(DisplayTask::current, true);
 	DisplayTask::current->isDirty = true;
 }
 
 void DisplayTask::addToStack() {
 	DisplayTask *dt_ptr = DisplayTask::current;
-	while (dt_ptr == this || !dt_ptr->isStackable()) {
+	while (dt_ptr == this || !dt_ptr->canStackPopTo()) {
 		dt_ptr = dt_ptr->stack_prev;
 		if (!dt_ptr) {
 			break;
@@ -254,6 +264,7 @@ void DisplayTask::handleButtonPress(const Button button, const PressType pressTy
 				}
 			}
 			else {
+				DisplayTask::clearStack();
 				DisplayTask::current = DisplayTask::findNextValid(DisplayTask::current, false);
 				DisplayTask::current->isDirty = true;
 			}
@@ -307,12 +318,6 @@ DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current, const bool must
 
 	DisplayTask* curPtr;
 
-	if (dt_current->stack_prev) {
-		curPtr = dt_current->stack_prev;
-		dt_current->stack_prev = NULL;
-		return curPtr;
-	}
-
 	curPtr = DisplayTask::_findNextValid(dt_current->list_next, NULL, mustIsActive);
 	if (curPtr) {
 		return curPtr;
@@ -345,8 +350,16 @@ bool DisplayTask::_isActive() const {
 	return true;
 }
 
-bool DisplayTask::isStackable() const {
+bool DisplayTask::canStackPopTo() const {
 	return true;
+}
+
+void DisplayTask::clearStack() {
+	DisplayTask *dt_ptr = dt_first;
+	while (dt_ptr) {
+		dt_ptr->stack_prev = NULL;
+		dt_ptr = dt_ptr->list_next;
+	}
 }
 
 void DisplayTask::add() {
@@ -355,6 +368,7 @@ void DisplayTask::add() {
 	}
 	this->isAdded = true;
 
+	this->stack_prev = NULL;
 	this->list_next = NULL;
 
 	if (dt_last) {
@@ -400,5 +414,6 @@ void DisplayTask::remove() {
 
 	this->list_next = NULL;
 	this->list_prev = NULL;
+	this->stack_prev = NULL;
 }
 

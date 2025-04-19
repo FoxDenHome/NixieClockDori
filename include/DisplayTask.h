@@ -49,10 +49,12 @@ public:
 	void setDisplayData(const byte offset, const uint16_t data);
 	void setColorFromInput(const byte offset, const int16_t eepromBase, const String& data);
 
+	static void clearStack();
+
 protected:
 	static unsigned long lastButtonPress;
 
-	virtual bool isStackable() const;
+	virtual bool canStackPopTo() const;
 	virtual bool _isActive() const;
 	bool removeOnCantShow = false;
 

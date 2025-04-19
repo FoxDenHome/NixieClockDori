@@ -94,7 +94,7 @@ void DisplayTask_Flash::setDataFromSerial(const String& data) {
 	this->showIfPossibleOtherwiseRotateIfCurrent();
 }
 
-bool DisplayTask_Flash::isStackable() const {
+bool DisplayTask_Flash::canStackPopTo() const {
 	return false;
 }
 
