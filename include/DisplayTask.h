@@ -67,10 +67,9 @@ protected:
 	bool insert2(const byte offset, const byte data, const bool trimLeadingZero);
 	bool showShortTime(const unsigned long timeMs, bool trimLZ);
 
-	void addToStack();
-
 private:
 	static DisplayTask* _findNextValid(DisplayTask *curPtr, DisplayTask *stopOn, const bool mustIsActive);
+	void addToStack();
 
 	DisplayTask *list_next;
 	DisplayTask *list_prev;
