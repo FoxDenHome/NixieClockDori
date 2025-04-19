@@ -53,14 +53,20 @@ void DisplayTask::cycleDisplayUpdater() {
 }
 
 void DisplayTask::addToStack() {
-	if (DisplayTask::current != this) {
-		this->stack_prev = DisplayTask::current;
+	DisplayTask *dt_ptr = DisplayTask::current;
+	while (dt_ptr == this || !dt_ptr->isStackable()) {
+		dt_ptr = dt_ptr->stack_prev;
+		if (!dt_ptr) {
+			break;
+		}
 	}
+	this->stack_prev = dt_ptr;
 }
 
 void DisplayTask::showIfPossibleOtherwiseRotateIfCurrent() {
 	if (this->isActive()) {
 		this->add();
+		this->addToStack();
 		DisplayTask::editMode = false;
 		DisplayTask::current = this;
 		this->isDirty = true;
@@ -335,8 +341,11 @@ bool DisplayTask::isActive() {
 	return false;
 }
 
-
 bool DisplayTask::_isActive() const {
+	return true;
+}
+
+bool DisplayTask::isStackable() const {
 	return true;
 }
 

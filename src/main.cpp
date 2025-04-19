@@ -38,8 +38,8 @@
 	_DECL_BUTTON_FN(NAME, LongPressStart)
 
 #define SETUP_BUTTON(NAME) \
-	NAME ## Button.setClickTicks(200); \
-	NAME ## Button.setPressTicks(500); \
+	NAME ## Button.setClickMs(200); \
+	NAME ## Button.setPressMs(500); \
 	_SETUP_BUTTON_FN(NAME, Click) \
 	_SETUP_BUTTON_FN(NAME, LongPressStart)
 

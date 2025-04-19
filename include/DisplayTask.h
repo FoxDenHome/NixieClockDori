@@ -52,6 +52,7 @@ public:
 protected:
 	static unsigned long lastButtonPress;
 
+	virtual bool isStackable() const;
 	virtual bool _isActive() const;
 	bool removeOnCantShow = false;
 
