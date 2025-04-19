@@ -15,7 +15,10 @@
 #include "DisplayTask.h"
 #include "version.h"
 #include "variables.h"
+
+#ifdef ENABLE_ESPPROXY
 #include "espproxy.h"
+#endif
 
 /**************************/
 /* ARDUINO EVENT HANDLERS */
@@ -116,10 +119,12 @@ void setup() {
 void loop() {
 	wdt_reset();
 
+#ifdef ENABLE_ESPPROXY
 	if (ESPPRoxyMode) {
         loopESPProxy();
 		return;
     }
+#endif
 
 	UPButton.tick();
 	DOWNButton.tick();

@@ -1,3 +1,7 @@
+#include "config.h"
+
+#ifdef ENABLE_ESPPROXY
+
 #include "espproxy.h"
 #include "serial.h"
 #include "variables.h"
@@ -26,3 +30,5 @@ void loopESPProxy() {
         HOST_SERIAL.write(WIFI_SERIAL.read());
     }
 }
+
+#endif

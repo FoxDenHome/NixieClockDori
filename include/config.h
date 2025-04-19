@@ -8,3 +8,5 @@
 
 #define HOST_SERIAL Serial
 #define WIFI_SERIAL Serial3
+
+#undef ENABLE_ESPPROXY

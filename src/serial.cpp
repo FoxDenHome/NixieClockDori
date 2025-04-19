@@ -1,8 +1,11 @@
 #include <Arduino.h>
 
 #include "serial.h"
-#include "espproxy.h"
 #include "config.h"
+
+#ifdef ENABLE_ESPPROXY
+#include "espproxy.h"
+#endif
 
 #define STATE_LOOKING_FOR_START 0
 #define STATE_LOOKING_FOR_COMMAND 1
@@ -84,10 +87,12 @@ void CommandSerial::loop() {
             continue;
         }
 
+#ifdef ENABLE_ESPPROXY
         if (data == 0xC0 || data == '&') { // ESP32 SLIP packet...
             initESPProxy(this, data);
             return;
         }
+#endif
 
         if (data == '^') {
             this->commandState = STATE_LOOKING_FOR_COMMAND;
