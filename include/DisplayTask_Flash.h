@@ -10,7 +10,7 @@ public:
 
 	bool refresh() override;
 
-	unsigned long endTime = 0;
+	unsigned long duration = 0;
 	unsigned long lastUpdate = 0;
 	bool allowEffects = true;
 

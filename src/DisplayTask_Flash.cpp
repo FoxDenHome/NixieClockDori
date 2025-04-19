@@ -53,7 +53,7 @@ DisplayTask_Flash::DisplayTask_Flash() {
 }
 
 bool DisplayTask_Flash::_canShow() const {
-	return this->endTime > 0 && millis() < this->endTime;
+	return this->duration > 0 && (millis() - this->lastUpdate) <= this->duration;
 }
 
 static uint8_t parseDotBitMask(const char c) {
@@ -81,7 +81,7 @@ void DisplayTask_Flash::setDataFromSerial(const String& data) {
 
 	this->allowEffects = (curMillis - this->lastUpdate) >= 400;
 	this->lastUpdate = curMillis;
-	this->endTime = curMillis + (unsigned long)data.substring(0, 8).toInt();
+	this->duration = (unsigned long)data.substring(0, 8).toInt();
 
 	this->dotMask = parseDotBitMask(data[8]) | (parseDotBitMask(data[9]) << 2) | (parseDotBitMask(data[10]) << 4);
 

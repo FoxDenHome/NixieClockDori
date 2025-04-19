@@ -102,6 +102,7 @@ void HostSerial::handle() {
     case 'F':
         if (this->buffer.length() < 20) {
             if (this->buffer.length() < 1) {
+                displayFlash.duration = 0;
                 DisplayTask::cycleDisplayUpdater();
                 this->reply(F("OK"));
                 break;
