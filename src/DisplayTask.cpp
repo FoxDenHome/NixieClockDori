@@ -237,7 +237,7 @@ void DisplayTask::handleButtonPress(const Button button, const PressType pressTy
 				}
 			}
 			else {
-				DisplayTask::selected = DisplayTask::findNextValid(DisplayTask::current, false);
+				DisplayTask::selected = DisplayTask::findNextValid(DisplayTask::current);
 				DisplayTask::current = DisplayTask::selected;
 				DisplayTask::current->isDirty = true;
 			}
@@ -260,29 +260,36 @@ void DisplayTask::handleButtonPress(const Button button, const PressType pressTy
 	}
 }
 
-DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopOn, const bool onlyActive) {
+DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopOn) {
 	if (!curPtr) {
 		return NULL;
 	}
 
+	DisplayTask *nextPtr;
 	do {
+		nextPtr = curPtr->list_next;
+
 		if (curPtr == stopOn) {
 			return NULL;
 		}
 
-		// Trigger isActive to allow self-remove, then check if added if not must can show
-		if (curPtr->isActive() || (!onlyActive && curPtr->isAdded)) {
+		if (!curPtr->canShow()) {
+			curPtr->remove();
+			continue;
+		}
+
+		if (curPtr->isAdded) {
 			return curPtr;
 		}
-	} while ((curPtr = curPtr->list_next));
+	} while ((curPtr = nextPtr));
 
 	return NULL;
 }
 
-DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current, const bool onlyActive) {
+DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current) {
 	if (!dt_current) {
 		if (dt_first) {
-			return DisplayTask::findNextValid(dt_first, onlyActive);
+			return DisplayTask::findNextValid(dt_first);
 		}
 
 		forceReset();
@@ -291,17 +298,17 @@ DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current, const bool only
 
 	DisplayTask* curPtr;
 
-	curPtr = DisplayTask::_findNextValid(dt_current->list_next, NULL, onlyActive);
+	curPtr = DisplayTask::_findNextValid(dt_current->list_next, NULL);
 	if (curPtr) {
 		return curPtr;
 	}
 
-	curPtr = DisplayTask::_findNextValid(dt_first, dt_current, onlyActive);
+	curPtr = DisplayTask::_findNextValid(dt_first, dt_current);
 	if (curPtr) {
 		return curPtr;
 	}
 
-	if (dt_current->isActive() || (!onlyActive && dt_current->isAdded)) {
+	if (dt_current->isAdded) {
 		return dt_current;
 	}
 
@@ -309,17 +316,11 @@ DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current, const bool only
 	return NULL;
 }
 
-bool DisplayTask::isActive() {
-	if (this->_isActive()) {
-		return true;
-	}
-	if (this->removeOnInactive) {
-		this->remove();
-	}
-	return false;
+bool DisplayTask::isActive() const {
+	return true;
 }
 
-bool DisplayTask::_isActive() const {
+bool DisplayTask::canShow() const {
 	return true;
 }
 

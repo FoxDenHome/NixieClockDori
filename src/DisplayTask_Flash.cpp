@@ -49,10 +49,9 @@ static uint16_t charToTube(const byte chr) {
 }
 
 DisplayTask_Flash::DisplayTask_Flash() {
-	this->removeOnInactive = true;
 }
 
-bool DisplayTask_Flash::_isActive() const {
+bool DisplayTask_Flash::isActive() const {
 	return this->duration > 0 && (millis() - this->lastUpdate) <= this->duration;
 }
 
@@ -96,9 +95,14 @@ void DisplayTask_Flash::setDataFromSerial(const String& data) {
 
 bool DisplayTask_Flash::refresh() {
 	DisplayTask::editMode = false;
+
 	if (!this->isActive()) {
-		this->showIfActiveOtherwiseShowSelected();
+		this->remove();
 	}
 
 	return this->allowEffects;
+}
+
+bool DisplayTask_Flash::canShow() const {
+	return this->isActive();
 }

@@ -7,7 +7,7 @@ DisplayTask_Temperature::DisplayTask_Temperature() {
 	this->displayData[8] = SYMBOL_DEGREES_C;
 }
 
-bool DisplayTask_Temperature::_isActive() const {
+bool DisplayTask_Temperature::isActive() const {
 	return false;
 }
 

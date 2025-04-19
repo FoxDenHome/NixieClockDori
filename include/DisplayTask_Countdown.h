@@ -22,7 +22,7 @@ public:
 	void handleEdit(const byte digit, const bool up) override;
 
 protected:
-	bool _isActive() const override;
+	bool isActive() const override;
 
 private:
 	bool running = false;
