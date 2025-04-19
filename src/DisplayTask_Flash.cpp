@@ -97,12 +97,8 @@ bool DisplayTask_Flash::refresh() {
 	DisplayTask::editMode = false;
 
 	if (!this->isActive()) {
-		this->remove();
+		this->showIfActiveOtherwiseShowSelected();
 	}
 
 	return this->allowEffects;
-}
-
-bool DisplayTask_Flash::canShow() const {
-	return this->isActive();
 }

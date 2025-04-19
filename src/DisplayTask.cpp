@@ -50,16 +50,22 @@ bool DisplayTask::isSelected() const {
 }
 
 void DisplayTask::showIfActiveOtherwiseShowSelected() {
+	DisplayTask *dt_next;
 	if (this->isActive()) {
-		this->add();
-		DisplayTask::current = this;
+		dt_next = this;
 	}
 	else if (this == DisplayTask::current) {
-		DisplayTask::current = DisplayTask::selected;
+		dt_next = DisplayTask::selected;
 	}
 	else {
 		return;
 	}
+
+	if (dt_next == DisplayTask::current) {
+		return;
+	}
+
+	DisplayTask::current = dt_next;
 	DisplayTask::editMode = false;
 	DisplayTask::current->isDirty = true;
 	displayAntiPoisonOff();
@@ -237,7 +243,7 @@ void DisplayTask::handleButtonPress(const Button button, const PressType pressTy
 				}
 			}
 			else {
-				DisplayTask::selected = DisplayTask::findNextValid(DisplayTask::current);
+				DisplayTask::selected = DisplayTask::findNext(DisplayTask::selected);
 				DisplayTask::current = DisplayTask::selected;
 				DisplayTask::current->isDirty = true;
 			}
@@ -260,67 +266,20 @@ void DisplayTask::handleButtonPress(const Button button, const PressType pressTy
 	}
 }
 
-DisplayTask* DisplayTask::_findNextValid(DisplayTask *curPtr, DisplayTask *stopOn) {
-	if (!curPtr) {
-		return NULL;
-	}
-
-	DisplayTask *nextPtr;
-	do {
-		nextPtr = curPtr->list_next;
-
-		if (curPtr == stopOn) {
-			return NULL;
-		}
-
-		if (!curPtr->canShow()) {
-			curPtr->remove();
-			continue;
-		}
-
-		if (curPtr->isAdded) {
-			return curPtr;
-		}
-	} while ((curPtr = nextPtr));
-
-	return NULL;
-}
-
-DisplayTask* DisplayTask::findNextValid(DisplayTask *dt_current) {
+DisplayTask* DisplayTask::findNext(DisplayTask *dt_current) {
 	if (!dt_current) {
-		if (dt_first) {
-			return DisplayTask::findNextValid(dt_first);
-		}
-
-		forceReset();
-		return NULL;
+		return dt_first;
 	}
 
-	DisplayTask* curPtr;
-
-	curPtr = DisplayTask::_findNextValid(dt_current->list_next, NULL);
-	if (curPtr) {
-		return curPtr;
+	dt_current = dt_current->list_next;
+	if (!dt_current) {
+		return dt_first;
 	}
 
-	curPtr = DisplayTask::_findNextValid(dt_first, dt_current);
-	if (curPtr) {
-		return curPtr;
-	}
-
-	if (dt_current->isAdded) {
-		return dt_current;
-	}
-
-	forceReset();
-	return NULL;
+	return dt_current;
 }
 
 bool DisplayTask::isActive() const {
-	return true;
-}
-
-bool DisplayTask::canShow() const {
 	return true;
 }
 

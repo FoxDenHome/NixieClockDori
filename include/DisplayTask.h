@@ -22,10 +22,11 @@ public:
 
 	virtual void handleEdit(const byte /*digit*/, const bool /*up*/) { };
 
+	// Add/Remove from selection cycle
 	void add();
 	void remove();
 
-	static DisplayTask* findNextValid(DisplayTask *dt_current);
+	static DisplayTask* findNext(DisplayTask *dt_current);
 	void showIfActiveOtherwiseShowSelected();
 
 	byte red = 0, green = 0, blue = 0;
@@ -49,7 +50,6 @@ public:
 
 	static void clearStack();
 
-	virtual bool canShow() const;
 	virtual bool isActive() const;
 
 protected:
@@ -67,8 +67,6 @@ protected:
 	bool showShortTime(const unsigned long timeMs, bool trimLZ);
 
 private:
-	static DisplayTask* _findNextValid(DisplayTask *curPtr, DisplayTask *stopOn);
-
 	DisplayTask *list_next;
 	DisplayTask *list_prev;
 
