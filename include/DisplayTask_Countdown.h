@@ -15,6 +15,8 @@ public:
 
 	bool refresh() override;
 	unsigned long timeReset;
+	unsigned long getTime() const;
+	unsigned long getResetTime() const;
 
 	void handleButtonPress(const Button button, const PressType press) override;
 	void handleEdit(const byte digit, const bool up) override;

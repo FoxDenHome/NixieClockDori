@@ -13,6 +13,8 @@ public:
 	void reset();
 	void start();
 
+	unsigned long getTime() const;
+
 	void handleButtonPress(const Button button, const PressType press) override;
 
 protected:

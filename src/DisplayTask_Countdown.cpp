@@ -124,3 +124,11 @@ void DisplayTask_Countdown::start() {
 	this->lastCall = millis();
 	this->running = true;
 }
+
+unsigned long DisplayTask_Countdown::getTime() const {
+	return this->time;
+}
+
+unsigned long DisplayTask_Countdown::getResetTime() const {
+	return this->timeReset;
+}

@@ -115,22 +115,63 @@ void HostSerial::handle() {
 
         this->reply(F("OK"));
         break;
-        // C [MMMMMMMM [RR GG BB]]
-        // M = Time in ms (Dec), R = Red (Hex), G = Green (Hex), B = Blue (Hex)
-        // Starts a countdown for <M> ms. Stops countdown if <M> = 0
-        // ^C00010000
-        // ^C
+        // C C [MMMMMMMM [RR GG BB]]
+        // C = subcommand, M = Time in ms (Dec), R = Red (Hex), G = Green (Hex), B = Blue (Hex)
+        // Controls the countdown. R for reset/disable, P for pause, U for un-pause, S for start/restart
+        //                         C for get current value, G for get configured value, N for no-op (just set configuration)
+        // ^CS00010000
+        // ^CR
     case 'C':
-        if (this->buffer.length() < 8) {
-            displayCountdown.reset();
+        if (this->buffer.length() < 1) {
+            this->reply(F("BAD Invalid length; expected 1"));
+            break;
         }
-        else {
-            displayCountdown.timeReset = this->buffer.substring(0, 8).toInt();
-            displayCountdown.start();
+
+        tmpData = true;
+        switch (this->buffer[0]) {
+            case 'C':
+                tmpData = false;
+                this->reply(String(displayCountdown.getTime()));
+                break;
+            case 'G':
+                tmpData = false;
+                this->reply(String(displayCountdown.getResetTime()));
+                break;
         }
-        displayCountdown.setColorFromInput(8, EEPROM_STORAGE_COUNTDOWN_RGB, this->buffer);
-        displayCountdown.showIfPossibleOtherwiseRotateIfCurrent();
-        this->reply(F("OK"));
+
+        if (tmpData) {
+            if (this->buffer.length() >= 9) {
+                displayCountdown.timeReset = this->buffer.substring(1, 9).toInt();
+            }
+            displayCountdown.setColorFromInput(8, EEPROM_STORAGE_COUNTDOWN_RGB, this->buffer);
+
+            tmpData = true;
+            switch (this->buffer[0]) {
+                case 'R':
+                    displayCountdown.reset();
+                    break;
+                case 'P':
+                    displayCountdown.pause();
+                    break;
+                case 'U':
+                    displayCountdown.resume();
+                    break;
+                case 'S':
+                    displayCountdown.start();
+                    break;
+                case 'N':
+                    break;
+                default:
+                    tmpData = false;
+                    this->reply(F("BAD Invalid C"));
+                    break;
+            }
+
+            if (tmpData) {
+                displayCountdown.showIfPossibleOtherwiseRotateIfCurrent();
+                this->reply(F("OK"));
+            }
+        }
         break;
         // W C [RR GG BB]
         // C = subcommand, R = Red (Hex), G = Green (Hex), B = Blue (Hex)
@@ -156,6 +197,10 @@ void HostSerial::handle() {
             break;
         case 'S':
             displayStopwatch.start();
+            break;
+        case 'G':
+            tmpData = false;
+            this->reply(String(displayStopwatch.getTime()));
             break;
         default:
             tmpData = false;

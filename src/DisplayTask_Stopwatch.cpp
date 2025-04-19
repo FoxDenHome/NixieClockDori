@@ -70,3 +70,6 @@ void DisplayTask_Stopwatch::start() {
 	this->running = true;
 }
 
+unsigned long DisplayTask_Stopwatch::getTime() const {
+	return this->time;
+}
