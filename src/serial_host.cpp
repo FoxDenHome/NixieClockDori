@@ -175,7 +175,7 @@ void HostSerial::handle() {
         break;
         // W C [RR GG BB]
         // C = subcommand, R = Red (Hex), G = Green (Hex), B = Blue (Hex)
-        // Controls the stopwatch. R for reset/disable, P for pause, U for un-pause, S for start/restart
+        // Controls the stopwatch. R for reset/disable, P for pause, U for un-pause, S for start/restart, N for no-op
         // ^WS
         // ^WR
     case 'W':
@@ -201,6 +201,8 @@ void HostSerial::handle() {
         case 'G':
             tmpData = false;
             this->reply(String(displayStopwatch.getTime()));
+            break;
+        case 'N':
             break;
         default:
             tmpData = false;
