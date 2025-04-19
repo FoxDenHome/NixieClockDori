@@ -91,7 +91,6 @@ void DisplayTask_Flash::setDataFromSerial(const String& data) {
 
 	this->setColorFromInput(20, -1, data);
 
-	this->addToStack();
 	this->showIfPossibleOtherwiseRotateIfCurrent();
 }
 
