@@ -5,11 +5,11 @@
 #include "rtc.h"
 #include "variables.h"
 
-DS3232RTC nxRTC;
+DS3232RTC cRTC;
 
 void rtcSetTimeRaw(const time_t t) {
 	setTime(t);
-	nxRTC.set(t);
+	cRTC.set(t);
 }
 
 void rtcSetTime(tmElements_t& tm) {
@@ -17,8 +17,8 @@ void rtcSetTime(tmElements_t& tm) {
 }
 
 void rtcInit() {
-	nxRTC.begin();
-	setSyncProvider(nxRTC.get);
+	cRTC.begin();
+	setSyncProvider(cRTC.get);
 	if (timeStatus() != timeSet) {
 		hostSerial.echo(F("Warning! Unable to sync with RTC! Try setting the time?"));
 	}
