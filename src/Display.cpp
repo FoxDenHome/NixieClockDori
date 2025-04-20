@@ -141,7 +141,8 @@ void renderNixies() {
 		dotMask = DOT_1_DOWN | DOT_1_UP | DOT_2_DOWN | DOT_2_UP | DOT_3_DOWN | DOT_3_UP;
 	}
 	else {
-		allowEffects = DisplayTask::current->refresh();
+		DisplayTask* dt_current = DisplayTask::retrieveCurrent();
+		allowEffects = dt_current->refresh();
 
 		if (currentEffect != NONE) {
 			byte redNow = redOld, greenNow = greenOld, blueNow = blueOld;
@@ -163,40 +164,40 @@ void renderNixies() {
 				analogWrite(PIN_LED_BLUE, blueNow);
 			}
 
-			if (DisplayTask::current->red != redOld || DisplayTask::current->green != greenOld || DisplayTask::current->blue != blueOld) {
+			if (dt_current->red != redOld || dt_current->green != greenOld || dt_current->blue != blueOld) {
 				redPrevious = redNow;
-				redOld = DisplayTask::current->red;
+				redOld = dt_current->red;
 				greenPrevious = greenNow;
-				greenOld = DisplayTask::current->green;
+				greenOld = dt_current->green;
 				bluePrevious = blueNow;
-				blueOld = DisplayTask::current->blue;
+				blueOld = dt_current->blue;
 				colorTransProg = EFFECT_SPEED;
 			}
 		}
 		else {
-			if (DisplayTask::current->red != redOld) {
-				redOld = DisplayTask::current->red;
+			if (dt_current->red != redOld) {
+				redOld = dt_current->red;
 				analogWrite(PIN_LED_RED, redOld);
 			}
-			if (DisplayTask::current->green != greenOld) {
-				greenOld = DisplayTask::current->green;
+			if (dt_current->green != greenOld) {
+				greenOld = dt_current->green;
 				analogWrite(PIN_LED_GREEN, greenOld);
 			}
-			if (DisplayTask::current->blue != blueOld) {
-				blueOld = DisplayTask::current->blue;
+			if (dt_current->blue != blueOld) {
+				blueOld = dt_current->blue;
 				analogWrite(PIN_LED_BLUE, blueOld);
 			}
 		}
 
-		isDirty = (dotMask != DisplayTask::current->dotMask) || DisplayTask::current->isDirty;
+		isDirty = (dotMask != dt_current->dotMask) || dt_current->isDirty;
 		if (isDirty) {
-			dotMask = DisplayTask::current->dotMask;
+			dotMask = dt_current->dotMask;
 
 			for (byte i = 0; i < 9; i++) {
-				displayData[i] = DisplayTask::current->displayData[i];
+				displayData[i] = dt_current->displayData[i];
 			}
 
-			DisplayTask::current->isDirty = false;
+			dt_current->isDirty = false;
 		}
 	}
 

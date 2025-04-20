@@ -103,8 +103,8 @@ void setup() {
 	displayCountdown.loadConfig(EEPROM_STORAGE_COUNTDOWN);
 	displayTemp.loadColor(EEPROM_STORAGE_TEMPERATURE_RGB);
 
-	DisplayTask::current = &displayClock;
-	DisplayTask::current->isDirty = true;
+	displayClock.select();
+	DisplayTask::activateSelected();
 
 	SETUP_BUTTON(UP);
 	SETUP_BUTTON(DOWN);

@@ -38,9 +38,6 @@ public:
 	static bool editMode;
 	static bool buttonLock;
 
-	static DisplayTask *current;
-	static DisplayTask *selected;
-
 	void saveColor(int16_t addr);
 	void loadColor(int16_t addr);
 	void setDisplayData(const byte offset, const uint16_t data);
@@ -48,7 +45,8 @@ public:
 	void select();
 	bool isSelected() const;
 
-	static void clearStack();
+	static DisplayTask* retrieveCurrent();
+	static void activateSelected();
 
 	virtual bool isActive() const;
 
@@ -69,6 +67,9 @@ protected:
 private:
 	DisplayTask *list_next;
 	DisplayTask *list_prev;
+
+	static DisplayTask *current;
+	static DisplayTask *selected;
 
 	bool isAdded = false;
 };

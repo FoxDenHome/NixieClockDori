@@ -8,7 +8,7 @@
 #include <TimeLib.h>
 
 void DisplayTask_Clock::handleButtonPress(const Button button, const PressType pressType) {
-	if ((button == UP || button == DOWN) && pressType == Click && !this->editMode) {
+	if ((button == UP || button == DOWN) && pressType == Click && !DisplayTask::editMode) {
 		currentEffect = static_cast<DisplayEffect>(static_cast<byte>(currentEffect) + 1);
 		if (currentEffect == FIRST_INVALID) {
 			currentEffect = NONE;

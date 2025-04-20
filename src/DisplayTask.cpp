@@ -73,8 +73,7 @@ void DisplayTask::showIfActiveOtherwiseShowSelected() {
 
 void DisplayTask::buttonHandler(const Button button, const PressType pressType) {
 	if (DisplayTask::buttonLock) {
-		DisplayTask::current->editMode = false;
-		DisplayTask::current->editModePos = 0;
+		DisplayTask::editMode = false;
 		return;
 	}
 
@@ -84,10 +83,23 @@ void DisplayTask::buttonHandler(const Button button, const PressType pressType) 
 	DisplayTask::current->handleButtonPress(button, pressType);
 }
 
+DisplayTask* DisplayTask::retrieveCurrent() {
+	if (DisplayTask::current == DisplayTask::selected || DisplayTask::current->isActive()) {
+		return DisplayTask::current;
+	}
+	DisplayTask::activateSelected();
+	return DisplayTask::current;
+}
+
+void DisplayTask::activateSelected() {
+	DisplayTask::current = DisplayTask::selected;
+	DisplayTask::current->isDirty = true;
+}
+
 bool DisplayTask::refresh() {
-	if (this->editMode) {
+	if (DisplayTask::editMode) {
 		if ((millis() - DisplayTask::lastButtonPress) % 1000 >= 500) {
-			insert1(this->editModePos, 0, true);
+			insert1(DisplayTask::editModePos, 0, true);
 		}
 		return false;
 	}
@@ -244,8 +256,7 @@ void DisplayTask::handleButtonPress(const Button button, const PressType pressTy
 			}
 			else {
 				DisplayTask::selected = DisplayTask::findNext(DisplayTask::selected);
-				DisplayTask::current = DisplayTask::selected;
-				DisplayTask::current->isDirty = true;
+				DisplayTask::activateSelected();
 			}
 			break;
 		case LongPressStart:
@@ -259,7 +270,7 @@ void DisplayTask::handleButtonPress(const Button button, const PressType pressTy
 		break;
 	case DOWN:
 	case UP:
-		if (this->editMode) {
+		if (DisplayTask::editMode) {
 			handleEdit(DisplayTask::editModePos, button == UP);
 		}
 		break;

@@ -25,7 +25,7 @@ bool DisplayTask_Date::isActive() const {
 }
 
 void DisplayTask_Date::handleButtonPress(const Button button, const PressType pressType) {
-	if ((button == UP || button == DOWN) && pressType == Click && !this->editMode) {
+	if ((button == UP || button == DOWN) && pressType == Click && !DisplayTask::editMode) {
 		this->cycleAuto = !this->cycleAuto;
 		if (this->base >= 0) {
 			EEPROM.put(this->base, this->cycleAuto);

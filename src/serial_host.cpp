@@ -117,8 +117,7 @@ void HostSerial::handle() {
         }
 
         if (tmpData) { 
-            DisplayTask::current = DisplayTask::selected;
-            DisplayTask::current->isDirty = true;
+            DisplayTask::activateSelected();
             this->reply(F("OK"));
         }
 
