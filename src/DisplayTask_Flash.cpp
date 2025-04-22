@@ -2,6 +2,8 @@
 #include "Display.h"
 #include "serial.h"
 
+DisplayTask* DisplayTask_Flash::pre;
+
 static uint16_t charToTube(const byte chr) {
 	switch (chr) {
 		// Special tube layouts
@@ -76,6 +78,11 @@ static uint8_t parseDotBitMask(const char c) {
 }
 
 void DisplayTask_Flash::setDataFromSerial(const String& data) {
+	DisplayTask *dt_current = DisplayTask::retrieveCurrent();
+	if (dt_current != this) {
+		DisplayTask_Flash::pre = dt_current;
+	}
+
 	const unsigned long curMillis = millis();
 
 	this->allowEffects = (curMillis - this->lastUpdate) >= 400;
@@ -97,7 +104,7 @@ bool DisplayTask_Flash::refresh() {
 	DisplayTask::editMode = false;
 
 	if (!this->isActive()) {
-		this->showIfActiveOtherwiseShowSelected();
+		DisplayTask_Flash::pre->setCurrent();
 	}
 
 	return this->allowEffects;

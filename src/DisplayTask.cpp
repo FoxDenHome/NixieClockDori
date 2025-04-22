@@ -45,30 +45,28 @@ void DisplayTask::select() {
 	DisplayTask::selected = this;
 }
 
+void DisplayTask::setCurrent() {
+	if (this == DisplayTask::current) {
+		return;
+	}
+
+	DisplayTask::current = this;
+	DisplayTask::editMode = false;
+	DisplayTask::current->isDirty = true;
+	displayAntiPoisonOff();
+}
+
 bool DisplayTask::isSelected() const {
 	return DisplayTask::selected == this;
 }
 
 void DisplayTask::showIfActiveOtherwiseShowSelected() {
-	DisplayTask *dt_next;
 	if (this->isActive()) {
-		dt_next = this;
+		this->setCurrent();
 	}
 	else if (this == DisplayTask::current) {
-		dt_next = DisplayTask::selected;
+		DisplayTask::selected->setCurrent();
 	}
-	else {
-		return;
-	}
-
-	if (dt_next == DisplayTask::current) {
-		return;
-	}
-
-	DisplayTask::current = dt_next;
-	DisplayTask::editMode = false;
-	DisplayTask::current->isDirty = true;
-	displayAntiPoisonOff();
 }
 
 void DisplayTask::buttonHandler(const Button button, const PressType pressType) {

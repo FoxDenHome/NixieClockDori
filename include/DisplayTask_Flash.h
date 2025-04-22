@@ -18,4 +18,6 @@ public:
 
 protected:
 	bool isActive() const override;
+
+	static DisplayTask *pre;
 };

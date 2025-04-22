@@ -45,6 +45,8 @@ public:
 	void select();
 	bool isSelected() const;
 
+	void setCurrent();
+
 	static DisplayTask* retrieveCurrent();
 	static void activateSelected();
 
