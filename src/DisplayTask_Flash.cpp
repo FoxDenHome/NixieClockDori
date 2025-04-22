@@ -104,7 +104,11 @@ bool DisplayTask_Flash::refresh() {
 	DisplayTask::editMode = false;
 
 	if (!this->isActive()) {
-		DisplayTask_Flash::pre->setCurrent();
+		if (DisplayTask_Flash::pre) {
+			DisplayTask_Flash::pre->setCurrent();
+		} else {
+			DisplayTask::standard->setCurrent();
+		}
 	}
 
 	return this->allowEffects;

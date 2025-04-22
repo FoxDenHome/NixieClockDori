@@ -52,6 +52,8 @@ public:
 
 	virtual bool isActive() const;
 
+	static DisplayTask *standard;
+
 protected:
 	static unsigned long lastButtonPress;
 

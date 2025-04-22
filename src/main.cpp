@@ -89,6 +89,8 @@ void setup() {
 	displayDate.loPri = true;
 	displayDate.add();
 
+	DisplayTask::standard = &displayClock;
+
 	displayStopwatch.add();
 	displayCountdown.add();
 

@@ -14,6 +14,7 @@ DisplayTask *dt_last;
 
 DisplayTask* DisplayTask::current;
 DisplayTask* DisplayTask::selected;
+DisplayTask* DisplayTask::standard;
 
 bool DisplayTask::buttonLock = false;
 
